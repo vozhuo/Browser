@@ -191,6 +191,7 @@ public class TabController {
         mTabQueue.remove(t);
         if (mController != null) {
             mController.onTabCountChanged();
+//            mController.onTabDataChanged();
         }
         return true;
     }

@@ -228,6 +228,7 @@ private View transparent;
         });
     }
 
+    private PopupWindow popupWindow;
     private void showPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.layout_site_list, null);
@@ -240,7 +241,7 @@ private View transparent;
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(true); //item高度固定
 
-        final PopupWindow popupWindow = new PopupWindow(contentView, ConstraintLayout.LayoutParams.MATCH_PARENT,
+        popupWindow = new PopupWindow(contentView, ConstraintLayout.LayoutParams.MATCH_PARENT,
                 ConstraintLayout.LayoutParams.WRAP_CONTENT);
 
         contentView.setFocusable(true);
@@ -284,13 +285,24 @@ private View transparent;
 //    }
     @Override
     public void selectTab(Tab tab) {
-
+        int index = mTabController.getTabPosition(tab);
+        mActiveTab = tab;
+        mTabController.setActiveTab(mActiveTab);
+        popupWindow.dismiss();
+        Log.e(TAG, "onSelect :: key =:" + tab.getId());
     }
 
     @Override
     public void closeTab(Tab tab) {
-        Log.e(TAG, "closeTab: "+ mTabController.getTabPosition(tab));
+        Log.e(TAG, "closeTab: "+ tab.getId());
         mTabController.removeTab(tab);
+        if(mTabController.getTabCount() <= 0) {
+            addTab();
+        }
+        mTabAdapter.updateData(mTabController.getTabs());
+//        mTabAdapter.notifyItemChanged(mTabController.getTabPosition(tab));
+//        onTabDataChanged(tab);
+
     }
 
     @Override
@@ -328,13 +340,13 @@ private View transparent;
        // view.loadUrl("file:///android_asset/index.html");
 //        tab.loadUrl("https://baidu.com");
         view = webView;
-
-        String query = getIntent().getStringExtra("query");
-        if (query == null) {
-            view.loadUrl("file:///android_asset/index.html");
-        } else {
-            view.loadUrl(query);
-        }
+        view.loadUrl("file:///android_asset/index.html");
+//        String query = getIntent().getStringExtra("query");
+//        if (query == null) {
+//            view.loadUrl("file:///android_asset/index.html");
+//        } else {
+//            view.loadUrl(query);
+//        }
     }
 
     @Override
