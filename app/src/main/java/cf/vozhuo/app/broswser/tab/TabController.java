@@ -131,7 +131,6 @@ public class TabController {
             return null;
         }
         */
-
         final WebView w = createNewWebView();
 
         // Create a new tab and add it to the tab list

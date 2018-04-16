@@ -23,6 +23,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -51,6 +52,7 @@ import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity implements UiController {
 
+    private static final int RESULT_CODE = 0;
     private WebSettings settings;
     private EditText editText;
 
@@ -68,14 +70,14 @@ private View transparent;
     @BindView(R.id.tvPagerNum)
     TextView mTabNum;
 
-//    @BindView(R.id.stackView)
-//    MYStackView mStackView;
+    @BindView(R.id.contentWrapper)
+    ConstraintLayout mContentWrapper;
 
-//    @BindView(R.id.flPagersManager)
-//    FrameLayout mTabsManagerLayout;
+//    @BindView(R.id.web_holder)
+//    WebView web_holder;
 
-//    @BindView(R.id.searchText)
-//    TextView searchText;
+    @BindView(R.id.iv_logo)
+    ImageView logo;
 
     @BindView(R.id.searchProgress)
     ProgressBar searchProgress;
@@ -83,20 +85,22 @@ private View transparent;
     @BindView(R.id.siteTitle)
     TextView siteTitle;
 
-//    @BindView(R.id.MainTitle)
-//    ConstraintLayout mainTitle;
+    @BindView(R.id.mainTitle)
+    ConstraintLayout mainTitle;
 
-    @BindView(R.id.web_holder)
-    WebView webView;
+    @BindView(R.id.searchBox)
+    ConstraintLayout searchBox;
 
     @BindView(R.id.BottomBar)
     ConstraintLayout mBottomBar;
 
     private boolean mTabsManagerUIShown = false;
 
-    @OnClick(R.id.siteTitle)
+    @OnClick({R.id.siteTitle, R.id.searchBox})
     public void showSearchBar() {
-        startActivity(new Intent(MainActivity.this, SearchActivity.class));
+        Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+        intent.putExtra("siteInfo", mActiveTab.getUrl());
+        startActivityForResult(intent, RESULT_CODE);
         overridePendingTransition(0, 0);
     }
 
@@ -116,7 +120,18 @@ private View transparent;
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
-        webView.saveState(outState);
+//        webView.saveState(outState);
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String query = getIntent().getStringExtra("query");
+        Log.e(TAG, "onResume: " + query);
+        if(query != null) {
+            load(query);
+            getIntent().removeExtra("query"); //解决返回时再次搜索的问题
+        }
+
     }
 
     @Override
@@ -132,63 +147,19 @@ private View transparent;
         mFactory = new BrowserWebViewFactory(this);
         // 先建立一个tab标记主页
         if (mTabController.getTabCount() <= 0) {
-            addTab();
+           addTab(false);
         }
-
-        if (savedInstanceState != null) {
-            webView.restoreState(savedInstanceState);
-        }
-
-//        settings = webView.getSettings();
-//        settings.setJavaScriptEnabled(true);
-//        settings.setSupportMultipleWindows(true); //支持多窗口
-//        settings.setUseWideViewPort(true);
-//        settings.setLoadWithOverviewMode(true);
-//
-//        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/_BuildID_) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36");
-//        webView.setWebViewClient(new WebViewClient() {
-//            @Override
-//            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-//                searchProgress.setVisibility(View.VISIBLE);
-//                siteTitle.setText(url);
-//                super.onPageStarted(view, url, favicon);
-//            }
-//
-//            @Override
-//            public void onPageFinished(WebView view, String url) {
-//                searchProgress.setVisibility(View.GONE);
-//                siteTitle.setText(view.getTitle());
-//                super.onPageFinished(view, url);
-//            }
-//        });
-//        webView.setWebChromeClient(new WebChromeClient() {
-//            @Override
-//            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-//                return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg);
-//            }
-//
-//            @Override
-//            public void onProgressChanged(WebView view, int newProgress) {
-//                searchProgress.setProgress(newProgress);
-//                super.onProgressChanged(view, newProgress);
-//            }
-//        });
-//        String query = getIntent().getStringExtra("query");
-//
-//        if (query == null) {
-////            webview.loadUrl("file:///android_asset/index.html");
-//        } else {
-//            mainTitle.setVisibility(View.GONE);
-//            webView.setVisibility(View.VISIBLE);
-//            webView.loadUrl(query);
-//        }
     }
 
-    private void addTab() {
+    private void addTab(boolean second) {
         Log.e(TAG,"addTab = ;-----------");
+        if(second) {
+            switchToMain();
+        }
         Tab tab = mTabController.createNewTab();
         mActiveTab = tab;
         mTabController.setActiveTab(mActiveTab);
+        Log.e(TAG, "First Web: "+ mActiveTab.getWebView());
     }
 
     private void removeTab(int index) {
@@ -197,8 +168,8 @@ private View transparent;
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()){
-            webView.goBack();//返回上个页面
+        if(keyCode == KeyEvent.KEYCODE_BACK && mActiveTab.getWebView().canGoBack()){
+            mActiveTab.getWebView().goBack();//返回上个页面
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -213,7 +184,7 @@ private View transparent;
     private RecyclerView mRecyclerView;
     private void showTabs() {
         mTabAdapter.updateData(mTabController.getTabs());
-        Log.e(TAG, "showTabs: " + mTabController.getTabCount());
+        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
 
         LinearLayoutManager layout = new LinearLayoutManager(this);
         layout.setStackFromEnd(true); //倒序
@@ -263,7 +234,7 @@ private View transparent;
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "ADD PAGE----------");
-                addTab();
+                addTab(true);
                 popupWindow.dismiss();
             }
         });
@@ -285,9 +256,18 @@ private View transparent;
 //    }
     @Override
     public void selectTab(Tab tab) {
-        int index = mTabController.getTabPosition(tab);
+//        int index = mTabController.getTabPosition(tab);
         mActiveTab = tab;
         mTabController.setActiveTab(mActiveTab);
+
+        if(!mActiveTab.isBlank()) {
+            siteTitle.setText(mActiveTab.getTitle());
+            switchToTab();
+            Log.e(TAG,"switchToTab");
+        } else {
+            switchToMain();
+            Log.e(TAG,"switchToMain");
+        }
         popupWindow.dismiss();
         Log.e(TAG, "onSelect :: key =:" + tab.getId());
     }
@@ -297,12 +277,9 @@ private View transparent;
         Log.e(TAG, "closeTab: "+ tab.getId());
         mTabController.removeTab(tab);
         if(mTabController.getTabCount() <= 0) {
-            addTab();
+            addTab(true);
         }
         mTabAdapter.updateData(mTabController.getTabs());
-//        mTabAdapter.notifyItemChanged(mTabController.getTabPosition(tab));
-//        onTabDataChanged(tab);
-
     }
 
     @Override
@@ -337,10 +314,9 @@ private View transparent;
 
     @Override
     public void onSetWebView(Tab tab, WebView view) {
-       // view.loadUrl("file:///android_asset/index.html");
-//        tab.loadUrl("https://baidu.com");
-        view = webView;
-        view.loadUrl("file:///android_asset/index.html");
+//        view = webView;
+//        tab.loadUrl("file:///android_asset/index.html", null, true);
+//        view.loadUrl("file:///android_asset/index.html");
 //        String query = getIntent().getStringExtra("query");
 //        if (query == null) {
 //            view.loadUrl("file:///android_asset/index.html");
@@ -349,9 +325,54 @@ private View transparent;
 //        }
     }
 
+    private void load(String url) {
+        if (mActiveTab != null) {
+            mActiveTab.clearWebHistory();
+            mActiveTab.loadUrl(url, null,true);
+            switchToTab();
+        }
+    }
+
+    private void switchToTab(){
+        if(mainTitle.getParent() != null) {
+            mContentWrapper.removeView(mainTitle);
+        }
+        WebView view = mActiveTab.getWebView();
+        Log.e(TAG,"switchToTab ----------" + mainTitle.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
+        if(view != null && view.getParent() == null) {
+            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
+            if(lp == null){
+                lp = new ConstraintLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT);
+            }
+//            lp.topMargin = getResources().getDimensionPixelSize(R.dimen.dimen_48dp);
+            mContentWrapper.addView(view,lp);
+        }
+        mIsInMain = false;
+    }
+    private void switchToMain(){
+        WebView view = mActiveTab.getWebView();
+        if (view != null) {
+            mContentWrapper.removeView(view);
+        }
+        if(mainTitle.getParent() == null) {
+            mContentWrapper.addView(mainTitle);
+        }
+        Log.e(TAG,"switchToMain :: getParent() =:" + mainTitle.getParent() + "view ：" + mActiveTab.getWebView());
+        mActiveTab.stopLoading();
+        //  mActiveTab.loadBlank();
+        mIsInMain = true;
+    }
+
     @Override
     public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
-
+        if(mIsInMain) {
+            searchProgress.setVisibility(View.GONE);
+        } else {
+            searchProgress.setVisibility(View.VISIBLE);
+        }
+        siteTitle.setText(tab.getUrl());
     }
 
     @Override
@@ -367,9 +388,9 @@ private View transparent;
 
     @Override
     public void onReceivedTitle(Tab tab, String title) {
-
+        siteTitle.setText(title);
+        Log.e(TAG, "onReceivedTitle: "+ tab.getUrl() + " " + tab.getTitle());
     }
-
 //
 //    @Override
 //    public void SendMessageValue(Boolean value) {

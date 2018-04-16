@@ -72,6 +72,8 @@
             android:hint="@string/search_hint"
             android:imeOptions="actionSearch"
             android:singleLine="true"
+            android:focusable="true"
+            android:selectAllOnFocus="true"
             android:textCursorDrawable="@null"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"

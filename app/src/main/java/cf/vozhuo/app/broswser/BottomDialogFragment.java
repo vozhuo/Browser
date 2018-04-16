@@ -76,7 +76,7 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         view.findViewById(R.id.ie5).setOnClickListener(this);
         view.findViewById(R.id.ie6).setOnClickListener(this);
 
-        webView = getActivity().findViewById(R.id.web_holder);
+//        webView = getActivity().findViewById(R.id.web_holder);
 //        init(view);
         SharedPreferences sp = getActivity().getSharedPreferences("image_config", Context.MODE_PRIVATE);
         Boolean state = sp.getBoolean("image_state", false);

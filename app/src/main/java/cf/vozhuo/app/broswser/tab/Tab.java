@@ -148,7 +148,6 @@ public class Tab {
             mCurrentState.mTitle = title;
             mWebViewController.onReceivedTitle(Tab.this, title);
         }
-
     };
 
     public void loadBlank(){
@@ -162,7 +161,6 @@ public class Tab {
     }
 
     public Tab(WebViewController webViewController,WebView view,Bundle state){
-
         mSavePageJob = new HashMap<Integer, Long>();
         mWebViewController = webViewController;
         mContext = mWebViewController.getContext();

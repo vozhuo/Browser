@@ -77,6 +77,16 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if(keyCode == KeyEvent.KEYCODE_BACK ) {
+//            startActivity(new Intent(SearchActivity.this, MainActivity.class));
+//            finish();
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +95,8 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
         showSoftInputFromWindow(SearchActivity.this, searchView);
         //initStatusBar();
+        searchView.setText(getIntent().getStringExtra("siteInfo"));
+        searchView.selectAll();
         mSearchPresenter = new SearchPresenterImpl(this, this);
         searchView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
