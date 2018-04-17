@@ -38,9 +38,10 @@ public class BrowserWebViewFactory implements WebViewFactory {
         //设置渲染的优先级
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
         //支持多窗口
-        webSettings.setSupportMultipleWindows(true);
-//        webSettings.setUseWideViewPort(true);
-//        webSettings.setLoadWithOverviewMode(true);
+//        webSettings.setSupportMultipleWindows(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setDefaultTextEncodingName("utf-8");
 //        String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + .APP_CACHE_DIRNAME;
 //        //设置  Application Caches 缓存目录
 //        webSettings.setAppCachePath(cacheDirPath);
@@ -64,6 +65,6 @@ public class BrowserWebViewFactory implements WebViewFactory {
             // Remote Web Debugging is always enabled, where available.
             WebView.setWebContentsDebuggingEnabled(true);
         }
-//        w.loadUrl("file:///android_asset/index.html");
+        w.loadUrl("file:///android_asset/index.html");
     }
 }
