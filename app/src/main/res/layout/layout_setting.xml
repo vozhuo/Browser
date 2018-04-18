@@ -42,15 +42,47 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar_setting" />
 
-    <TextView
-        android:id="@+id/tv_browser_state"
-        android:layout_width="wrap_content"
+    <!--<TextView-->
+    <!--android:id="@+id/tv_browser_state"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginLeft="146dp"-->
+    <!--android:layout_marginStart="146dp"-->
+    <!--android:layout_marginTop="27dp"-->
+    <!--app:layout_constraintStart_toStartOf="@+id/switchBrowser"-->
+    <!--app:layout_constraintTop_toBottomOf="@+id/switchBrowser" />-->
+
+    <LinearLayout
+        android:id="@+id/ll_search"
+        android:layout_width="382dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="146dp"
-        android:layout_marginStart="146dp"
-        android:layout_marginTop="27dp"
-        app:layout_constraintStart_toStartOf="@+id/switchBrowser"
-        app:layout_constraintTop_toBottomOf="@+id/switchBrowser" />
+        android:layout_marginTop="40dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchBrowser">
+
+        <TextView
+            android:id="@+id/option_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="搜索引擎"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_engine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/iv_engine"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/forward" />
+    </LinearLayout>
 
 
 </android.support.constraint.ConstraintLayout>

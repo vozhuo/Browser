@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             Log.e(TAG, "showSearchBar: " + mIsInMain);
             intent.putExtra("siteInfo", mActiveTab.getUrl());
         }
+
         startActivityForResult(intent, RESULT_CODE);
         overridePendingTransition(0, 0);
     }
@@ -112,6 +113,9 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void showMainSettings(View view) {
         FragmentManager fm = getSupportFragmentManager();
         BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("mActiveTab", mActiveTab);
+        bottomDialogFragment.setArguments(bundle);
         bottomDialogFragment.show(fm, "fragment_bottom_dialog");
     }
 

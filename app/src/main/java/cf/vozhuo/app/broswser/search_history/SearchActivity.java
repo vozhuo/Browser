@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -162,15 +163,33 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
     @Override
     public void searchSuccess(String value) {
-//        Toast.makeText(this, value, Toast.LENGTH_SHORT).show();
-        String baidu_search = "https://www.baidu.com/s?ie=UTF-8&wd=";
+        SharedPreferences sp = getSharedPreferences("search_engine_config", Context.MODE_PRIVATE);
+        String search_engine = sp.getString("search_engine", "百度");
+        String search_string;
+        switch (search_engine) {
+            case "百度":
+                search_string = "https://www.baidu.com/s?ie=UTF-8&wd=";
+                break;
+            case "谷歌":
+                search_string = "https://www.google.com/search?q=";
+                break;
+            case "必应":
+                search_string = "https://bing.com/search?q=";
+                break;
+            case "搜狗":
+                search_string = "https://www.sogou.com/web?query=";
+                break;
+            default:
+                search_string = "https://www.baidu.com/s?ie=UTF-8&wd=";
+                break;
+        }
                 //https://blog.csdn.net/myth13141314/article/details/68940911
                 if(URLUtil.isValidUrl(value) || Patterns.WEB_URL.matcher(value).matches()) {
                     if(!(value.startsWith("http://") || value.startsWith("https://"))) {
                         value = "http://" + value;
                     }
                 } else {
-                    value = baidu_search + value;
+                    value = search_string + value;
                 }
 
         Intent intent = new Intent(SearchActivity.this, MainActivity.class);

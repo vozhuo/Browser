@@ -2,10 +2,12 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:paddingBottom="8dp"
+    android:paddingRight="8dp"
+    android:paddingLeft="8dp">
 
     <LinearLayout
-
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:background="@drawable/background"
@@ -38,12 +40,12 @@
                 android:drawableStart="@drawable/bg_image" />
 
             <ImageView
-                android:id="@+id/ie3"
+                android:id="@+id/mark"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:scaleType="center"
-                android:src="@drawable/bg_ie" />
+                android:src="@drawable/mark" />
 
         </LinearLayout>
 
@@ -54,28 +56,28 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/ie4"
+                android:id="@+id/collect"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:scaleType="center"
-                android:src="@drawable/bg_ie" />
+                android:src="@drawable/bg_collect" />
 
             <ImageView
-                android:id="@+id/ie5"
+                android:id="@+id/track"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:scaleType="center"
-                android:src="@drawable/bg_ie" />
+                android:src="@drawable/bg_seen" />
 
             <ImageView
-                android:id="@+id/ie6"
+                android:id="@+id/refresh"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:scaleType="center"
-                android:src="@drawable/bg_ie" />
+                android:src="@drawable/refresh" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

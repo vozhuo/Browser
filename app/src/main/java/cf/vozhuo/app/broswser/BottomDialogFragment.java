@@ -27,8 +27,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.Serializable;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cf.vozhuo.app.broswser.adapter.TabAdapter;
+import cf.vozhuo.app.broswser.tab.Tab;
 
 import static android.content.ContentValues.TAG;
 import static android.widget.Toast.LENGTH_SHORT;
@@ -39,10 +43,14 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
     private ImageView imageView;
     private CheckBox checkBox;
     private WebView webView;
-
+    private Serializable tab;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            tab = bundle.getSerializable("mActiveTab");
+        }
         return inflater.inflate(R.layout.fragment_option, null); //载入fragment_option
     }
 
@@ -59,7 +67,6 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
             Window window = dialog.getWindow();
-
             dialog.getWindow().setGravity(Gravity.BOTTOM);
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             window.setWindowAnimations(R.style.animate_dialog);
@@ -71,30 +78,33 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         view.findViewById(R.id.setting).setOnClickListener(this);
         view.findViewById(R.id.setImage).setOnClickListener(this);
-        view.findViewById(R.id.ie3).setOnClickListener(this);
-        view.findViewById(R.id.ie4).setOnClickListener(this);
-        view.findViewById(R.id.ie5).setOnClickListener(this);
-        view.findViewById(R.id.ie6).setOnClickListener(this);
+        view.findViewById(R.id.mark).setOnClickListener(this);
+        view.findViewById(R.id.collect).setOnClickListener(this);
+        view.findViewById(R.id.track).setOnClickListener(this);
+        view.findViewById(R.id.refresh).setOnClickListener(this);
 
-//        webView = getActivity().findViewById(R.id.web_holder);
-//        init(view);
         SharedPreferences sp = getActivity().getSharedPreferences("image_config", Context.MODE_PRIVATE);
         Boolean state = sp.getBoolean("image_state", false);
         checkBox = view.findViewById(R.id.setImage);
         checkBox.setChecked(state);
     }
-
+    private Tab mActiveTab;
+    TabAdapter mTabAdapter;
     @Override
     public void onClick(View v) {
         v.setSelected(!v.isSelected());
         int id = v.getId();
         switch (id) {
-            case R.id.ie3:
-            case R.id.ie4:
-            case R.id.ie5:
-            case R.id.ie6:
-                Toast.makeText(getActivity(), "IE", LENGTH_SHORT).show();
+            case R.id.refresh:
+                mActiveTab = (Tab) tab;
+                mActiveTab.reloadPage();
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
+//            case R.id.ie4:
+//            case R.id.ie5:
+//            case R.id.ie6:
+//                Toast.makeText(getActivity(), "IE", LENGTH_SHORT).show();
+//                break;
             case R.id.setting:
                 startActivity(new Intent(getActivity(), SettingActivity.class));
                 getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();

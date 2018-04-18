@@ -38,7 +38,7 @@ public class BrowserWebViewFactory implements WebViewFactory {
         //设置渲染的优先级
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
         //支持多窗口
-//        webSettings.setSupportMultipleWindows(true);
+        webSettings.setSupportMultipleWindows(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setDefaultTextEncodingName("utf-8");

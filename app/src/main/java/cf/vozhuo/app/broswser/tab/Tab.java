@@ -21,13 +21,14 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
 import cf.vozhuo.app.broswser.R;
 
-public class Tab {
+public class Tab implements Serializable {
     public static final String DEFAULT_BLANK_URL = "about:blank";
     private final static String TAG = "TAB";
     private static final int INITIAL_PROGRESS = 5;
