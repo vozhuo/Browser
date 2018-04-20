@@ -55,13 +55,15 @@
             android:layout_weight="1"
             android:orientation="horizontal">
 
-            <ImageView
+            <CheckBox
                 android:id="@+id/collect"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:scaleType="center"
-                android:src="@drawable/bg_collect" />
+                android:button="@null"
+                android:paddingLeft="40dip"
+                android:drawableLeft="@drawable/bg_collect"
+                android:drawableStart="@drawable/bg_collect" />
 
             <ImageView
                 android:id="@+id/track"

@@ -42,6 +42,7 @@
 
         </activity>
         <activity android:name=".tab.CardActivity" />
+        <activity android:name=".favorites.FavoriteActivity" />
 
         <receiver android:name=".network.NetworkConnectChangedReceiver"/>
     </application>

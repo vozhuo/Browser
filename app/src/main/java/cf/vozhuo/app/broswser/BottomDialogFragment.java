@@ -28,10 +28,16 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
+import cf.vozhuo.app.broswser.favorites.FavoriteActivity;
+import cf.vozhuo.app.broswser.favorites.FavoritesDao;
 import cf.vozhuo.app.broswser.tab.Tab;
 
 import static android.content.ContentValues.TAG;
@@ -42,14 +48,15 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
     private boolean flag;
     private ImageView imageView;
     private CheckBox checkBox;
+    private CheckBox collect;
     private WebView webView;
-    private Serializable tab;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Bundle bundle = getArguments();
         if (bundle != null) {
-            tab = bundle.getSerializable("mActiveTab");
+            Serializable tab = bundle.getSerializable("mActiveTab");
+            mActiveTab = (Tab) tab;
         }
         return inflater.inflate(R.layout.fragment_option, null); //载入fragment_option
     }
@@ -83,28 +90,38 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         view.findViewById(R.id.track).setOnClickListener(this);
         view.findViewById(R.id.refresh).setOnClickListener(this);
 
-        SharedPreferences sp = getActivity().getSharedPreferences("image_config", Context.MODE_PRIVATE);
-        Boolean state = sp.getBoolean("image_state", false);
-        checkBox = view.findViewById(R.id.setImage);
-        checkBox.setChecked(state);
+//        SharedPreferences sp = getActivity().getSharedPreferences("image_config", Context.MODE_PRIVATE);
+//        Boolean state = sp.getBoolean("image_state", false);
+//        checkBox = view.findViewById(R.id.setImage);
+//        checkBox.setChecked(state);
+
+        //检测是否已收藏
+        favoritesDao = new FavoritesDao(getContext());
+        collect = view.findViewById(R.id.collect);
+        collect.setChecked(favoritesDao.queryURL(mActiveTab.getUrl()));
     }
     private Tab mActiveTab;
     TabAdapter mTabAdapter;
+    private FavoritesDao favoritesDao;
     @Override
     public void onClick(View v) {
-        v.setSelected(!v.isSelected());
+//        v.setSelected(!v.isSelected());
         int id = v.getId();
+        SharedPreferences sp;
+        SharedPreferences.Editor editor;
+        favoritesDao = new FavoritesDao(getContext());
         switch (id) {
             case R.id.refresh:
-                mActiveTab = (Tab) tab;
                 mActiveTab.reloadPage();
                 getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
-//            case R.id.ie4:
-//            case R.id.ie5:
-//            case R.id.ie6:
-//                Toast.makeText(getActivity(), "IE", LENGTH_SHORT).show();
-//                break;
+            case R.id.mark:
+                startActivity(new Intent(getActivity(), FavoriteActivity.class));
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                break;
+            case R.id.collect:
+                collectClick();
+                break;
             case R.id.setting:
                 startActivity(new Intent(getActivity(), SettingActivity.class));
                 getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
@@ -123,8 +140,8 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
 
                 Log.e("TAG","wifi状态:" + wifiState + "\n mobile状态:" + mobileState);
 
-                SharedPreferences sp = getActivity().getSharedPreferences("image_config", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sp.edit();
+                sp = getActivity().getSharedPreferences("image_config", Context.MODE_PRIVATE);
+                editor = sp.edit();
 
                 checkBox = v.findViewById(R.id.setImage);
                 if(checkBox.isChecked()) { //进入智能无图模式
@@ -143,16 +160,19 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
                     editor.apply();
                     Log.e(TAG, "ONNNNNNNNNN: ");
                 }
-//                if(v.getContentDescription().equals("CLOSE")) {
-//                    v.setContentDescription("OPEN");
-//                    Log.e(TAG, "onClick111: " + v.getContentDescription());
-//                } else if(v.getContentDescription().equals("OPEN")) {
-//                    v.setContentDescription("CLOSE");
-//                    Log.e(TAG, "onClick222: " + v.getContentDescription());
-//                }
         }
     }
 
+    private void collectClick() {
+        if(collect.isChecked()) { //收藏
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
+            String currentTime = format.format(new Date());
+//            Log.e(TAG, "FavoritesDao: " + mActiveTab.getUrl());
+            favoritesDao.insert(null, mActiveTab.getTitle(), mActiveTab.getUrl(), currentTime);
+        } else { //取消收藏
+            favoritesDao.delete(mActiveTab.getUrl());
+        }
+    }
 
 //    protected void save(Boolean flag, View view) {
 //
