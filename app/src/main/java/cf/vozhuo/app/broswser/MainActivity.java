@@ -373,6 +373,11 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void onSetWebView(Tab tab, WebView view) {
     }
 
+    @Override
+    public void onFavicon(Tab tab, WebView view, Bitmap icon) {
+
+    }
+
     private void load(String url) {
         if (mActiveTab != null) {
             mActiveTab.clearWebHistory();

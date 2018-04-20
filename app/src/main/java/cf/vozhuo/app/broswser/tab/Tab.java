@@ -40,7 +40,7 @@ public class Tab implements Serializable {
 
     // WebView controller
     WebViewController mWebViewController;
-
+    private boolean mUpdateThumbnail;
     //
     Context mContext;
 
@@ -91,14 +91,14 @@ public class Tab implements Serializable {
         sAlphaPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         sAlphaPaint.setColor(Color.TRANSPARENT);
     }
-//    // 获取默认网页图标
-//    private static synchronized Bitmap getDefaultFavicon(Context context) {
-//        if (sDefaultFavicon == null) {
-//            sDefaultFavicon = BitmapFactory.decodeResource(
-//                    context.getResources(), R.drawable.ic_home);
-//        }
-//        return sDefaultFavicon;
-//    }
+    // 获取默认网页图标
+    private static synchronized Bitmap getDefaultFavicon(Context context) {
+        if (sDefaultFavicon == null) {
+            sDefaultFavicon = BitmapFactory.decodeResource(
+                    context.getResources(), R.drawable.ic_home);
+        }
+        return sDefaultFavicon;
+    }
 
     // 构造WebViewClient
     private final WebViewClient mWebViewClient = new WebViewClient(){
@@ -106,8 +106,9 @@ public class Tab implements Serializable {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
             mInPageLoad = true;
+            mUpdateThumbnail = true;
             mPageLoadProgress = INITIAL_PROGRESS;
-            mCurrentState = new PageState(mContext,url);
+            mCurrentState = new PageState(mContext, url, favicon);
             mLoadStartTime = SystemClock.uptimeMillis();
             mWebViewController.onPageStarted(Tab.this,view,favicon);
         }
@@ -140,7 +141,9 @@ public class Tab implements Serializable {
                 syncCurrentState(view, view.getUrl());
             }
             mWebViewController.onProgressChanged(Tab.this);
-
+            if (mUpdateThumbnail && newProgress == 100) {
+                mUpdateThumbnail = false;
+            }
         }
 
         @Override
@@ -148,6 +151,13 @@ public class Tab implements Serializable {
             super.onReceivedTitle(view, title);
             mCurrentState.mTitle = title;
             mWebViewController.onReceivedTitle(Tab.this, title);
+        }
+
+        @Override
+        public void onReceivedIcon(WebView view, Bitmap icon) {
+            super.onReceivedIcon(view, icon);
+            mCurrentState.mFavicon = icon;
+            mWebViewController.onFavicon(Tab.this, view, icon);
         }
     };
 
@@ -372,15 +382,15 @@ public class Tab implements Serializable {
         }
         return mCurrentState.mTitle;
     }
-//    /**
-//     * Get the favicon of this tab.
-//     */
-//    public Bitmap getFavicon() {
-//        if (mCurrentState.mFavicon != null) {
-//            return mCurrentState.mFavicon;
-//        }
-//        return getDefaultFavicon(mContext);
-//    }
+    /**
+     * Get the favicon of this tab.
+     */
+    public Bitmap getFavicon() {
+        if (mCurrentState.mFavicon != null) {
+            return mCurrentState.mFavicon;
+        }
+        return getDefaultFavicon(mContext);
+    }
 
     public int getPageLoadProgress(){
         return mPageLoadProgress;
@@ -533,20 +543,20 @@ public class Tab implements Serializable {
         String mUrl;
         String mOriginalUrl;
         String mTitle;
-//        Bitmap mFavicon;
+        Bitmap mFavicon;
         PageState(Context context){
-            this(context,"");
+            this(context,"",getDefaultFavicon(context));
         }
-        PageState(Context context,String url) {
-            this(url, context.getString(R.string.defaultWebTitle));
+        PageState(Context context,String url,Bitmap favicon){
+            this(url,context.getString(R.string.defaultWebTitle),favicon);
         }
         PageState(Context context,String url,String title){
-            this(url,title);
+            this(url,title,getDefaultFavicon(context));
         }
-        PageState(String url,String title){
+        PageState(String url,String title,Bitmap favicon){
             mUrl = mOriginalUrl = url;
             mTitle = title;
-//            mFavicon = favicon;
+            mFavicon = favicon;
         }
         boolean checkUrlNotNull(){
             return !TextUtils.isEmpty(mUrl);

@@ -36,12 +36,12 @@ public class FavoritesDao {
         Log.e(TAG, "delete: SUCCESS");
     }
     //改
-    public void update(String _id, String title, String url) {
+    public void update(String title, String url) {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("title",title);
         values.put("url",url);
-        db.update(TABLE, values, "_id = ?", new String[]{_id});
+        db.update(TABLE, values, "url = ?", new String[]{url});
     }
     //查询所有
     public List<FavoritesEntity> queryAllFavorites() {

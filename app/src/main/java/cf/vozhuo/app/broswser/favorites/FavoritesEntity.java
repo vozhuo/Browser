@@ -1,6 +1,8 @@
 package cf.vozhuo.app.broswser.favorites;
 
-public class FavoritesEntity {
+import java.io.Serializable;
+
+public class FavoritesEntity implements Serializable {
     private int id;
     private String title;
     private String url;

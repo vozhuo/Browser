@@ -19,11 +19,10 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
         mData = new ArrayList<>();
     }
     public void setData(List<T> data){
-        if(data == null){
-            return;
-        }
         mData.clear();
-        mData.addAll(data);
+        if(data != null) {
+            mData.addAll(data);
+        }
         notifyDataSetChanged();
     }
     public void updateData(List<T> data){
