@@ -6,12 +6,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
-import android.os.Message;
-import android.os.PersistableBundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -26,15 +22,11 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 
-import android.webkit.WebViewClient;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
@@ -55,7 +47,7 @@ import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity implements UiController {
 
-    private static final int RESULT_CODE = 0;
+    private static final int REQUEST_CODE = 0;
     private WebSettings settings;
     private EditText editText;
 
@@ -64,9 +56,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
     TabController mTabController;
     private Tab mActiveTab;
     private WebViewFactory mFactory;
-    private boolean mIsAnimating = false;
     private boolean mIsInMain = true;
-
+    private RecyclerView mRecyclerView;
 
     @BindView(R.id.tvPagerNum)
     TextView mTabNum;
@@ -74,71 +65,77 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @BindView(R.id.contentWrapper)
     ConstraintLayout mContentWrapper;
 
-//    @BindView(R.id.web_holder)
-//    WebView web_holder;
-
-//    @BindView(R.id.iv_logo)
-//    ImageView logo;
-
     @BindView(R.id.searchProgress)
     ProgressBar searchProgress;
 
     @BindView(R.id.siteTitle)
     TextView siteTitle;
 
-//    @BindView(R.id.mainTitle)
-//    ConstraintLayout mainTitle;
+    @BindView(R.id.mainView)
+    ConstraintLayout mainView;
 
-//    @BindView(R.id.searchBox)
-//    ConstraintLayout searchBox;
+    @BindView(R.id.searchBox)
+    ConstraintLayout searchBox;
 
     @BindView(R.id.BottomBar)
     ConstraintLayout mBottomBar;
 
     private boolean mTabsManagerUIShown = false;
 
-    @OnClick(R.id.siteTitle)
+    @OnClick({R.id.searchBox, R.id.siteTitle})
     public void showSearchBar() {
         Intent intent = new Intent(MainActivity.this, SearchActivity.class);
         if(!mIsInMain) {
             Log.e(TAG, "showSearchBar: " + mIsInMain);
             intent.putExtra("siteInfo", mActiveTab.getUrl());
         }
-
-        startActivityForResult(intent, RESULT_CODE);
+        startActivityForResult(intent, REQUEST_CODE);
         overridePendingTransition(0, 0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 0 && resultCode == 1) {
+            String query = data.getStringExtra("query");
+            if(query != null) {
+                load(query);
+                data.removeExtra("query"); //解决返回时再次搜索的问题
+            }
+        }
     }
 
     @OnClick(R.id.ivMenu)
     public void showMainSettings(View view) {
         FragmentManager fm = getSupportFragmentManager();
         BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("mActiveTab", mActiveTab);
-        bottomDialogFragment.setArguments(bundle);
+//        Bundle bundle = new Bundle();
+//        bundle.putSerializable("mActiveTab", mActiveTab);
+
+//        bottomDialogFragment.setArguments(bundle);
         bottomDialogFragment.show(fm, "fragment_bottom_dialog");
+    }
+    //for Fragment use
+    public void refreshPage() {
+        mActiveTab.reloadPage();
+    }
+    public String getPageUrl() {
+        return mActiveTab.getUrl();
+    }
+    public String getPageTitle() {
+        return mActiveTab.getTitle();
+    }
+    public void setNoImage(boolean noImage) {
+        for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
+            WebSettings settings = tab.getWebView().getSettings();
+            settings.setLoadsImagesAutomatically(false);
+        }
     }
 
     @Override
     public void onPause() {
         overridePendingTransition(0, 0);
         super.onPause();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-//        webView.saveState(outState);
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String query = getIntent().getStringExtra("query");
-        Log.e(TAG, "onResume: " + query);
-        if(query != null) {
-            load(query);
-            getIntent().removeExtra("query"); //解决返回时再次搜索的问题
-        }
     }
 
     @Override
@@ -150,8 +147,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
         mTabAdapter = new TabAdapter(this, this);
         mTabController = new TabController(this, this);
-
         mFactory = new BrowserWebViewFactory(this);
+
         // 先建立一个tab标记主页
         if (mTabController.getTabCount() <= 0) {
            addTab(false);
@@ -159,30 +156,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
 
     private void addTab(boolean second) {
-        Log.e(TAG,"addTab = ;-----------");
+        if(second) switchToMain();
 
-        mIsInMain = true;
-        if(second) {
-            WebView old = mActiveTab.getWebView();
-            old.onPause();
-            old.setVisibility(View.GONE);
-        }
         Tab tab = mTabController.createNewTab();
         mActiveTab = tab;
-
         mTabController.setActiveTab(mActiveTab);
-        WebView newView = mActiveTab.getWebView();
-        if(newView != null) {
-            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) newView.getLayoutParams();
-            if(lp == null){
-                lp = new ConstraintLayout.LayoutParams(
-                        ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
-                        ViewGroup.LayoutParams.MATCH_PARENT);
-            }
-//            lp.topMargin = getResources().getDimensionPixelSize(R.dimen.dimen_48dp);
-            mContentWrapper.addView(newView,lp);
-        }
-        Log.e(TAG, "First Web: "+ mActiveTab.getWebView());
+
+        mTabAdapter.setlastSelectedPos();
     }
 
     private void removeTab(int index) {
@@ -210,17 +190,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
         showPopupWindow(view);
         showTabs();
     }
-    private RecyclerView mRecyclerView;
+
     private void showTabs() {
         mTabAdapter.updateData(mTabController.getTabs());
         Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
 
-
-//        Tab tab = mTabAdapter.getItem(mTabController.getCurrentPosition();
-
         LinearLayoutManager layout = new LinearLayoutManager(this);
         layout.setStackFromEnd(true); //倒序
-        layout.setReverseLayout(true);
+//        layout.setReverseLayout(true);
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mTabAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL) {
@@ -236,8 +213,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private void showPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.layout_site_list, null);
-
-//        mRecyclerView = contentView.findViewById(R.id.showTabList);
+        contentView.setFocusable(true);
+        contentView.setFocusableInTouchMode(true);
 
         //创建默认的线性LayoutManager
         mRecyclerView = contentView.findViewById(R.id.showTabList);
@@ -245,28 +222,16 @@ public class MainActivity extends AppCompatActivity implements UiController {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(true); //item高度固定
 
-        popupWindow = new PopupWindow(contentView, ConstraintLayout.LayoutParams.MATCH_PARENT,
+        popupWindow = new PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT,
                 500);
-        Log.e(TAG, "mBottomBar: " + mBottomBar.getHeight() + " " + mBottomBar.getMeasuredHeight());
-        contentView.setFocusable(true);
-        contentView.setFocusableInTouchMode(true);
         popupWindow.setContentView(contentView);
         popupWindow.setAnimationStyle(R.style.anim_pop);
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.YELLOW));
-
-        int[] location = new int[2];
-        mBottomBar.getLocationOnScreen(location);
-//        popupWindow.showAsDropDown(mContentWrapper);
-        Log.e(TAG, "mBottomBar: " + location[1]);
-        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, location[0], location[1]-mBottomBar.getMeasuredHeight());
-
-//        transparent = contentView.findViewById(R.id.view_transparent);
-//        transparent.setVisibility(View.VISIBLE);
-
-//        mContentWrapper.setBackgroundColor(Color.BLACK);
-//        mContentWrapper.setAlpha(0.1f);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+//        int[] location = new int[2];
+//        view.getLocationOnScreen(location);
+        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 0);
 
         ImageView iv_addTab = contentView.findViewById(R.id.addTab);
         iv_addTab.setOnClickListener(new View.OnClickListener() {
@@ -274,8 +239,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
             public void onClick(View v) {
                 addTab(true);
                 popupWindow.dismiss();
-//                mContentWrapper.setBackgroundColor(Color.TRANSPARENT);
-//                mContentWrapper.setAlpha(1f);
             }
         });
 
@@ -284,59 +247,115 @@ public class MainActivity extends AppCompatActivity implements UiController {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
                     popupWindow.dismiss();
-//                    mContentWrapper.setBackgroundColor(Color.TRANSPARENT);
-//                    mContentWrapper.setAlpha(1f);
                     return true;
                 }
                 return false;
             }
         });
     }
-//    @Override
-//    public void onWebsiteIconClicked(String url) {
-//
-//    }
+
     @Override
     public void selectTab(Tab tab) {
-//        int index = mTabController.getTabPosition(tab);
-//        WebView oldview = mActiveTab.getWebView();
-//        oldview.onPause();
-//        oldview.setVisibility(View.GONE);
+        removeWebView();
         mActiveTab = tab;
         mTabController.setActiveTab(mActiveTab);
-
-//        if(!mActiveTab.isBlank()) {
-        siteTitle.setText(mActiveTab.getTitle());
-
-        WebView newview = mActiveTab.getWebView();
-//        newview.setVisibility(View.VISIBLE);
-//        newview.onResume();
-//        } else {
-//            switchToMain();
-//            Log.e(TAG,"switchToMain");
-//        }
-//        if(newview.getParent() == null) {
-//            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) newview.getLayoutParams();
-//            if(lp == null){
-//                lp = new ConstraintLayout.LayoutParams(
-//                        ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
-//                        ViewGroup.LayoutParams.MATCH_PARENT);
-//            }
-////            lp.topMargin = getResources().getDimensionPixelSize(R.dimen.dimen_48dp);
-//            mContentWrapper.addView(newview,lp);
-//        }
-        popupWindow.dismiss();
+        if(!mActiveTab.isBlank()) {
+            updateSearchBar();
+            switchToTab();
+            Log.e(TAG, "switchToTab:");
+        } else {
+            switchToMain();
+            Log.e(TAG, "switchToMain:");
+        }
         Log.e(TAG, "onSelect :: key =:" + tab.getId());
+        popupWindow.dismiss();
+    }
+
+    private void updateSearchBar() {
+        int progress = mActiveTab.getPageLoadProgress();
+        if (progress == 100) {
+            searchProgress.setVisibility(View.GONE);
+        }
+        siteTitle.setText(mActiveTab.getTitle());
     }
 
     @Override
     public void closeTab(Tab tab) {
         Log.e(TAG, "closeTab: "+ tab.getId());
         mTabController.removeTab(tab);
+        mTabAdapter.updateData(mTabController.getTabs());
         if(mTabController.getTabCount() <= 0) {
+            popupWindow.dismiss();
             addTab(true);
         }
-        mTabAdapter.updateData(mTabController.getTabs());
+    }
+
+    private void load(String url) {
+        if (mActiveTab != null) {
+            mActiveTab.clearWebHistory();
+            mActiveTab.loadUrl(url, null,true);
+            switchToTab();
+        }
+    }
+
+    private void switchToTab() {
+        if(mainView.getParent() != null) {
+            mContentWrapper.removeView(mainView);
+        }
+        WebView view = mActiveTab.getWebView();
+        Log.e(TAG,"switchToTab ----------" + mainView.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
+        if(view.getParent() == null) {
+//            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
+//            if(lp == null){
+//                lp = new ConstraintLayout.LayoutParams(
+//                        ConstraintLayout.LayoutParams.MATCH_PARENT,
+//                        ViewGroup.LayoutParams.MATCH_PARENT);
+//            }
+            mContentWrapper.addView(view);
+        }
+        mIsInMain = false;
+    }
+    private void switchToMain(){
+        if(mainView.getParent() == null){
+            mContentWrapper.addView(mainView);
+        }
+        mainView.bringToFront();
+        removeWebView();
+        mActiveTab.stopLoading();
+        mIsInMain = true;
+    }
+    //移除当前WebView
+    private void removeWebView() {
+        WebView view = mActiveTab.getWebView();
+        if(view != null) {
+            mContentWrapper.removeView(view);
+        }
+    }
+    @Override
+    public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
+        if(mIsInMain) {
+            searchProgress.setVisibility(View.GONE);
+        } else {
+            searchProgress.setVisibility(View.VISIBLE);
+        }
+        siteTitle.setText(tab.getUrl());
+    }
+
+    @Override
+    public void onPageFinished(Tab tab) {
+        searchProgress.setVisibility(View.INVISIBLE);
+//        mTabAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onProgressChanged(Tab tab) {
+        searchProgress.setProgress(tab.getPageLoadProgress());
+    }
+
+    @Override
+    public void onReceivedTitle(Tab tab, String title) {
+        siteTitle.setText(title);
+        Log.e(TAG, "onReceivedTitle: "+ tab.getUrl() + " " + tab.getTitle());
     }
 
     @Override
@@ -376,72 +395,5 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public void onFavicon(Tab tab, WebView view, Bitmap icon) {
 
-    }
-
-    private void load(String url) {
-        if (mActiveTab != null) {
-            mActiveTab.clearWebHistory();
-            mActiveTab.loadUrl(url, null,true);
-            switchToTab();
-        }
-    }
-
-    private void switchToTab(){
-        WebView view = mActiveTab.getWebView();
-        if(view.getParent() != null) {
-            mContentWrapper.removeView(view);
-        }
-//        Log.e(TAG,"switchToTab ----------" + mainTitle.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
-        if(view != null && view.getParent() == null) {
-            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
-            if(lp == null){
-                lp = new ConstraintLayout.LayoutParams(
-                        ConstraintLayout.LayoutParams.MATCH_PARENT,
-                        ConstraintLayout.LayoutParams.MATCH_CONSTRAINT);
-            }
-//            lp.topMargin = getResources().getDimensionPixelSize(R.dimen.dimen_48dp);
-            mContentWrapper.addView(view);
-        }
-//        mIsInMain = false;
-    }
-    private void switchToMain(){
-        WebView view = mActiveTab.getWebView();
-        if (view != null) {
-            mContentWrapper.removeView(view);
-        }
-//        if(mainTitle.getParent() == null) {
-//            mContentWrapper.addView(mainTitle);
-//        }
-//        Log.e(TAG,"switchToMain :: getParent() =:" + mainTitle.getParent() + "view ：" + mActiveTab.getWebView());
-        mActiveTab.stopLoading();
-        //  mActiveTab.loadBlank();
-        mIsInMain = true;
-    }
-
-    @Override
-    public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
-//        if(mIsInMain) {
-//            searchProgress.setVisibility(View.GONE);
-//        } else {
-            searchProgress.setVisibility(View.VISIBLE);
-//        }
-        siteTitle.setText(tab.getUrl());
-    }
-
-    @Override
-    public void onPageFinished(Tab tab) {
-        searchProgress.setVisibility(View.INVISIBLE);
-        mTabAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onProgressChanged(Tab tab) {
-        searchProgress.setProgress(tab.getPageLoadProgress());
-    }
-
-    @Override
-    public void onReceivedTitle(Tab tab, String title) {
-        siteTitle.setText(title);
-        Log.e(TAG, "onReceivedTitle: "+ tab.getUrl() + " " + tab.getTitle());
     }
 }

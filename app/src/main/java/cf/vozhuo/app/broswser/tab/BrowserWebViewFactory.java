@@ -1,12 +1,16 @@
 package cf.vozhuo.app.broswser.tab;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+
+import static android.content.ContentValues.TAG;
 
 public class BrowserWebViewFactory implements WebViewFactory {
     private final Context mContext;
@@ -22,7 +26,7 @@ public class BrowserWebViewFactory implements WebViewFactory {
         initWebViewSettings(w);
         return w;
     }
-
+    private static final String APP_CACHE_DIRNAME = "cache";
     protected void initWebViewSettings(WebView w) {
         w.setScrollbarFadingEnabled(true);
         w.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
@@ -30,10 +34,10 @@ public class BrowserWebViewFactory implements WebViewFactory {
         WebSettings webSettings = w.getSettings();
         //设置支持缩放
         webSettings.setBuiltInZoomControls(true);
-        //开启 database storage API 功能
-        webSettings.setDatabaseEnabled(true);
-        // 开启 DOM storage API 功能
-        webSettings.setDomStorageEnabled(true);
+//        //开启 database storage API 功能
+////        webSettings.setDatabaseEnabled(true);
+////        // 开启 DOM storage API 功能
+////        webSettings.setDomStorageEnabled(true);
         webSettings.setJavaScriptEnabled(true);
         //设置渲染的优先级
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
@@ -42,11 +46,22 @@ public class BrowserWebViewFactory implements WebViewFactory {
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setDefaultTextEncodingName("utf-8");
-//        String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + .APP_CACHE_DIRNAME;
-//        //设置  Application Caches 缓存目录
-//        webSettings.setAppCachePath(cacheDirPath);
+        String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + APP_CACHE_DIRNAME;
+        //设置  Application Caches 缓存目录
+        webSettings.setAppCachePath(cacheDirPath);
         //开启 Application Caches 功能
         webSettings.setAppCacheEnabled(true);
+
+        //加载图片
+        SharedPreferences sp = mContext.getSharedPreferences("image_config", Context.MODE_PRIVATE);
+        Boolean state = sp.getBoolean("image_state", false);
+        if(state) {
+            webSettings.setLoadsImagesAutomatically(false);
+            Log.e(TAG, "NO Image ");
+        } else {
+            Log.e(TAG, "YES");
+        }
+//        else webSettings.setLoadsImagesAutomatically(true);
 
         //设置可以访问文件
         webSettings.setAllowFileAccess(true);

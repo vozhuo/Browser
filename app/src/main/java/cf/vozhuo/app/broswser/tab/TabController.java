@@ -45,8 +45,8 @@ public class TabController {
     public TabController(Context context, UiController controller) {
         mController = controller;
         mMaxTabs = context.getResources().getInteger(R.integer.max_tab_count);
-        mTabs = new ArrayList<Tab>(mMaxTabs);
-        mTabQueue = new ArrayList<Tab>(mMaxTabs);
+        mTabs = new ArrayList<>(mMaxTabs);
+        mTabQueue = new ArrayList<>(mMaxTabs);
     }
 
     synchronized static long getNextId() {
@@ -190,7 +190,6 @@ public class TabController {
         mTabQueue.remove(t);
         if (mController != null) {
             mController.onTabCountChanged();
-//            mController.onTabDataChanged();
         }
         return true;
     }

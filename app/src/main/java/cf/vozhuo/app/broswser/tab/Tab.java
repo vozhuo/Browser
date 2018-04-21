@@ -28,7 +28,7 @@ import java.util.Stack;
 
 import cf.vozhuo.app.broswser.R;
 
-public class Tab implements Serializable {
+public class Tab {
     public static final String DEFAULT_BLANK_URL = "about:blank";
     private final static String TAG = "TAB";
     private static final int INITIAL_PROGRESS = 5;

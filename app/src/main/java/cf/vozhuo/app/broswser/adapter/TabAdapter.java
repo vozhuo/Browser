@@ -67,6 +67,9 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
         pagerViewHolder.bind(tab,position);
     }
 
+    public void setlastSelectedPos() {
+        lastSelectedPos = getItemCount();
+    }
     private int lastSelectedPos = 0;
 
     class TabViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -96,7 +99,6 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
                     Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
                     lastSelectedPos = position;
                     notifyItemChanged(lastSelectedPos);
-
                     mController.selectTab(tab);
                 }
             }

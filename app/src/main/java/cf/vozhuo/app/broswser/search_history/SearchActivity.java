@@ -194,7 +194,8 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
         Intent intent = new Intent(SearchActivity.this, MainActivity.class);
         intent.putExtra("query", value);
-        startActivityForResult(intent, RESULT_CODE);
+
+        setResult(RESULT_CODE,intent); //回传数据
         finish();
     }
 
