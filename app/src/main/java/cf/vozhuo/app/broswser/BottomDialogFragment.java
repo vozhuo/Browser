@@ -19,32 +19,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import cf.vozhuo.app.broswser.adapter.TabAdapter;
-import cf.vozhuo.app.broswser.favorites.FavoriteActivity;
-import cf.vozhuo.app.broswser.favorites.FavoritesDao;
-import cf.vozhuo.app.broswser.tab.Tab;
+import cf.vozhuo.app.broswser.favorites.FavHisActivity;
+import cf.vozhuo.app.broswser.favorites.FavHisDao;
 
 import static android.content.ContentValues.TAG;
-import static android.widget.Toast.LENGTH_SHORT;
 
 public class BottomDialogFragment extends DialogFragment implements View.OnClickListener {
-
+    private static final String TABLE = "favorites";
     private boolean flag;
     private ImageView imageView;
     private CheckBox cb_image;
@@ -97,26 +87,26 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         cb_image.setChecked(state);
 
         //检测是否已收藏
-        favoritesDao = new FavoritesDao(getContext());
+        favHisDao = new FavHisDao(getContext(), TABLE);
         collect = view.findViewById(R.id.collect);
-        collect.setChecked(favoritesDao.queryURL(((MainActivity)getActivity()).getPageUrl()));
+        collect.setChecked(favHisDao.queryURL(((MainActivity)getActivity()).getPageUrl()));
     }
 
-    private FavoritesDao favoritesDao;
+    private FavHisDao favHisDao;
 
     @Override
     public void onClick(View v) {
 //        v.setSelected(!v.isSelected());
         int id = v.getId();
 
-        favoritesDao = new FavoritesDao(getContext());
+//        favHisDao = new FavHisDao(getContext(), TABLE);
         switch (id) {
             case R.id.refresh:
                 ((MainActivity)getActivity()).refreshPage();
                 getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
             case R.id.mark:
-                startActivity(new Intent(getActivity(), FavoriteActivity.class));
+                startActivity(new Intent(getActivity(), FavHisActivity.class));
                 getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
             case R.id.collect:
@@ -161,10 +151,10 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         if(collect.isChecked()) { //收藏
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());
-            favoritesDao.insert(null, ((MainActivity)getActivity()).getPageTitle(),
+            favHisDao.insert(null, ((MainActivity)getActivity()).getPageTitle(),
                     ((MainActivity)getActivity()).getPageUrl(), currentTime);
         } else { //取消收藏
-            favoritesDao.delete(((MainActivity)getActivity()).getPageUrl());
+            favHisDao.delete(((MainActivity)getActivity()).getPageUrl());
         }
     }
 }

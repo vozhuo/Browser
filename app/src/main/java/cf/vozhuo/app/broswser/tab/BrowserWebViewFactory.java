@@ -34,10 +34,7 @@ public class BrowserWebViewFactory implements WebViewFactory {
         WebSettings webSettings = w.getSettings();
         //设置支持缩放
         webSettings.setBuiltInZoomControls(true);
-//        //开启 database storage API 功能
-////        webSettings.setDatabaseEnabled(true);
-////        // 开启 DOM storage API 功能
-////        webSettings.setDomStorageEnabled(true);
+        //支持JS
         webSettings.setJavaScriptEnabled(true);
         //设置渲染的优先级
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
@@ -47,6 +44,11 @@ public class BrowserWebViewFactory implements WebViewFactory {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + APP_CACHE_DIRNAME;
+
+        //开启 database storage API 功能
+        webSettings.setDatabaseEnabled(true);
+        // 开启 DOM storage API 功能
+        webSettings.setDomStorageEnabled(true);
         //设置  Application Caches 缓存目录
         webSettings.setAppCachePath(cacheDirPath);
         //开启 Application Caches 功能
@@ -80,6 +82,6 @@ public class BrowserWebViewFactory implements WebViewFactory {
             // Remote Web Debugging is always enabled, where available.
             WebView.setWebContentsDebuggingEnabled(true);
         }
-        w.loadUrl("file:///android_asset/index.html");
+//        w.loadUrl("file:///android_asset/index.html");
     }
 }

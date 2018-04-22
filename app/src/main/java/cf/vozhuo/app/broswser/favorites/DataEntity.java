@@ -2,13 +2,13 @@ package cf.vozhuo.app.broswser.favorites;
 
 import java.io.Serializable;
 
-public class FavoritesEntity implements Serializable {
+abstract class DataEntity implements Serializable {
     private int id;
     private String title;
     private String url;
     private String time;
 
-    public FavoritesEntity(int id, String title, String url, String time) {
+    public DataEntity(int id, String title, String url, String time) {
         this.id = id;
         this.title = title;
         this.url = url;

@@ -31,11 +31,18 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
+import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 import cf.vozhuo.app.broswser.tab.BrowserWebViewFactory;
 import cf.vozhuo.app.broswser.tab.Tab;
@@ -47,6 +54,7 @@ import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity implements UiController {
 
+    public static MainActivity instance;
     private static final int REQUEST_CODE = 0;
     private WebSettings settings;
     private EditText editText;
@@ -109,10 +117,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void showMainSettings(View view) {
         FragmentManager fm = getSupportFragmentManager();
         BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
-//        Bundle bundle = new Bundle();
-//        bundle.putSerializable("mActiveTab", mActiveTab);
-
-//        bottomDialogFragment.setArguments(bundle);
         bottomDialogFragment.show(fm, "fragment_bottom_dialog");
     }
     //for Fragment use
@@ -153,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         if (mTabController.getTabCount() <= 0) {
            addTab(false);
         }
+        instance = this;
     }
 
     private void addTab(boolean second) {
@@ -168,17 +173,21 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private void removeTab(int index) {
         mTabController.removeTab(index);
     }
-
+    private long mExitTime = 0;
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode == KeyEvent.KEYCODE_BACK) {
             if (mActiveTab.getWebView().canGoBack()) {
                 mActiveTab.getWebView().goBack();//返回上个页面
             } else {
-                mTabController.removeTab(mActiveTab);
-                if (mTabController.getTabCount() <= 0) {
-                    finish();
-                }
+                if (mTabController.getTabCount() == 1) {
+                    if ((System.currentTimeMillis() - mExitTime) > 2000) {
+                        Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                        mExitTime = System.currentTimeMillis();// 更新mExitTime
+                    } else {
+                        System.exit(0);
+                    }
+                } else mTabController.removeTab(mActiveTab);
             }
             return true;
         }
@@ -264,6 +273,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             switchToTab();
             Log.e(TAG, "switchToTab:");
         } else {
+            siteTitle.setText("");
             switchToMain();
             Log.e(TAG, "switchToMain:");
         }
@@ -290,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         }
     }
 
-    private void load(String url) {
+    public void load(String url) {
         if (mActiveTab != null) {
             mActiveTab.clearWebHistory();
             mActiveTab.loadUrl(url, null,true);
@@ -305,13 +315,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
         WebView view = mActiveTab.getWebView();
         Log.e(TAG,"switchToTab ----------" + mainView.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
         if(view.getParent() == null) {
-//            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
-//            if(lp == null){
-//                lp = new ConstraintLayout.LayoutParams(
-//                        ConstraintLayout.LayoutParams.MATCH_PARENT,
-//                        ViewGroup.LayoutParams.MATCH_PARENT);
-//            }
-            mContentWrapper.addView(view);
+            ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
+            if(lp == null){
+                lp = new ConstraintLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+                        ConstraintLayout.LayoutParams.MATCH_CONSTRAINT);
+            }
+            mContentWrapper.addView(view, lp);
         }
         mIsInMain = false;
     }
@@ -340,10 +350,17 @@ public class MainActivity extends AppCompatActivity implements UiController {
         }
         siteTitle.setText(tab.getUrl());
     }
-
+    private static final String TABLE = "histories";
     @Override
     public void onPageFinished(Tab tab) {
         searchProgress.setVisibility(View.INVISIBLE);
+
+        FavHisDao favHisDao = new FavHisDao(this, TABLE);
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
+        String currentTime = format.format(new Date());
+        favHisDao.insert(null, mActiveTab.getTitle(),
+                mActiveTab.getUrl(), currentTime);
+
 //        mTabAdapter.notifyDataSetChanged();
     }
 

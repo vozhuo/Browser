@@ -11,18 +11,18 @@ import java.util.List;
 
 import static android.content.ContentValues.TAG;
 
-public class FavoritesDao {
-    private static final String TABLE = "favorites";
-    public int DB_VERSION = 1;
-    private FavoritesSQLiteOpenHelper openHelper;
-
-    public FavoritesDao(Context context) {
-        openHelper = new FavoritesSQLiteOpenHelper(context);
+public class FavHisDao {
+    private SQLiteHelper openHelper;
+    private String TABLE;
+    public FavHisDao(Context context, String table) {
+        TABLE = table;
+        openHelper = new SQLiteHelper(context);
     }
     //增
     public void insert(String _id, String title, String url, String time) {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
+        Log.e(TAG, "insert: " + title + " " + url);
         values.put("_id",_id);
         values.put("title",title);
         values.put("url",url);
@@ -33,7 +33,6 @@ public class FavoritesDao {
     public void delete(String url) {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         db.delete(TABLE, "url = ?", new String[]{url});
-        Log.e(TAG, "delete: SUCCESS");
     }
     //改
     public void update(String title, String url) {
@@ -44,21 +43,21 @@ public class FavoritesDao {
         db.update(TABLE, values, "url = ?", new String[]{url});
     }
     //查询所有
-    public List<FavoritesEntity> queryAllFavorites() {
+    public List<FavHisEntity> queryAll() {
         SQLiteDatabase db = openHelper.getReadableDatabase();
         String[] columns = {"_id","title","url","time"};
         Cursor cursor = db.query(TABLE, columns, null, null, null, null, null);
         if(cursor != null && cursor.getCount() > 0) {
-            List<FavoritesEntity> listFavorites = new ArrayList<>();
+            List<FavHisEntity> list = new ArrayList<>();
             while(cursor.moveToNext()) {
                 int _id = cursor.getInt(cursor.getColumnIndex("_id"));
                 String title = cursor.getString(cursor.getColumnIndex("title"));
                 String url = cursor.getString(cursor.getColumnIndex("url"));
                 String time = cursor.getString(cursor.getColumnIndex("time"));
-                listFavorites.add(new FavoritesEntity(_id,title,url,time));
+                list.add(new FavHisEntity(_id,title,url,time));
             }
             cursor.close();
-            return listFavorites;
+            return list;
         }
         if (cursor != null) {
             cursor.close();

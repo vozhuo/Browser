@@ -2,7 +2,6 @@ package cf.vozhuo.app.broswser.favorites;
 
 
 import android.app.Dialog;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -21,10 +20,7 @@ import java.io.Serializable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import cf.vozhuo.app.broswser.BottomDialogFragment;
 import cf.vozhuo.app.broswser.R;
-import cf.vozhuo.app.broswser.search_history.view.MySearchView;
-import cf.vozhuo.app.broswser.tab.Tab;
 
 public class ModifyFragment extends DialogFragment {
     @BindView(R.id.et_title)
@@ -34,18 +30,7 @@ public class ModifyFragment extends DialogFragment {
     @BindView(R.id.bt_confirm)
     Button bt_confirm;
 
-    private FavoritesEntity favorites;
-
-    private ModifyListener mListener;
-    public interface ModifyListener {
-       void sendEntity(FavoritesEntity favorites);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mListener = (ModifyListener) getActivity();
-    }
+    private FavHisEntity favorites;
 
     @Nullable
     @Override
@@ -53,7 +38,7 @@ public class ModifyFragment extends DialogFragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             Serializable serializable = bundle.getSerializable("favorites");
-            favorites = (FavoritesEntity) serializable;
+            favorites = (FavHisEntity) serializable;
         }
         return inflater.inflate(R.layout.modify_favorite, null);
     }
@@ -82,7 +67,8 @@ public class ModifyFragment extends DialogFragment {
     void updateFavorite() {
         favorites.setTitle(et_title.getText().toString());
         favorites.setUrl(et_url.getText().toString());
-        mListener.sendEntity(favorites); //数据传送入FavoriteActivity
+
+        ((FavoriteFragment)getParentFragment()).updateFavorite(favorites); //调用FavoriteFragment的方法
         getFragmentManager().beginTransaction().remove(ModifyFragment.this).commit();
     }
 

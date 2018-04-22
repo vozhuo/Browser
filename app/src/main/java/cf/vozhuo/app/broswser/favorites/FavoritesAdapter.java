@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,13 +17,13 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.RecyclerAdapter;
-import cf.vozhuo.app.broswser.tab.Tab;
 
-public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
+public class FavoritesAdapter extends RecyclerAdapter<FavHisEntity> {
 
-    private List<FavoritesEntity> mFavorites;
+    private List<FavHisEntity> mFavorites;
     private FavoritesController mController;
 
     public FavoritesAdapter(Context context, FavoritesController controller) {
@@ -39,15 +38,15 @@ public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
     }
 
     @Override
-    public void bindView(FavoritesEntity favorites, int position, RecyclerView.ViewHolder holder) {
+    public void bindView(FavHisEntity favorites, int position, RecyclerView.ViewHolder holder) {
         FavoritesHolder viewHolder = (FavoritesHolder)holder;
         viewHolder.bind(favorites, position);
     }
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new FavoritesHolder(mInflater.inflate(R.layout.favorite_list_item, parent, false));
+         return new FavoritesHolder(mInflater.inflate(R.layout.favorite_list_item,
+                parent, false));
     }
 
     class FavoritesHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -58,7 +57,7 @@ public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
         @BindView(R.id.iv_edit)
         ImageView iv_edit;
 
-        FavoritesEntity favorites;
+        FavHisEntity favorites;
         int position;
         FavoritesHolder(View itemView) {
             super(itemView);
@@ -69,14 +68,15 @@ public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
         public void onClick(View v) {
             switch(v.getId()) {
                 case R.id.fav_web_title:
-                    Toast.makeText(mContext, favorites.getUrl(),
-                            Toast.LENGTH_SHORT).show();
+                    MainActivity.instance.load(favorites.getUrl()); //调用MainActivity的方法
+                    ((FavHisActivity)mContext).finish(); //结束FavHisActivity
+                    ((FavHisActivity)mContext).overridePendingTransition(0, 0);
                     break;
                 case R.id.iv_edit:
                     LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View contentView = mInflater.inflate(R.layout.pop_favorite_edit, null);
 
-                    final PopupWindow popupWindow = new PopupWindow(contentView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    final PopupWindow popupWindow = new PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                     popupWindow.setFocusable(true);
                     popupWindow.setBackgroundDrawable(new BitmapDrawable());
                     popupWindow.setOutsideTouchable(true);
@@ -84,7 +84,7 @@ public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
                     v.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
                     int mShowMorePopupWindowWidth = -v.getMeasuredWidth();
                     int mShowMorePopupWindowHeight = -v.getMeasuredHeight();
-                    popupWindow.showAsDropDown(iv_edit,mShowMorePopupWindowWidth, mShowMorePopupWindowHeight);
+                    popupWindow.showAsDropDown(iv_edit,mShowMorePopupWindowWidth, mShowMorePopupWindowHeight + 24);
 
                     TextView tv_del = contentView.findViewById(R.id.fav_del);
                     TextView tv_mod = contentView.findViewById(R.id.fav_mod);
@@ -92,7 +92,6 @@ public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
                         @Override
                         public void onClick(View v) {
                             mController.delete(favorites);
-//                            notifyDataSetChanged();
                             popupWindow.dismiss();
                         }
                     });
@@ -107,7 +106,7 @@ public class FavoritesAdapter extends RecyclerAdapter<FavoritesEntity> {
             }
         }
 
-        void bind(FavoritesEntity favorites, int position) {
+        void bind(FavHisEntity favorites, int position) {
             tv.setText(favorites.getTitle());
             tv.setOnClickListener(this);
             iv_edit.setOnClickListener(this);
