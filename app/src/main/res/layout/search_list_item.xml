@@ -16,10 +16,12 @@
         android:drawablePadding="4dp"
         android:drawableStart="@drawable/home_search_history"
         android:paddingBottom="15dp"
+        android:clickable="true"
         android:paddingLeft="8dp"
         android:paddingStart="8dp"
         android:paddingTop="15dp"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:focusable="true" />
 
         <!--<LinearLayout-->
             <!--android:id="@+id/ll_search_close"-->

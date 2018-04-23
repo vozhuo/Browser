@@ -77,24 +77,13 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         editText.requestFocus();
         activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
-
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if(keyCode == KeyEvent.KEYCODE_BACK ) {
-//            startActivity(new Intent(SearchActivity.this, MainActivity.class));
-//            finish();
-//            return true;
-//        }
-//        return super.onKeyDown(keyCode, event);
-//    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_layout);
         ButterKnife.bind(this);
 
-        showSoftInputFromWindow(SearchActivity.this, searchView);
+//        showSoftInputFromWindow(SearchActivity.this, searchView);
         //initStatusBar();
         searchView.setText(getIntent().getStringExtra("siteInfo"));
         searchView.selectAll();
@@ -163,7 +152,7 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
     @Override
     public void searchSuccess(String value) {
-        SharedPreferences sp = getSharedPreferences("search_engine_config", Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         String search_engine = sp.getString("search_engine", "百度");
         String search_string;
         switch (search_engine) {
@@ -195,7 +184,7 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         Intent intent = new Intent(SearchActivity.this, MainActivity.class);
         intent.putExtra("query", value);
 
-        setResult(RESULT_CODE,intent); //回传数据
+        setResult(RESULT_CODE, intent); //回传数据
         finish();
     }
 

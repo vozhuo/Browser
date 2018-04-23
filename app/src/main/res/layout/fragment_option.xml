@@ -32,12 +32,13 @@
                 android:id="@+id/setImage"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_gravity="center"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableLeft="@drawable/bg_image"
-                android:paddingLeft="40dip"
-                android:layout_gravity="center"
-                android:drawableStart="@drawable/bg_image" />
+                android:drawableTop="@drawable/bg_image"
+                android:paddingTop="15dp"
+                android:text="智能无图"
+                android:textAlignment="center" />
 
             <ImageView
                 android:id="@+id/mark"
@@ -46,6 +47,19 @@
                 android:layout_weight="1"
                 android:scaleType="center"
                 android:src="@drawable/mark" />
+
+            <CheckBox
+                android:id="@+id/dark"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:button="@null"
+                android:drawableTop="@drawable/bg_dark"
+                android:paddingTop="15dp"
+                android:text="夜间模式"
+                android:textAlignment="center"
+                android:textColor="@color/black" />
 
         </LinearLayout>
 
@@ -61,17 +75,19 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:button="@null"
-                android:paddingLeft="40dip"
                 android:drawableLeft="@drawable/bg_collect"
-                android:drawableStart="@drawable/bg_collect" />
+                android:drawableStart="@drawable/bg_collect"
+                android:paddingLeft="40dip" />
 
-            <ImageView
+            <CheckBox
                 android:id="@+id/track"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:scaleType="center"
-                android:src="@drawable/bg_seen" />
+                android:button="@null"
+                android:paddingLeft="40dip"
+                android:drawableLeft="@drawable/bg_seen"
+                android:drawableStart="@drawable/bg_seen" />
 
             <ImageView
                 android:id="@+id/refresh"

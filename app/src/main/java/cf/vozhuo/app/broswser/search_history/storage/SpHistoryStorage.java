@@ -36,13 +36,17 @@ public class SpHistoryStorage extends BaseHistoryStorage {
 
     @Override
         public void save(String value) {
-        Map<String, String> histories = (Map<String, String>) getAll();
-        for (Map.Entry<String, String> entry : histories.entrySet()) {
-            if (value.equals(entry.getValue())) {
-                remove(entry.getKey());
+        SharedPreferences sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        Boolean noTrack = sp.getBoolean("track_state", false);
+        if(!noTrack) {
+            Map<String, String> histories = (Map<String, String>) getAll();
+            for (Map.Entry<String, String> entry : histories.entrySet()) {
+                if (value.equals(entry.getValue())) {
+                    remove(entry.getKey());
+                }
             }
+            put(generateKey(), value);
         }
-        put(generateKey(), value);
     }
 
     @Override

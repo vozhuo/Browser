@@ -16,6 +16,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,8 +27,12 @@ import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 public class SettingActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE = 1;
+    private static final String TAG = "SettingActivity";
     @BindView(R.id.iv_engine)
     ImageView iv_engine;
 
@@ -39,6 +45,12 @@ public class SettingActivity extends AppCompatActivity {
     @BindView(R.id.tv_engine)
     TextView tv_engine;
 
+    @BindView(R.id.ib_ua)
+    ImageButton ib_ua;
+
+    @BindView(R.id.tv_ua_text)
+    TextView tv_ua_text;
+
     @OnClick(R.id.iv_engine)
     public void changeEngine() {
         FragmentManager fm = getSupportFragmentManager();
@@ -48,30 +60,52 @@ public class SettingActivity extends AppCompatActivity {
         bottomDialogFragment.setArguments(bundle);
         bottomDialogFragment.show(fm, "fragment_notice_dialog");
     }
+    @OnClick(R.id.ib_ua)
+    public void changeUA() {
+        FragmentManager fm = getSupportFragmentManager();
+        NoticeDialogFragment bottomDialogFragment = new NoticeDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("ua", "ua");
+        bottomDialogFragment.setArguments(bundle);
+        bottomDialogFragment.show(fm, "fragment_notice_dialog");
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        SharedPreferences sp = getSharedPreferences("search_engine_config", Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                tv_engine.setText(sharedPreferences.getString(key, "百度"));
+                switch (key) {
+                    case "search_engine":
+                        tv_engine.setText(sharedPreferences.getString(key, "百度"));
+                        break;
+                    case "ua":
+                        tv_ua_text.setText(sharedPreferences.getString(key, "Android"));
+                        break;
+                        default: break;
+                }
             }
         });
         tv_engine.setText(sp.getString("search_engine", "百度"));
+        tv_ua_text.setText(sp.getString("ua", "Android"));
     }
 
     @OnCheckedChanged(R.id.switchBrowser)
     public void clearDefaultAndSet(boolean isChecked) {
         if (isChecked) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
             ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
 
-            if(!"android".equals(info.activityInfo.packageName)) {
-                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + info.activityInfo.packageName)), 0);
+            if("android".equals(info.activityInfo.packageName)) { //未设置默认浏览器
+
+                startActivityForResult(intent, REQUEST_CODE);
+                overridePendingTransition(0, 0);
             } else {
-                startActivity(intent);
+                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + info.activityInfo.packageName)), 0);
             }
         }
     }
@@ -79,10 +113,11 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+//        finishActivity(REQUEST_CODE);
         if(hasDefaultBrowser()) {
 
         } else {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://")));
+            startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse("http://")), REQUEST_CODE);
         }
     }
 
@@ -102,6 +137,13 @@ public class SettingActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
         ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);

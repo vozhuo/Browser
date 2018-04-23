@@ -84,5 +84,44 @@
             app:srcCompat="@drawable/forward" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/tv_ua"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="63dp"
+        android:layout_marginStart="63dp"
+        android:layout_marginTop="60dp"
+        android:text="UA切换"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ll_search" />
+
+    <ImageButton
+        android:id="@+id/ib_ua"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="120dp"
+        android:layout_marginRight="120dp"
+        android:layout_marginTop="60dp"
+        android:background="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_ua_text"
+        app:layout_constraintTop_toBottomOf="@+id/ll_search"
+        app:srcCompat="@drawable/forward" />
+
+    <TextView
+        android:id="@+id/tv_ua_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginLeft="23dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginStart="23dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_ua"
+        app:layout_constraintEnd_toStartOf="@+id/iv_ua"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>

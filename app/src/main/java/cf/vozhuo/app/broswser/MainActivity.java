@@ -3,6 +3,7 @@ package cf.vozhuo.app.broswser;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -16,6 +17,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -33,6 +35,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -129,11 +133,21 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public String getPageTitle() {
         return mActiveTab.getTitle();
     }
-    public void setNoImage(boolean noImage) {
+    public void setNoImage(boolean noImage) { //智能无图设置
         for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
             WebSettings settings = tab.getWebView().getSettings();
             settings.setLoadsImagesAutomatically(false);
         }
+    }
+    private boolean isTrack = true;
+    public void setNoTrack() { //无痕浏览设置
+        for (Tab tab : mTabController.getTabs()) {
+            WebSettings settings = tab.getWebView().getSettings();
+            settings.setDatabaseEnabled(false);
+            settings.setAppCacheEnabled(false);
+            settings.setDomStorageEnabled(false);
+        }
+        isTrack = false;
     }
 
     @Override
@@ -158,8 +172,24 @@ public class MainActivity extends AppCompatActivity implements UiController {
            addTab(false);
         }
         instance = this;
-    }
 
+        InputStream is = getContext().getResources().openRawResource(R.raw.night);
+        byte[] buffer = new byte[0];
+        try {
+            buffer = new byte[is.available()];
+            is.read(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        nightCode = Base64.encodeToString(buffer, Base64.NO_WRAP);
+    }
+    private String nightCode;
     private void addTab(boolean second) {
         if(second) switchToMain();
 
@@ -349,24 +379,44 @@ public class MainActivity extends AppCompatActivity implements UiController {
             searchProgress.setVisibility(View.VISIBLE);
         }
         siteTitle.setText(tab.getUrl());
+
+        darkMode();
+
     }
     private static final String TABLE = "histories";
     @Override
     public void onPageFinished(Tab tab) {
         searchProgress.setVisibility(View.INVISIBLE);
 
-        FavHisDao favHisDao = new FavHisDao(this, TABLE);
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
-        String currentTime = format.format(new Date());
-        favHisDao.insert(null, mActiveTab.getTitle(),
-                mActiveTab.getUrl(), currentTime);
+        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        Boolean noTrack = sp.getBoolean("track_state", false);
+        if (!noTrack) {
+            FavHisDao favHisDao = new FavHisDao(this, TABLE);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
+            String currentTime = format.format(new Date());
+            favHisDao.insert(null, mActiveTab.getTitle(),
+                    mActiveTab.getUrl(), currentTime);
+        }
 
+        darkMode();
 //        mTabAdapter.notifyDataSetChanged();
     }
 
+    public void darkMode() {
+        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        Boolean darkMode = sp.getBoolean("dark_state", false);
+        if(darkMode) {
+            mActiveTab.getWebView().loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
+                    + "var style = document.createElement('style');"
+                    + "style.type = 'text/css';" + "style.innerHTML = window.atob('" + nightCode + "');"
+                    + "parent.appendChild(style)" + "})();");
+        }
+    }
     @Override
     public void onProgressChanged(Tab tab) {
         searchProgress.setProgress(tab.getPageLoadProgress());
+
+        darkMode();
     }
 
     @Override
