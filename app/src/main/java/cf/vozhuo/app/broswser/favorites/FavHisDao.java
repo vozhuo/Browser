@@ -34,12 +34,24 @@ public class FavHisDao {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         db.delete(TABLE, "url = ?", new String[]{url});
     }
+    public void deleteAll() {
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        String sql = "DELETE FROM " + TABLE;
+        db.execSQL(sql);
+    }
+
     //改
     public void update(String title, String url) {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("title",title);
         values.put("url",url);
+        db.update(TABLE, values, "url = ?", new String[]{url});
+    }
+    public void updateTime(String url, String time) {
+        SQLiteDatabase db = openHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("time",time);
         db.update(TABLE, values, "url = ?", new String[]{url});
     }
     //查询所有

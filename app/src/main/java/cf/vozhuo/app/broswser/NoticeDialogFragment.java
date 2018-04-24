@@ -15,10 +15,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import cf.vozhuo.app.broswser.favorites.HistoryFragment;
+import cf.vozhuo.app.broswser.search_history.SearchActivity;
 
 import static android.content.ContentValues.TAG;
 
@@ -46,15 +55,11 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
             Window window = dialog.getWindow();
             dialog.getWindow().setGravity(Gravity.BOTTOM);
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-//            dialog.setTitle("搜索引擎");
             window.setWindowAnimations(R.style.animate_dialog);
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
 
-    enum Search_engine {
-        百度,谷歌,必应,搜狗
-    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         tv_notice = view.findViewById(R.id.tv_notice);
@@ -62,8 +67,10 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
         Bundle bundle = getArguments();
         String []engine = new String[]{"百度", "谷歌", "必应", "搜狗"};
         String []ua = new String[]{"Android", "PC", "iPhone"};
+        String []clear = new String[]{"搜索记录", "帐号密码", "Cookies", "历史记录", "缓存文件"};
         if (bundle != null) {
             if(bundle.getString("search_engine") != null) {
+                notice_content.setOrientation(LinearLayout.HORIZONTAL);
                 tv_notice.setText("选择搜索引擎");
                 tv_notice.setTextColor(Color.BLACK);
 
@@ -97,6 +104,7 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                 });
 
             } else if (bundle.getString("ua") != null) {
+                notice_content.setOrientation(LinearLayout.HORIZONTAL);
                 tv_notice.setText("选择UA");
                 tv_notice.setTextColor(Color.BLACK);
 
@@ -128,10 +136,60 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                         getFragmentManager().beginTransaction().remove(NoticeDialogFragment.this).commit();
                     }
                 });
+            } else if (bundle.getString("clear") != null) {
+                notice_content.setOrientation(LinearLayout.VERTICAL);
+                tv_notice.setText("清除缓存");
+                tv_notice.setTextColor(Color.BLACK);
+
+                for (int i = 0; i < 5; i++) {
+                    CheckBox checkBox = new CheckBox(getContext());
+                    checkBox.setId(i);
+                    checkBox.setText(clear[i]);
+                    checkBox.setOnCheckedChangeListener(listener);
+                    if(i == 0 || i == 3 || i == 4) checkBox.setChecked(true);
+                    notice_content.addView(checkBox);
+                }
+                Button submit = new Button(getContext());
+                submit.setText("确认");
+                submit.setTextSize(16);
+
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                lp.gravity=Gravity.CENTER_HORIZONTAL;
+                submit.setBackgroundResource(R.drawable.shape_button);
+                notice_content.addView(submit, lp);
+
+
+                submit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(isCheck[0]) {
+                            SearchActivity.ClearSearch();
+                        } else if(isCheck[1]) {
+
+                        } else if(isCheck[2]) {
+                            CookieSyncManager.createInstance(getContext());
+                            CookieSyncManager.getInstance().startSync();
+                            CookieManager.getInstance().removeSessionCookie();
+                        } else if(isCheck[3]) {
+                            HistoryFragment.deleteHistory();
+                        } else if(isCheck[4]) {
+                            MainActivity.ClearCache();
+                        }
+                        getFragmentManager().beginTransaction().remove(NoticeDialogFragment.this).commit();
+                        Toast.makeText(getContext(), "清理成功",  Toast.LENGTH_LONG).show();
+                    }
+                });
+
             }
         }
     }
-
+    private boolean []isCheck = new boolean[5];
+    private CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            isCheck[buttonView.getId()] = isChecked;
+        }
+    };
     @Override
     public void onClick(View v) {
         int id = v.getId();

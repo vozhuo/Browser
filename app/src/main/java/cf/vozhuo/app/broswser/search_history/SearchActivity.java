@@ -41,6 +41,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import cf.vozhuo.app.broswser.ClearSearchController;
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.search_history.presenter.SearchPresenter;
@@ -56,7 +57,7 @@ import butterknife.OnClick;
 public class SearchActivity extends AppCompatActivity implements MySearchView {
 
     private static final int RESULT_CODE = 1;
-    private SearchPresenter mSearchPresenter;
+    private static SearchPresenter mSearchPresenter;
     private SearchHistoryAdapter searchHistoryAdapter;
     private ArrayList<SearchBean> histories = new ArrayList<>();
 
@@ -70,19 +71,13 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
     ConstraintLayout search_history;
     @BindView(R.id.btn_search_check)
     TextView search_check;
-
-    public static void showSoftInputFromWindow(AppCompatActivity activity, EditText_Clear editText) {
-        editText.setFocusable(true);
-        editText.setFocusableInTouchMode(true);
-        editText.requestFocus();
-        activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-    }
+    public static SearchActivity instance;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_layout);
         ButterKnife.bind(this);
-
+        instance = this;
 //        showSoftInputFromWindow(SearchActivity.this, searchView);
         //initStatusBar();
         searchView.setText(getIntent().getStringExtra("siteInfo"));
@@ -237,4 +232,9 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
             }
         }
     };
+
+
+    public static void ClearSearch() {
+        if(mSearchPresenter != null) mSearchPresenter.clear();
+    }
 }

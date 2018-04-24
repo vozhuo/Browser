@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     TabAdapter mTabAdapter;
 
-    TabController mTabController;
+    static TabController mTabController;
     private Tab mActiveTab;
     private WebViewFactory mFactory;
     private boolean mIsInMain = true;
@@ -150,11 +150,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
         isTrack = false;
     }
 
-    @Override
-    public void onPause() {
-        overridePendingTransition(0, 0);
-        super.onPause();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 mActiveTab.getWebView().goBack();//返回上个页面
             } else {
                 if (mTabController.getTabCount() == 1) {
+                    if(!mIsInMain) switchToMain();
                     if ((System.currentTimeMillis() - mExitTime) > 2000) {
                         Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
                         mExitTime = System.currentTimeMillis();// 更新mExitTime
@@ -223,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         }
         return super.onKeyDown(keyCode, event);
     }
+
 
     @OnClick(R.id.tvPagerNum)
     void clickPagerNum(View view) {
@@ -343,13 +340,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
             mContentWrapper.removeView(mainView);
         }
         WebView view = mActiveTab.getWebView();
+
         Log.e(TAG,"switchToTab ----------" + mainView.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
         if(view.getParent() == null) {
             ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
             if(lp == null){
                 lp = new ConstraintLayout.LayoutParams(
                         ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
-                        ConstraintLayout.LayoutParams.MATCH_CONSTRAINT);
+                        ViewGroup.LayoutParams.MATCH_PARENT);
             }
             mContentWrapper.addView(view, lp);
         }
@@ -373,11 +371,11 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
     @Override
     public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
-        if(mIsInMain) {
-            searchProgress.setVisibility(View.GONE);
-        } else {
+//        if(mIsInMain) {
+//            searchProgress.setVisibility(View.GONE);
+//        } else {
             searchProgress.setVisibility(View.VISIBLE);
-        }
+//        }
         siteTitle.setText(tab.getUrl());
 
         darkMode();
@@ -394,8 +392,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
             FavHisDao favHisDao = new FavHisDao(this, TABLE);
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());
-            favHisDao.insert(null, mActiveTab.getTitle(),
-                    mActiveTab.getUrl(), currentTime);
+            String url = mActiveTab.getUrl();
+            if(favHisDao.queryURL(url)) { //判断是否已记录相同的URL
+                favHisDao.updateTime(url, currentTime); //更新访问时间
+            } else {
+                favHisDao.insert(null, mActiveTab.getTitle(),
+                        url, currentTime);
+            }
         }
 
         darkMode();
@@ -461,6 +464,11 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     @Override
     public void onFavicon(Tab tab, WebView view, Bitmap icon) {
+    }
 
+    public static void ClearCache() {
+        for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
+            tab.getWebView().clearCache(true);
+        }
     }
 }

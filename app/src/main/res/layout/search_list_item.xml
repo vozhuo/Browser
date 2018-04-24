@@ -2,26 +2,27 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/search_item"
+    android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:minHeight="35dp">
-
+    android:minHeight="35dp"
+    android:focusable="true">
 
     <TextView
         android:id="@+id/tv_searchhistory"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:clickable="true"
         android:drawableLeft="@drawable/home_search_history"
         android:drawablePadding="4dp"
         android:drawableStart="@drawable/home_search_history"
+        android:focusable="true"
         android:paddingBottom="15dp"
-        android:clickable="true"
         android:paddingLeft="8dp"
         android:paddingStart="8dp"
         android:paddingTop="15dp"
-        android:singleLine="true"
-        android:focusable="true" />
+        android:singleLine="true" />
 
         <!--<LinearLayout-->
             <!--android:id="@+id/ll_search_close"-->

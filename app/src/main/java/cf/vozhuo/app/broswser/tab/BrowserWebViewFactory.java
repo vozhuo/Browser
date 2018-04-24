@@ -102,6 +102,6 @@ public class BrowserWebViewFactory implements WebViewFactory {
             // Remote Web Debugging is always enabled, where available.
             WebView.setWebContentsDebuggingEnabled(true);
         }
-//        w.loadUrl("file:///android_asset/index.html");
+        w.loadUrl("file:///android_asset/index.html");
     }
 }

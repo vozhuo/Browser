@@ -22,7 +22,7 @@ import cf.vozhuo.app.broswser.R;
 
 public class HistoryFragment extends Fragment implements HistoriesController{
     private static final String TABLE = "histories";
-    private FavHisDao favHisDao;
+    private static FavHisDao favHisDao;
     private SQLiteHelper openHelper;
     private List<FavHisEntity> list = new ArrayList<>();
 
@@ -66,5 +66,9 @@ public class HistoryFragment extends Fragment implements HistoriesController{
     public void delete(FavHisEntity histories) {
         favHisDao.delete(histories.getUrl());
         mAdapter.updateData(favHisDao.queryAll());
+    }
+
+    public static void deleteHistory() {
+        favHisDao.deleteAll();
     }
 }

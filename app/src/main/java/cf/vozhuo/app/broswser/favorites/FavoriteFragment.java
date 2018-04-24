@@ -60,7 +60,7 @@ public class FavoriteFragment extends Fragment implements FavoritesController {
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
                 super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 10, 10,10);//设置item偏移
+                outRect.set(10, 15, 10,10);//设置item偏移
             }
         });
     }
