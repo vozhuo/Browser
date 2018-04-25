@@ -10,6 +10,8 @@ import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import cf.vozhuo.app.broswser.NetworkUtil;
+
 import static android.content.ContentValues.TAG;
 
 public class BrowserWebViewFactory implements WebViewFactory {
@@ -47,10 +49,10 @@ public class BrowserWebViewFactory implements WebViewFactory {
         //设置  Application Caches 缓存目录
         webSettings.setAppCachePath(cacheDirPath);
 
+        SharedPreferences sp;
+        Boolean state;
         //加载图片
-        SharedPreferences sp = mContext.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        Boolean state = sp.getBoolean("image_state", false);
-        if(state) {
+        if(NetworkUtil.isNoImageOn(mContext) && !NetworkUtil.isWifiConnected(mContext)) {
             webSettings.setLoadsImagesAutomatically(false);
             Log.e(TAG, "NO Image ");
         } else {

@@ -12,12 +12,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import cf.vozhuo.app.broswser.R;
 
 public class HistoryFragment extends Fragment implements HistoriesController{
@@ -28,7 +31,14 @@ public class HistoryFragment extends Fragment implements HistoriesController{
 
     @BindView(R.id.showHisList)
     RecyclerView mRecyclerView;
+    @BindView(R.id.iv_clear_history)
+    ImageView iv_clear_history;
 
+    @OnClick(R.id.iv_clear_history)
+    void onClick() {
+        deleteHistory();
+        Toast.makeText(getActivity(), "清理成功", Toast.LENGTH_SHORT).show();
+    }
     HistoriesAdapter mAdapter;
     @Nullable
     @Override
@@ -46,6 +56,9 @@ public class HistoryFragment extends Fragment implements HistoriesController{
         favHisDao = new FavHisDao(getContext(), TABLE);
 
         list = favHisDao.queryAll();
+        if(list == null) {
+            iv_clear_history.setVisibility(View.GONE);
+        }
 
         mAdapter = new HistoriesAdapter(getContext(), this);
         mAdapter.updateData(list);
@@ -57,7 +70,7 @@ public class HistoryFragment extends Fragment implements HistoriesController{
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
                 super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 10, 10,10);//设置item偏移
+                outRect.set(20, 20, 20,20);//设置item偏移
             }
         });
     }

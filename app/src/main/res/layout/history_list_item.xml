@@ -11,6 +11,7 @@
         android:layout_height="0dp"
         android:gravity="fill_vertical"
         android:text="TextView"
+        android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/ib_his_close"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,9 +23,11 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:background="@null"
+        android:padding="5dp"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_his_title"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/close" />
 

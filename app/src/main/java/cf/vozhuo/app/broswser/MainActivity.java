@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
@@ -125,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
     //for Fragment use
     public void refreshPage() {
-        mActiveTab.reloadPage();
+        if(mActiveTab != null) mActiveTab.reloadPage();
     }
     public String getPageUrl() {
         return mActiveTab.getUrl();
@@ -136,7 +138,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void setNoImage(boolean noImage) { //智能无图设置
         for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
             WebSettings settings = tab.getWebView().getSettings();
-            settings.setLoadsImagesAutomatically(false);
+            if(noImage) {
+                settings.setLoadsImagesAutomatically(false);
+                Log.e(TAG, "setNoImage: 无图");
+            } else {
+                settings.setLoadsImagesAutomatically(true);
+                Log.e(TAG, "setNoImage: 有图");
+            }
         }
     }
     private boolean isTrack = true;
@@ -150,7 +158,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
         isTrack = false;
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         mTabController = new TabController(this, this);
         mFactory = new BrowserWebViewFactory(this);
 
-        // 先建立一个tab标记主页
+        // 先建立一个tab标记主页dark
         if (mTabController.getTabCount() <= 0) {
            addTab(false);
         }
@@ -183,6 +190,16 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
         }
         nightCode = Base64.encodeToString(buffer, Base64.NO_WRAP);
+
+//        if(!NetworkUtil.isWifiConnected(this) && NetworkUtil.isNoImageOn(this)) {
+//            setNoImage(true);
+//            Log.e(TAG, "onCreate: 无图");
+//        } else {
+//            Log.e(TAG, "onCreate: 有图");
+//        }
+//        else {
+//            setNoImage(false);
+//        }
     }
     private String nightCode;
     private void addTab(boolean second) {
@@ -259,15 +276,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
         mRecyclerView.setHasFixedSize(true); //item高度固定
 
         popupWindow = new PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT,
-                500);
+                ViewGroup.LayoutParams.WRAP_CONTENT);
         popupWindow.setContentView(contentView);
         popupWindow.setAnimationStyle(R.style.anim_pop);
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//        int[] location = new int[2];
-//        view.getLocationOnScreen(location);
-        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 0);
+
+        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 70);
 
         ImageView iv_addTab = contentView.findViewById(R.id.addTab);
         iv_addTab.setOnClickListener(new View.OnClickListener() {
@@ -320,7 +336,10 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void closeTab(Tab tab) {
         Log.e(TAG, "closeTab: "+ tab.getId());
         mTabController.removeTab(tab);
-        mTabAdapter.updateData(mTabController.getTabs());
+        mTabAdapter.removeData(tab, false);
+
+
+//        mTabAdapter.updateData(mTabController.getTabs());
         if(mTabController.getTabCount() <= 0) {
             popupWindow.dismiss();
             addTab(true);
@@ -388,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean noTrack = sp.getBoolean("track_state", false);
-        if (!noTrack) {
+        if (!noTrack && NetworkUtil.isNetworkConnected(this)) {
             FavHisDao favHisDao = new FavHisDao(this, TABLE);
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());

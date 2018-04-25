@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,6 +23,7 @@ import android.view.Window;
 import android.webkit.WebView;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -41,7 +43,7 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
     private CheckBox collect;
     private CheckBox cb_track;
     private CheckBox cb_dark;
-    private WebView webView;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -93,7 +95,14 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         //检测是否已收藏
         favHisDao = new FavHisDao(getContext(), TABLE);
         collect = view.findViewById(R.id.collect);
-        collect.setChecked(favHisDao.queryURL(((MainActivity)getActivity()).getPageUrl()));
+        boolean isCollected = favHisDao.queryURL(((MainActivity)getActivity()).getPageUrl());
+        if(isCollected) {
+            collect.setText("已添加");
+            collect.setChecked(true);
+        } else {
+            collect.setText("添加书签");
+            collect.setChecked(false);
+        }
 
         //检测夜间模式是否开启
         sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
@@ -118,6 +127,7 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
                 break;
             case R.id.collect:
                 collectClick();
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
             case R.id.setting:
                 startActivity(new Intent(getActivity(), SettingActivity.class));
@@ -125,10 +135,17 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
                 break;
             case R.id.setImage:
                 setImageClick();
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                break;
             case R.id.track:
+                Log.e(TAG, "TrackClick");
                 trackClick();
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                break;
             case R.id.dark:
+                Log.e(TAG, "DarkClick");
                 darkClick();
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
         }
     }
@@ -137,13 +154,14 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         if(cb_dark.isChecked()) { //进入夜间模式
-            ((MainActivity)getActivity()).setNoTrack();
+//            ((MainActivity)getActivity()).setNoTrack();
             editor.putBoolean("dark_state", true);
             editor.apply();
-
+            Toast.makeText(getContext(), "夜间模式开启", Toast.LENGTH_SHORT).show();
         } else {
             editor.putBoolean("dark_state", false);
             editor.apply();
+            Toast.makeText(getContext(), "夜间模式关闭", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -154,10 +172,11 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
             ((MainActivity)getActivity()).setNoTrack();
             editor.putBoolean("track_state", true);
             editor.apply();
-
+            Toast.makeText(getContext(), "无痕浏览开启", Toast.LENGTH_SHORT).show();
         } else {
             editor.putBoolean("track_state", false);
             editor.apply();
+            Toast.makeText(getContext(), "无痕浏览关闭", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -165,36 +184,33 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
 
-        NetworkInfo.State wifiState = null;
-        NetworkInfo.State mobileState = null;
-
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context
-                .CONNECTIVITY_SERVICE);
-        wifiState = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
-        mobileState = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
-//
-//        Log.e("TAG","wifi状态:" + wifiState + "\n mobile状态:" + mobileState);
         if(cb_image.isChecked()) { //进入智能无图模式
-            if(!(wifiState == NetworkInfo.State.CONNECTED)) {
+            if(!NetworkUtil.isWifiConnected(getContext())) {
                 ((MainActivity)getActivity()).setNoImage(true);
             }
             editor.putBoolean("image_state", true);
             editor.apply();
-
+            Toast.makeText(getContext(), "智能无图开启", Toast.LENGTH_SHORT).show();
         } else {
+            ((MainActivity)getActivity()).setNoImage(false);
             editor.putBoolean("image_state", false);
             editor.apply();
-            Log.e(TAG, "ONNNNNNNNNN: ");
+            Toast.makeText(getContext(), "智能无图关闭", Toast.LENGTH_SHORT).show();
         }
     }
+
     private void collectClick() {
         if(collect.isChecked()) { //收藏
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());
             favHisDao.insert(null, ((MainActivity)getActivity()).getPageTitle(),
                     ((MainActivity)getActivity()).getPageUrl(), currentTime);
+            collect.setText("已添加");
+            Toast.makeText(getActivity(), "已添加书签", Toast.LENGTH_SHORT).show();
         } else { //取消收藏
             favHisDao.delete(((MainActivity)getActivity()).getPageUrl());
+            collect.setText("添加书签");
+            Toast.makeText(getActivity(), "已删除书签", Toast.LENGTH_SHORT).show();
         }
     }
 }

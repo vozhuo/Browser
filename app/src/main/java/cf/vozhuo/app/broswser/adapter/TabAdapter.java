@@ -88,8 +88,11 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
         @Override
         public void onClick(View v) {
             if(v == iv_close){
-                if(mController != null){
+                if(mController != null) {
                     mController.closeTab(tab);
+                    notifyItemRemoved(position);
+                    notifyItemRangeChanged(position, getItemCount());
+                    v.setVisibility(View.GONE);
                 }
             } else if(v == tv_title) {
                 if(mController != null) {
@@ -105,7 +108,7 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
         }
         public void bind(Tab tab, int position) {
             String title = tab.getTitle();
-            tv_title.setText(title);
+            tv_title.setText(title + position);
             tv_title.setOnClickListener(this);
             iv_close.setOnClickListener(this);
             this.tab = tab;

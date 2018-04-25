@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="cf.vozhuo.app.broswser">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -53,9 +52,14 @@
 
         </activity>
 
-        <activity android:name=".favorites.FavHisActivity" android:windowSoftInputMode="stateAlwaysVisible"/>
+        <activity android:name=".favorites.FavHisActivity"/>
+
+        <receiver android:name=".NetWorkStateReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>
-
-    <!--android:configChanges="keyboard|keyboardHidden|orientation|screenSize"-->
-    <!--android:launchMode="singleTask"-->
