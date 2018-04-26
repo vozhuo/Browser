@@ -3,16 +3,13 @@ package cf.vozhuo.app.broswser.tab;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -21,7 +18,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import java.io.Serializable;
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -95,7 +92,7 @@ public class Tab {
     private static synchronized Bitmap getDefaultFavicon(Context context) {
         if (sDefaultFavicon == null) {
             sDefaultFavicon = BitmapFactory.decodeResource(
-                    context.getResources(), R.drawable.ic_home);
+                    context.getResources(), R.drawable.web);
         }
         return sDefaultFavicon;
     }
@@ -390,6 +387,13 @@ public class Tab {
             return mCurrentState.mFavicon;
         }
         return getDefaultFavicon(mContext);
+    }
+
+    public byte[] getFaviconBytes() {
+        Bitmap bitmap = getFavicon();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        return stream.toByteArray();
     }
 
     public int getPageLoadProgress(){

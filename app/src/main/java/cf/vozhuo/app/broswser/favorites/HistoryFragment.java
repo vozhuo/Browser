@@ -70,7 +70,7 @@ public class HistoryFragment extends Fragment implements HistoriesController{
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
                 super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(20, 20, 20,20);//设置item偏移
+                outRect.set(10, 10, 10,10);//设置item偏移
             }
         });
     }
@@ -78,7 +78,7 @@ public class HistoryFragment extends Fragment implements HistoriesController{
     @Override
     public void delete(FavHisEntity histories) {
         favHisDao.delete(histories.getUrl());
-        mAdapter.updateData(favHisDao.queryAll());
+        mAdapter.removeData(histories, false);
     }
 
     public static void deleteHistory() {

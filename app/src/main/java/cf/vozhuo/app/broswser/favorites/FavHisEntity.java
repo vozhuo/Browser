@@ -1,5 +1,7 @@
 package cf.vozhuo.app.broswser.favorites;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 public class FavHisEntity implements Serializable {
@@ -7,12 +9,14 @@ public class FavHisEntity implements Serializable {
     private String title;
     private String url;
     private String time;
+    private byte[] favicon;
 
-    public FavHisEntity(int id, String title, String url, String time) {
+    public FavHisEntity(int id, String title, String url, String time, byte[] favicon) {
         this.id = id;
         this.title = title;
         this.url = url;
         this.time = time;
+        this.favicon = favicon;
     }
 
     public int getId() {
@@ -45,5 +49,13 @@ public class FavHisEntity implements Serializable {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public byte[] getFavicon() {
+        return favicon;
+    }
+
+    public void setFavicon(byte[] favicon) {
+        this.favicon = favicon;
     }
 }

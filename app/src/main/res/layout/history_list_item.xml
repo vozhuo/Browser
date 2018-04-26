@@ -5,16 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <ImageView
+        android:id="@+id/tiv_his_icon"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:padding="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tv_his_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/web" />
+
     <TextView
         android:id="@+id/tv_his_title"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:gravity="fill_vertical"
-        android:text="TextView"
         android:singleLine="true"
+        android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/ib_his_close"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tiv_his_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:paddingLeft="8dp" />
 
@@ -23,12 +34,12 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:background="@null"
-        android:padding="5dp"
+        android:padding="8dp"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/tv_his_title"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/close" />
+        app:srcCompat="@drawable/ic_close" />
 
 </android.support.constraint.ConstraintLayout>

@@ -43,7 +43,7 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
     private CheckBox collect;
     private CheckBox cb_track;
     private CheckBox cb_dark;
-
+    private CheckBox refresh;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -80,6 +80,7 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         view.findViewById(R.id.refresh).setOnClickListener(this);
         view.findViewById(R.id.dark).setOnClickListener(this);
 
+        refresh = view.findViewById(R.id.refresh);
         //检测智能无图模式是否开启
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean state = sp.getBoolean("image_state", false);
@@ -109,6 +110,11 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         state = sp.getBoolean("dark_state", false);
         cb_dark = view.findViewById(R.id.dark);
         cb_dark.setChecked(state);
+        //刷新、收藏Checkbox是否可点击
+        if(((MainActivity)getActivity()).getPageUrl().equals("file:///android_asset/index.html")) {
+            refresh.setEnabled(false);
+            collect.setEnabled(false);
+        }
     }
 
     private FavHisDao favHisDao;
@@ -201,16 +207,17 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
 
     private void collectClick() {
         if(collect.isChecked()) { //收藏
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
-            String currentTime = format.format(new Date());
-            favHisDao.insert(null, ((MainActivity)getActivity()).getPageTitle(),
-                    ((MainActivity)getActivity()).getPageUrl(), currentTime);
-            collect.setText("已添加");
-            Toast.makeText(getActivity(), "已添加书签", Toast.LENGTH_SHORT).show();
-        } else { //取消收藏
-            favHisDao.delete(((MainActivity)getActivity()).getPageUrl());
-            collect.setText("添加书签");
-            Toast.makeText(getActivity(), "已删除书签", Toast.LENGTH_SHORT).show();
-        }
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
+                String currentTime = format.format(new Date());
+                favHisDao.insert(null, ((MainActivity)getActivity()).getPageTitle(),
+                        ((MainActivity)getActivity()).getPageUrl(), currentTime, ((MainActivity)getActivity()).getPageFavicon());
+                collect.setText("已添加");
+                Toast.makeText(getActivity(), "已添加书签", Toast.LENGTH_SHORT).show();
+
+            } else { //取消收藏
+                favHisDao.delete(((MainActivity)getActivity()).getPageUrl());
+                collect.setText("添加书签");
+                Toast.makeText(getActivity(), "已删除书签", Toast.LENGTH_SHORT).show();
+            }
     }
 }

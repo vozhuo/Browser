@@ -77,7 +77,7 @@ public class FavoriteFragment extends Fragment implements FavoritesController {
     @Override
     public void delete(FavHisEntity favorites) {
         favHisDao.delete(favorites.getUrl());
-        mAdapter.updateData(favHisDao.queryAll());
+        mAdapter.removeData(favorites, false);
     }
 
     public void updateFavorite(FavHisEntity favorites) {

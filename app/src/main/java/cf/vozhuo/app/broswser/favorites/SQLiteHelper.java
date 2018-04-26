@@ -18,8 +18,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String fav = "CREATE TABLE " + TABLE_FAV + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, url VARCHAR UNIQUE, title VARCHAR, time VARCHAR)";
-        String his = "CREATE TABLE " + TABLE_HIS + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, url VARCHAR UNIQUE, title VARCHAR, time VARCHAR)";
+        String fav = "CREATE TABLE " + TABLE_FAV + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, url VARCHAR UNIQUE, title VARCHAR, time VARCHAR, favicon BLOB)";
+        String his = "CREATE TABLE " + TABLE_HIS + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, url VARCHAR UNIQUE, title VARCHAR, time VARCHAR, favicon BLOB)";
         db.execSQL(fav);
         db.execSQL(his);
         Log.e(TAG, "onCreate: SUCCESS");

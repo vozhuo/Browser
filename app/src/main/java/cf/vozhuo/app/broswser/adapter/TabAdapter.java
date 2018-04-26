@@ -77,6 +77,8 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
         TextView tv_title;
         @BindView(R.id.tabClose)
         ImageView iv_close;
+        @BindView(R.id.iv_tab_icon)
+        ImageView iv_tab_icon;
         int position;
         Tab tab;
 
@@ -108,7 +110,9 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
         }
         public void bind(Tab tab, int position) {
             String title = tab.getTitle();
-            tv_title.setText(title + position);
+            tv_title.setText(title);
+            iv_tab_icon.setImageBitmap(tab.getFavicon());
+            iv_tab_icon.setOnClickListener(this);
             tv_title.setOnClickListener(this);
             iv_close.setOnClickListener(this);
             this.tab = tab;

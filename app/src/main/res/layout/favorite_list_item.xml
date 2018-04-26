@@ -38,15 +38,15 @@
 
     <ImageView
         android:id="@+id/iv_edit"
-        android:layout_width="wrap_content"
+        android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusable="true"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp"
+        android:padding="5dp"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/fav_web_title"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/edit" />
 </android.support.constraint.ConstraintLayout>

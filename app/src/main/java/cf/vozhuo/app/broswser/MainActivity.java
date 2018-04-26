@@ -8,8 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
@@ -135,6 +133,9 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public String getPageTitle() {
         return mActiveTab.getTitle();
     }
+    public byte[] getPageFavicon() {
+        return mActiveTab.getFaviconBytes();
+    }
     public void setNoImage(boolean noImage) { //智能无图设置
         for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
             WebSettings settings = tab.getWebView().getSettings();
@@ -169,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         mTabController = new TabController(this, this);
         mFactory = new BrowserWebViewFactory(this);
 
-        // 先建立一个tab标记主页dark
+        // 先建立一个tab标记主页
         if (mTabController.getTabCount() <= 0) {
            addTab(false);
         }
@@ -244,24 +245,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
         showTabs();
     }
 
-    private void showTabs() {
-        mTabAdapter.updateData(mTabController.getTabs());
-        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
-
-        LinearLayoutManager layout = new LinearLayoutManager(this);
-        layout.setStackFromEnd(true); //倒序
-//        layout.setReverseLayout(true);
-        mRecyclerView.setLayoutManager(layout);
-        mRecyclerView.setAdapter(mTabAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL) {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 20, 10,20);//设置item偏移
-            }
-        });
-    }
-
     private PopupWindow popupWindow;
     private void showPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -283,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 70);
+        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 75);
 
         ImageView iv_addTab = contentView.findViewById(R.id.addTab);
         iv_addTab.setOnClickListener(new View.OnClickListener() {
@@ -302,6 +285,24 @@ public class MainActivity extends AppCompatActivity implements UiController {
                     return true;
                 }
                 return false;
+            }
+        });
+    }
+
+    private void showTabs() {
+        mTabAdapter.updateData(mTabController.getTabs());
+        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
+
+        LinearLayoutManager layout = new LinearLayoutManager(this);
+        layout.setStackFromEnd(true); //倒序
+//        layout.setReverseLayout(true);
+        mRecyclerView.setLayoutManager(layout);
+        mRecyclerView.setAdapter(mTabAdapter);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL) {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                super.getItemOffsets(outRect, view, parent, state);
+                outRect.set(10, 20, 10,20);//设置item偏移
             }
         });
     }
@@ -337,8 +338,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
         Log.e(TAG, "closeTab: "+ tab.getId());
         mTabController.removeTab(tab);
         mTabAdapter.removeData(tab, false);
-
-
 //        mTabAdapter.updateData(mTabController.getTabs());
         if(mTabController.getTabCount() <= 0) {
             popupWindow.dismiss();
@@ -390,13 +389,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
     @Override
     public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
-//        if(mIsInMain) {
-//            searchProgress.setVisibility(View.GONE);
-//        } else {
+        if(mIsInMain) {
+            searchProgress.setVisibility(View.GONE);
+            siteTitle.setText(tab.getTitle());
+        } else {
             searchProgress.setVisibility(View.VISIBLE);
-//        }
-        siteTitle.setText(tab.getUrl());
-
+            siteTitle.setText(tab.getUrl());
+        }
         darkMode();
 
     }
@@ -416,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 favHisDao.updateTime(url, currentTime); //更新访问时间
             } else {
                 favHisDao.insert(null, mActiveTab.getTitle(),
-                        url, currentTime);
+                        url, currentTime, mActiveTab.getFaviconBytes());
             }
         }
 

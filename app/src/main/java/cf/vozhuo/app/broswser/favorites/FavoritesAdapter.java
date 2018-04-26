@@ -17,6 +17,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import cf.vozhuo.app.broswser.BitmapUtil;
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.RecyclerAdapter;
@@ -53,7 +54,7 @@ public class FavoritesAdapter extends RecyclerAdapter<FavHisEntity> {
         @BindView(R.id.fav_web_title)
         TextView tv;
         @BindView(R.id.iv_web_icon)
-        ImageView iv;
+        ImageView iv_web_icon;
         @BindView(R.id.iv_edit)
         ImageView iv_edit;
 
@@ -92,6 +93,9 @@ public class FavoritesAdapter extends RecyclerAdapter<FavHisEntity> {
                         @Override
                         public void onClick(View v) {
                             mController.delete(favorites);
+                            notifyItemRemoved(position);
+                            notifyItemRangeChanged(position, getItemCount());
+                            v.setVisibility(View.GONE);
                             popupWindow.dismiss();
                         }
                     });
@@ -108,6 +112,7 @@ public class FavoritesAdapter extends RecyclerAdapter<FavHisEntity> {
 
         void bind(FavHisEntity favorites, int position) {
             tv.setText(favorites.getTitle());
+            iv_web_icon.setImageBitmap(BitmapUtil.getImage(favorites.getFavicon()));
             tv.setOnClickListener(this);
             iv_edit.setOnClickListener(this);
             this.favorites = favorites;

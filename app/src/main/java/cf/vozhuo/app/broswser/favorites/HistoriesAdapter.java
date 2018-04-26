@@ -62,6 +62,8 @@ public class HistoriesAdapter extends RecyclerAdapter<FavHisEntity> {
             switch(v.getId()) {
                 case R.id.ib_his_close:
                     mController.delete(histories);
+                    notifyItemRemoved(position);
+                    notifyItemRangeChanged(position, getItemCount());
                     break;
                 case R.id.tv_his_title:
                     MainActivity.instance.load(histories.getUrl()); //调用MainActivity的方法

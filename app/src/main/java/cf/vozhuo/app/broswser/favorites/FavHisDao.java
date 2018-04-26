@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class FavHisDao {
         openHelper = new SQLiteHelper(context);
     }
     //增
-    public void insert(String _id, String title, String url, String time) {
+    public void insert(String _id, String title, String url, String time, byte[] favicon) {
         SQLiteDatabase db = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         Log.e(TAG, "insert: " + title + " " + url);
@@ -27,6 +28,7 @@ public class FavHisDao {
         values.put("title",title);
         values.put("url",url);
         values.put("time",time);
+        values.put("favicon", favicon);
         db.insert(TABLE, null, values);
     }
     //删
@@ -57,7 +59,7 @@ public class FavHisDao {
     //查询所有
     public List<FavHisEntity> queryAll() {
         SQLiteDatabase db = openHelper.getReadableDatabase();
-        String[] columns = {"_id","title","url","time"};
+        String[] columns = {"_id","title","url","time", "favicon"};
         Cursor cursor = db.query(TABLE, columns, null, null, null, null, null);
         if(cursor != null && cursor.getCount() > 0) {
             List<FavHisEntity> list = new ArrayList<>();
@@ -66,7 +68,8 @@ public class FavHisDao {
                 String title = cursor.getString(cursor.getColumnIndex("title"));
                 String url = cursor.getString(cursor.getColumnIndex("url"));
                 String time = cursor.getString(cursor.getColumnIndex("time"));
-                list.add(new FavHisEntity(_id,title,url,time));
+                byte[] favicon = cursor.getBlob(cursor.getColumnIndex("favicon"));
+                list.add(new FavHisEntity(_id,title,url,time, favicon));
             }
             cursor.close();
             return list;
