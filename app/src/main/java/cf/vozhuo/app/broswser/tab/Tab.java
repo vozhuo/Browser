@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -111,6 +112,12 @@ public class Tab {
         }
 
         @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            mWebViewController.shouldOverrideUrlLoading(Tab.this, view, url);
+            return super.shouldOverrideUrlLoading(view, url);
+        }
+
+        @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             syncCurrentState(view,url);
@@ -128,7 +135,6 @@ public class Tab {
         public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
             return super.onCreateWindow(view, isDialog, isUserGesture, resultMsg);
         }
-
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
             super.onProgressChanged(view, newProgress);
@@ -314,7 +320,7 @@ public class Tab {
         resume();
     }
     void putInBackground() {
-        Log.e(TAG,"putInBackground ------- mInForeground =:" + mInForeground);
+//        Log.e(TAG,"putInBackground ------- mInForeground =:" + mInForeground);
         if (!mInForeground) {
             return;
         }

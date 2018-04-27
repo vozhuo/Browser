@@ -151,7 +151,6 @@ public class TabController {
 
         // Remove t from our list of tabs.
         mTabs.remove(t);
-
         // Put the tab in the background only if it is the current one.
         if (current == t) {
             t.putInBackground();

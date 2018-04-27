@@ -1,5 +1,6 @@
 package cf.vozhuo.app.broswser;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -11,17 +12,20 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
@@ -45,6 +49,7 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
@@ -70,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private WebViewFactory mFactory;
     private boolean mIsInMain = true;
     private RecyclerView mRecyclerView;
+
+    @BindView(R.id.refreshLayout)
+    SwipeRefreshLayout refreshLayout;
 
     @BindView(R.id.tvPagerNum)
     TextView mTabNum;
@@ -105,17 +113,17 @@ public class MainActivity extends AppCompatActivity implements UiController {
         overridePendingTransition(0, 0);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 0 && resultCode == 1) {
-            String query = data.getStringExtra("query");
-            if(query != null) {
-                load(query);
-                data.removeExtra("query"); //解决返回时再次搜索的问题
-            }
-        }
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if(requestCode == 0 && resultCode == 1) {
+//            String query = data.getStringExtra("query");
+//            if(query != null) {
+//                load(query);
+//                data.removeExtra("query"); //解决返回时再次搜索的问题
+//            }
+//        }
+//    }
 
     @OnClick(R.id.ivMenu)
     public void showMainSettings(View view) {
@@ -192,15 +200,17 @@ public class MainActivity extends AppCompatActivity implements UiController {
         }
         nightCode = Base64.encodeToString(buffer, Base64.NO_WRAP);
 
-//        if(!NetworkUtil.isWifiConnected(this) && NetworkUtil.isNoImageOn(this)) {
-//            setNoImage(true);
-//            Log.e(TAG, "onCreate: 无图");
-//        } else {
-//            Log.e(TAG, "onCreate: 有图");
-//        }
-//        else {
-//            setNoImage(false);
-//        }
+
+        //配置refreshLayout
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshPage();
+            }
+        });
+        refreshLayout.setProgressViewOffset(false, 0, 100);
+        refreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary),
+                getResources().getColor(R.color.colorAccent));
     }
     private String nightCode;
     private void addTab(boolean second) {
@@ -220,25 +230,38 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mActiveTab.getWebView().canGoBack()) {
-                mActiveTab.getWebView().goBack();//返回上个页面
+            if (mActiveTab != null) {
+                if(mActiveTab.canGoBack()) {
+                    if(mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)){
+                        if(!mIsInMain) switchToMain();
+                    } else {
+                        if(mIsInMain) switchToTab();
+                    }
+                    mActiveTab.goBack();
+                }
             } else {
-                if (mTabController.getTabCount() == 1) {
-                    if(!mIsInMain) switchToMain();
+                if(!mIsInMain) {
+                    mActiveTab.clearTabData();
+                    switchToMain();
+                } else { //位于主页
                     if ((System.currentTimeMillis() - mExitTime) > 2000) {
                         Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
                         mExitTime = System.currentTimeMillis();// 更新mExitTime
                     } else {
                         System.exit(0);
                     }
-                } else mTabController.removeTab(mActiveTab);
+                }
             }
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
-
+    @OnLongClick(R.id.tvPagerNum)
+    boolean longClick(View view) {
+        addTab(true);
+        return true;
+    }
     @OnClick(R.id.tvPagerNum)
     void clickPagerNum(View view) {
         showPopupWindow(view);
@@ -288,6 +311,41 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
         });
     }
+    private int startX;
+    private int scrollSize = 100;
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        final WebView webView = mActiveTab.getWebView();
+
+        webView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if(webView.getScrollY() <= 0) { //WebView滑动到顶部时开启下拉刷新
+                            refreshLayout.setEnabled(true);
+                        } else {
+                            refreshLayout.setEnabled(false);
+                        }
+                        startX = (int) event.getX();
+//                    case MotionEvent.ACTION_UP:
+//                        int endX = (int) event.getX();
+//                        if(endX > startX && webView.canGoBack() && endX-startX > scrollSize){
+//                            webView.goBack();
+//                        }else if(endX<startX &&webView.canGoForward() && startX-endX > scrollSize){
+//                            webView.goForward();
+//                        }
+//                        break;
+                    default:
+                        break;
+                }
+                return false;
+            }
+
+        });
+        return super.dispatchTouchEvent(ev);
+    }
 
     private void showTabs() {
         mTabAdapter.updateData(mTabController.getTabs());
@@ -311,6 +369,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void selectTab(Tab tab) {
         removeWebView();
         mActiveTab = tab;
+
         mTabController.setActiveTab(mActiveTab);
         if(!mActiveTab.isBlank()) {
             updateSearchBar();
@@ -335,10 +394,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     @Override
     public void closeTab(Tab tab) {
-        Log.e(TAG, "closeTab: "+ tab.getId());
+        Log.e(TAG, "closeTab: "+ mTabController.getCurrentPosition());
+        if(mActiveTab == tab && mTabController.getTabCount()>1) { //移除当前Tab，选择上一个创建的Tab显示
+            selectTab(mTabController.getTab(
+                    mTabController.getCurrentPosition()-1));
+        }
         mTabController.removeTab(tab);
         mTabAdapter.removeData(tab, false);
-//        mTabAdapter.updateData(mTabController.getTabs());
+
         if(mTabController.getTabCount() <= 0) {
             popupWindow.dismiss();
             addTab(true);
@@ -387,6 +450,9 @@ public class MainActivity extends AppCompatActivity implements UiController {
             mContentWrapper.removeView(view);
         }
     }
+    boolean loadingFinished = true;
+    boolean redirect = false;
+
     @Override
     public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
         if(mIsInMain) {
@@ -397,30 +463,34 @@ public class MainActivity extends AppCompatActivity implements UiController {
             siteTitle.setText(tab.getUrl());
         }
         darkMode();
-
+        loadingFinished = false;
     }
+
+    @Override
+    public boolean shouldOverrideUrlLoading(Tab tab, WebView view, String url) {
+        if (!loadingFinished) {
+            redirect = true;
+        }
+        loadingFinished = false;
+        return true;
+    }
+
     private static final String TABLE = "histories";
     @Override
     public void onPageFinished(Tab tab) {
         searchProgress.setVisibility(View.INVISIBLE);
 
-        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        Boolean noTrack = sp.getBoolean("track_state", false);
-        if (!noTrack && NetworkUtil.isNetworkConnected(this)) {
-            FavHisDao favHisDao = new FavHisDao(this, TABLE);
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
-            String currentTime = format.format(new Date());
-            String url = mActiveTab.getUrl();
-            if(favHisDao.queryURL(url)) { //判断是否已记录相同的URL
-                favHisDao.updateTime(url, currentTime); //更新访问时间
-            } else {
-                favHisDao.insert(null, mActiveTab.getTitle(),
-                        url, currentTime, mActiveTab.getFaviconBytes());
-            }
+        if (!redirect) {
+            loadingFinished = true;
         }
 
+        if (loadingFinished && !redirect) {
+            Log.e(TAG, "Final");
+        } else {
+            redirect = false;
+        }
+        refreshLayout.setRefreshing(false);
         darkMode();
-//        mTabAdapter.notifyDataSetChanged();
     }
 
     public void darkMode() {
@@ -443,7 +513,28 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public void onReceivedTitle(Tab tab, String title) {
         siteTitle.setText(title);
+
         Log.e(TAG, "onReceivedTitle: "+ tab.getUrl() + " " + tab.getTitle());
+
+        saveAsHistory();
+    }
+
+    private void saveAsHistory() {
+        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        Boolean noTrack = sp.getBoolean("track_state", false);
+        if (!noTrack && NetworkUtil.isNetworkConnected(this) && !mIsInMain) {
+            FavHisDao favHisDao = new FavHisDao(this, TABLE);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
+            String currentTime = format.format(new Date());
+            String url = mActiveTab.getUrl();
+
+            if(favHisDao.queryURL(url)) { //判断是否已记录相同的URL
+                favHisDao.updateTime(url, currentTime); //更新访问时间
+            } else {
+                favHisDao.insert(null, mActiveTab.getTitle(),
+                        url, currentTime, mActiveTab.getFaviconBytes());
+            }
+        }
     }
 
     @Override

@@ -12,6 +12,7 @@ public interface WebViewController {
     WebViewFactory getWebViewFactory();
     void onSetWebView(Tab tab, WebView view);
     void onPageStarted(Tab tab, WebView webView, Bitmap favicon);
+    boolean shouldOverrideUrlLoading(Tab tab, WebView view, String url);
     void onPageFinished(Tab tab);
     void onProgressChanged(Tab tab);
     void onReceivedTitle(Tab tab,final String title);

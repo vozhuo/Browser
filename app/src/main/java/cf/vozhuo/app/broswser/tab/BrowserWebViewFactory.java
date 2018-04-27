@@ -42,8 +42,11 @@ public class BrowserWebViewFactory implements WebViewFactory {
         webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
         //支持多窗口
         webSettings.setSupportMultipleWindows(true);
+        //自适应屏幕
         webSettings.setUseWideViewPort(true);
+        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
         webSettings.setLoadWithOverviewMode(true);
+
         webSettings.setDefaultTextEncodingName("utf-8");
         String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + APP_CACHE_DIRNAME;
         //设置  Application Caches 缓存目录
@@ -75,17 +78,6 @@ public class BrowserWebViewFactory implements WebViewFactory {
         //设置UA
         sp = mContext.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         String ua = sp.getString("ua", "Android");
-//       switch (ua) {
-//           case "Android":
-//               ua_string = "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/43.0.2357.65 Mobile Safari/537.36";
-//               break;
-//           case "PC":
-//               ua_string = "";
-//               break;
-//           case "iPhone":
-//               ua_string = "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/603.1.23 (KHTML, like Gecko) Version/10.0 Mobile/14E5239e Safari/602.1";
-//               break;
-//       }
         webSettings.setUserAgentString(ua);
         //设置可以访问文件
         webSettings.setAllowFileAccess(true);
