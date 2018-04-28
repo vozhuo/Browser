@@ -500,7 +500,9 @@ public class Tab {
         mCurrentState.mTitle = view.getTitle();
 //        mCurrentState.mFavicon = view.getFavicon();
     }
-
+    public void add(String url) {
+        mBrowsedHistory.push(url);
+    }
     public void loadUrl(String url, Map<String, String> headers, boolean record) {
         if (mMainView != null) {
             mPageLoadProgress = INITIAL_PROGRESS;
@@ -525,18 +527,20 @@ public class Tab {
         boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
         boolean isSingle = mBrowsedHistory.size() == 1;
         Log.e(TAG,"canGoBack :: isSingle =:" + isSingle +",isBlank =:" + isBlank);
-        return mMainView != null ? !(isSingle && isBlank) : false;
+//        return mMainView != null ? !(isSingle && isBlank) : false;
+        return mMainView != null && !isBlank;
 
     }
     public boolean canGoForward() {
-        return mMainView != null ? mMainView.canGoForward() : false;
+        return mMainView != null && mMainView.canGoForward();
     }
 
     public void goBack() {
         Log.e(TAG,"goBack :: mMainView =:" + mMainView);
         if (mMainView != null) {
             mBrowsedHistory.pop();
-            mMainView.loadUrl(mBrowsedHistory.peek());
+//            mMainView.loadUrl(mBrowsedHistory.peek());
+            mMainView.goBack();
             for(int i = 0 ;i < mBrowsedHistory.size();i++){
                 Log.e(TAG,"goBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
             }

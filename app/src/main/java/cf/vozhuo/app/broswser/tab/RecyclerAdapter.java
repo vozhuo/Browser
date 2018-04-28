@@ -25,6 +25,10 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
         mData.addAll(data);
         notifyDataSetChanged();
     }
+    public void clearData() {
+        mData.clear();
+        notifyDataSetChanged();
+    }
     public void updateData(List<T> data){
         setData(data);
     }

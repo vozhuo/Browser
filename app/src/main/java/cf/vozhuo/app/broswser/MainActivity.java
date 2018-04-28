@@ -22,6 +22,7 @@ import android.support.v7.widget.RecyclerView;
 
 import android.util.Base64;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -211,6 +212,52 @@ public class MainActivity extends AppCompatActivity implements UiController {
         refreshLayout.setProgressViewOffset(false, 0, 100);
         refreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary),
                 getResources().getColor(R.color.colorAccent));
+
+        mGesture = new GestureDetector(new GestureDetector.OnGestureListener() {
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                return false;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1.getX() - e2.getX() > 120) { //左滑，前进
+                    Log.e(TAG, "onFling: 左");
+                    if(mActiveTab.canGoForward())
+                        Log.e(TAG, "onFling: 前进");
+                        mActiveTab.goForward();
+                        updateSearchBar();
+                }
+                if (e1.getX() - e2.getX() < -120) { //右滑，后退
+                    if(mActiveTab.canGoBack()) {
+                        Log.e(TAG, "onFling: 右");
+                        mActiveTab.goBack();
+                        updateSearchBar();
+                    }
+                }
+                return false;
+            }
+        });
     }
     private String nightCode;
     private void addTab(boolean second) {
@@ -227,35 +274,69 @@ public class MainActivity extends AppCompatActivity implements UiController {
         mTabController.removeTab(index);
     }
     private long mExitTime = 0;
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if(keyCode == KeyEvent.KEYCODE_BACK) {
+//            if (mActiveTab != null) {
+//                if(mActiveTab.canGoBack()) {
+//                    if(mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)){
+//                        if(!mIsInMain) switchToMain();
+//                    } else {
+//                        if(mIsInMain) switchToTab();
+//                    }
+//                    mActiveTab.goBack();
+//                    updateSearchBar();
+//                }
+//            } else {
+//                if(!mIsInMain) {
+//                    mActiveTab.clearTabData();
+//                    switchToMain();
+//                } else { //位于主页
+//                    if ((System.currentTimeMillis() - mExitTime) > 2000) {
+//                        Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+//                        mExitTime = System.currentTimeMillis();// 更新mExitTime
+//                    } else {
+//                        System.exit(0);
+//                    }
+//                }
+//            }
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, event);
+//    }
+
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mActiveTab != null) {
-                if(mActiveTab.canGoBack()) {
-                    if(mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)){
-                        if(!mIsInMain) switchToMain();
-                    } else {
-                        if(mIsInMain) switchToTab();
+    public void onBackPressed() {
+        if (mActiveTab != null) {
+            Log.e(TAG, "onBackPressed: "+ mActiveTab.canGoBack());
+            if (mActiveTab.canGoBack()) {
+
+                Log.e(TAG,mActiveTab.getCurrentUrl() +"---" + mActiveTab.getPreUrl());
+                if(mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)){
+                    if(!mIsInMain) {
+                        // mActiveTab.popBrowsedHistory();
+                        switchToMain();
                     }
-                    mActiveTab.goBack();
+                } else {
+                    if(mIsInMain){
+                        switchToTab();
+                    }
                 }
+                Log.e(TAG,"isInMan = ;" + mIsInMain);
+                mActiveTab.goBack();
+                updateSearchBar();
+                return;
             } else {
                 if(!mIsInMain) {
                     mActiveTab.clearTabData();
                     switchToMain();
-                } else { //位于主页
-                    if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                        Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
-                        mExitTime = System.currentTimeMillis();// 更新mExitTime
-                    } else {
-                        System.exit(0);
-                    }
+                    return;
                 }
             }
-            return true;
         }
-        return super.onKeyDown(keyCode, event);
+        super.onBackPressed();
     }
+
 
     @OnLongClick(R.id.tvPagerNum)
     boolean longClick(View view) {
@@ -313,6 +394,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
     private int startX;
     private int scrollSize = 100;
+    private GestureDetector mGesture;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -328,15 +410,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
                         } else {
                             refreshLayout.setEnabled(false);
                         }
-                        startX = (int) event.getX();
-//                    case MotionEvent.ACTION_UP:
-//                        int endX = (int) event.getX();
-//                        if(endX > startX && webView.canGoBack() && endX-startX > scrollSize){
-//                            webView.goBack();
-//                        }else if(endX<startX &&webView.canGoForward() && startX-endX > scrollSize){
-//                            webView.goForward();
-//                        }
-//                        break;
+                        break;
                     default:
                         break;
                 }
@@ -344,6 +418,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
 
         });
+        mGesture.onTouchEvent(ev);
         return super.dispatchTouchEvent(ev);
     }
 
@@ -411,7 +486,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void load(String url) {
         if (mActiveTab != null) {
             mActiveTab.clearWebHistory();
-            mActiveTab.loadUrl(url, null,true);
+            mActiveTab.loadUrl(url, null,false);
             switchToTab();
         }
     }
@@ -472,25 +547,29 @@ public class MainActivity extends AppCompatActivity implements UiController {
             redirect = true;
         }
         loadingFinished = false;
+//        mActiveTab.loadUrl(url, null, true);
         return true;
     }
 
+    private boolean canSave = false;
     private static final String TABLE = "histories";
     @Override
     public void onPageFinished(Tab tab) {
         searchProgress.setVisibility(View.INVISIBLE);
-
         if (!redirect) {
             loadingFinished = true;
         }
-
         if (loadingFinished && !redirect) {
-            Log.e(TAG, "Final");
+
+            tab.add(tab.getUrl());
+            Log.e(TAG, "saveAsHistory");
+            saveAsHistory(tab);
+            loadingFinished = false;
         } else {
             redirect = false;
         }
         refreshLayout.setRefreshing(false);
-        darkMode();
+//        darkMode();
     }
 
     public void darkMode() {
@@ -506,33 +585,29 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public void onProgressChanged(Tab tab) {
         searchProgress.setProgress(tab.getPageLoadProgress());
-
         darkMode();
     }
 
     @Override
     public void onReceivedTitle(Tab tab, String title) {
         siteTitle.setText(title);
-
         Log.e(TAG, "onReceivedTitle: "+ tab.getUrl() + " " + tab.getTitle());
-
-        saveAsHistory();
     }
 
-    private void saveAsHistory() {
+    private void saveAsHistory(Tab tab) {
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean noTrack = sp.getBoolean("track_state", false);
         if (!noTrack && NetworkUtil.isNetworkConnected(this) && !mIsInMain) {
             FavHisDao favHisDao = new FavHisDao(this, TABLE);
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());
-            String url = mActiveTab.getUrl();
-
+            String url = tab.getUrl();
             if(favHisDao.queryURL(url)) { //判断是否已记录相同的URL
                 favHisDao.updateTime(url, currentTime); //更新访问时间
             } else {
-                favHisDao.insert(null, mActiveTab.getTitle(),
-                        url, currentTime, mActiveTab.getFaviconBytes());
+                if(!tab.getTitle().equals("about:blank"))
+                    favHisDao.insert(null, tab.getTitle(),
+                        url, currentTime, tab.getFaviconBytes());
             }
         }
     }

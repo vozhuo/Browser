@@ -37,6 +37,7 @@ public class HistoryFragment extends Fragment implements HistoriesController{
     @OnClick(R.id.iv_clear_history)
     void onClick() {
         deleteHistory();
+        mAdapter.clearData();
         Toast.makeText(getActivity(), "清理成功", Toast.LENGTH_SHORT).show();
     }
     HistoriesAdapter mAdapter;
