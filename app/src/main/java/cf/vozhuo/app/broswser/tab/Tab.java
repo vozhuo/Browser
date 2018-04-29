@@ -85,6 +85,7 @@ public class Tab {
     private boolean mInForeground;
     private static Paint sAlphaPaint = new Paint();
     private Stack<String> mBrowsedHistory = new Stack<>();
+    private Stack<String> mForwardHistory = new Stack<>();
     static {
         sAlphaPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         sAlphaPaint.setColor(Color.TRANSPARENT);
@@ -187,7 +188,7 @@ public class Tab {
         }
         setWebView(view);
         mBrowsedHistory.push(DEFAULT_BLANK_URL);
-        currentPos = mBrowsedHistory.size();
+//        currentPos = mBrowsedHistory.size();
     }
 
     private void restoreState(Bundle state){
@@ -361,11 +362,11 @@ public class Tab {
 //        for(int i = 0 ;i < mBrowsedHistory.size();i++){
 //            Log.e(TAG,"getCurrentUrl :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i));
 //        }
-        return mBrowsedHistory.elementAt(currentPos - 1);
+        return mBrowsedHistory.peek();
     }
     public String getPreUrl(){
-//        int size = mBrowsedHistory.size();
-        int pre = currentPos - 2;
+        int size = mBrowsedHistory.size();
+        int pre = size - 2;
         if(pre >= 0){
             return mBrowsedHistory.elementAt(pre);
         }
@@ -419,6 +420,9 @@ public class Tab {
         mMainView.clearHistory();
         mMainView.clearCache(true);
         mMainView.loadUrl(DEFAULT_BLANK_URL);
+    }
+    public void pushForwardHistory(String url) {
+        mForwardHistory.push(url);
     }
     public void popBrowsedHistory(){
         mBrowsedHistory.pop();
@@ -508,7 +512,8 @@ public class Tab {
     }
     public void add(String url) {
         mBrowsedHistory.push(url);
-        currentPos = mBrowsedHistory.size();
+//        currentPos = mBrowsedHistory.size();
+        if(!mForwardHistory.isEmpty()) mForwardHistory.clear();
     }
     public void loadUrl(String url, Map<String, String> headers, boolean record) {
         if (mMainView != null) {
@@ -527,23 +532,24 @@ public class Tab {
         }
     }
 
-    private int currentPos;
-
-    public int getCurrentPos() {
-        return currentPos;
-    }
-
-    public void setCurrentPos(int currentPos) {
-        this.currentPos = currentPos;
-    }
+//    private int currentPos;
+//
+//    public int getCurrentPos() {
+//        return currentPos;
+//    }
+//
+//    public void setCurrentPos(int currentPos) {
+//        this.currentPos = currentPos;
+//    }
 
     public boolean canGoBack() {
 //        for(int i = 0 ;i < mBrowsedHistory.size();i++){
 //            Log.e(TAG,"canGoBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
 //        }
-        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.elementAt(currentPos - 1));
-        boolean isSingle = (currentPos == 1);
-        Log.e(TAG,"canGoBack :: " + currentPos);
+        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
+        boolean isSingle = mBrowsedHistory.size() == 1;
+
+//        Log.e(TAG,"canGoBack :: " + currentPos);
         return mMainView != null && !(isSingle && isBlank);
 //        return mMainView != null && !isBlank;
 
@@ -552,21 +558,31 @@ public class Tab {
     public boolean canGoForward() {
 //        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
 //        boolean isSingle = (mBrowsedHistory.size() == 1);
-        boolean isLast = (currentPos == mBrowsedHistory.size());
-        Log.e(TAG, "canGoForward: " + currentPos + mBrowsedHistory.size());
-        return mMainView != null && !isLast;
+//        boolean isLast = (currentPos == mBrowsedHistory.size());
+
+        return mMainView != null && !mForwardHistory.isEmpty();
     }
 
-    public boolean isGoBack = false;
-    public boolean isBack() {
+    private boolean isGoBack = false;
+
+    public void setGoBack(boolean goBack) {
+        isGoBack = goBack;
+    }
+
+    public boolean isGoBack() {
         return isGoBack;
     }
+
     public void goBack() {
         if (mMainView != null) {
-//            mBrowsedHistory.pop();
-            currentPos -= 1;
-            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.elementAt(currentPos - 1));
-            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
+
+            mForwardHistory.push(mBrowsedHistory.peek());
+            mBrowsedHistory.pop();
+
+//            currentPos -= 1;
+//            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.peek());
+//            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
+            mMainView.loadUrl(mBrowsedHistory.peek());
             isGoBack = true;
 //            WebBackForwardList list = mMainView.copyBackForwardList();
 //            String url;
@@ -583,9 +599,12 @@ public class Tab {
 
     public void goForward() {
         if (mMainView != null) {
-            currentPos += 1;
-            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.elementAt(currentPos - 1));
-            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
+//            currentPos += 1;
+//            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.elementAt(currentPos - 1));
+//            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
+            mMainView.loadUrl(mForwardHistory.peek());
+            mBrowsedHistory.push(mForwardHistory.peek());
+            mForwardHistory.pop();
             isGoBack = true;
         }
     }

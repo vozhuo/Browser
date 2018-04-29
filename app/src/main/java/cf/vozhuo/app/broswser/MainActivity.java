@@ -241,9 +241,12 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 if (e1.getX() - e2.getX() > 150) { //左滑，前进
                     Log.e(TAG, "onFling: 左 " + mActiveTab.canGoForward());
                     if(mActiveTab.canGoForward()) {
-                        if(mIsInMain) switchToTab();
+                        if(mIsInMain) {
+                            switchToTab();
+                        }
                         mActiveTab.goForward();
                         updateSearchBar();
+                        return true;
                     }
                 }
                 if (e1.getX() - e2.getX() < -150) { //右滑，后退
@@ -253,13 +256,15 @@ public class MainActivity extends AppCompatActivity implements UiController {
                         Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
                         if (mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)) { //到达最前页
                             if (!mIsInMain) {
-                                mActiveTab.setCurrentPos(mActiveTab.getCurrentPos() - 1);
+                                mActiveTab.pushForwardHistory(mActiveTab.getCurrentUrl());
+                                mActiveTab.popBrowsedHistory();
                                 switchToMain(); //返回至主页
                             }
                         } else { //正常返回
                             mActiveTab.goBack();
                         }
                         updateSearchBar();
+                        return true;
                     }
                 }
                 return false;
@@ -438,6 +443,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         if (progress == 100) {
             searchProgress.setVisibility(View.GONE);
         }
+        Log.e(TAG, "updateSearchBar: "+ mActiveTab.getTitle());
         siteTitle.setText(mActiveTab.getTitle());
     }
 
@@ -482,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             mContentWrapper.addView(view, lp);
         }
         siteTitle.setVisibility(View.VISIBLE);
+        siteTitle.setText(view.getTitle());
         mIsInMain = false;
     }
     private void switchToMain(){
@@ -508,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void onPageStarted(Tab tab, WebView webView, Bitmap favicon) {
         if(mIsInMain) {
             searchProgress.setVisibility(View.GONE);
-            siteTitle.setText(tab.getTitle());
+//            siteTitle.setText(tab.getTitle());
         } else {
             searchProgress.setVisibility(View.VISIBLE);
             siteTitle.setText(tab.getUrl());
@@ -519,8 +526,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     @Override
     public boolean shouldOverrideUrlLoading(Tab tab, WebView view, String url) {
-        Log.e(TAG, "shouldOverrideUrlLoading: " + redirect + loadingFinished);
-
         if (!loadingFinished) {
             redirect = true;
         }
@@ -564,14 +569,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
     public void onReceivedTitle(Tab tab, String title) {
         siteTitle.setText(title);
         Log.e(TAG, "onReceivedTitle: " + tab.getUrl() + " " + tab.getTitle() + redirect + isReload);
-        if(!redirect && !isReload &&!tab.isGoBack) {
+        if(!redirect && !isReload &&!tab.isGoBack()) {
             Log.e(TAG, "ADD");
             tab.add(tab.getUrl());
             saveAsHistory(tab);
         }
         tab.showHistory();
         isReload = false;
-        tab.isGoBack = false;
+        tab.setGoBack(false);
     }
 
     private void saveAsHistory(Tab tab) {
