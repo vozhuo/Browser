@@ -187,6 +187,7 @@ public class Tab {
         }
         setWebView(view);
         mBrowsedHistory.push(DEFAULT_BLANK_URL);
+        currentPos = mBrowsedHistory.size();
     }
 
     private void restoreState(Bundle state){
@@ -357,14 +358,14 @@ public class Tab {
         return mCurrentState.checkUrlNotNull();
     }
     public String getCurrentUrl(){
-        for(int i = 0 ;i < mBrowsedHistory.size();i++){
-            Log.e(TAG,"getCurrentUrl :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i));
-        }
-        return mBrowsedHistory.peek();
+//        for(int i = 0 ;i < mBrowsedHistory.size();i++){
+//            Log.e(TAG,"getCurrentUrl :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i));
+//        }
+        return mBrowsedHistory.elementAt(currentPos - 1);
     }
     public String getPreUrl(){
-        int size = mBrowsedHistory.size();
-        int pre = size - 2;
+//        int size = mBrowsedHistory.size();
+        int pre = currentPos - 2;
         if(pre >= 0){
             return mBrowsedHistory.elementAt(pre);
         }
@@ -422,8 +423,13 @@ public class Tab {
     public void popBrowsedHistory(){
         mBrowsedHistory.pop();
     }
-    public void clearTabData(){
+    public void showHistory(){
+        for(int i = 0 ;i < mBrowsedHistory.size();i++){
+            Log.e(TAG,"SHOW " + mBrowsedHistory.elementAt(i));
+        }
+    }
 
+    public void clearTabData(){
         mCurrentState.mUrl = DEFAULT_BLANK_URL;
         mCurrentState.mOriginalUrl = DEFAULT_BLANK_URL;
         mCurrentState.mTitle = mContext.getString(R.string.defaultWebTitle);
@@ -502,6 +508,7 @@ public class Tab {
     }
     public void add(String url) {
         mBrowsedHistory.push(url);
+        currentPos = mBrowsedHistory.size();
     }
     public void loadUrl(String url, Map<String, String> headers, boolean record) {
         if (mMainView != null) {
@@ -520,28 +527,55 @@ public class Tab {
         }
     }
 
+    private int currentPos;
+
+    public int getCurrentPos() {
+        return currentPos;
+    }
+
+    public void setCurrentPos(int currentPos) {
+        this.currentPos = currentPos;
+    }
+
     public boolean canGoBack() {
-        for(int i = 0 ;i < mBrowsedHistory.size();i++){
-            Log.e(TAG,"canGoBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
-        }
-        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
-        boolean isSingle = mBrowsedHistory.size() == 1;
-        Log.e(TAG,"canGoBack :: isSingle =:" + isSingle +",isBlank =:" + isBlank);
-//        return mMainView != null ? !(isSingle && isBlank) : false;
-        return mMainView != null && !isBlank;
+//        for(int i = 0 ;i < mBrowsedHistory.size();i++){
+//            Log.e(TAG,"canGoBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
+//        }
+        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.elementAt(currentPos - 1));
+        boolean isSingle = (currentPos == 1);
+        Log.e(TAG,"canGoBack :: " + currentPos);
+        return mMainView != null && !(isSingle && isBlank);
+//        return mMainView != null && !isBlank;
 
     }
+
     public boolean canGoForward() {
-        return mMainView != null && mMainView.canGoForward();
+//        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
+//        boolean isSingle = (mBrowsedHistory.size() == 1);
+        boolean isLast = (currentPos == mBrowsedHistory.size());
+        Log.e(TAG, "canGoForward: " + currentPos + mBrowsedHistory.size());
+        return mMainView != null && !isLast;
     }
 
+    public boolean isGoBack = false;
+    public boolean isBack() {
+        return isGoBack;
+    }
     public void goBack() {
-        Log.e(TAG,"goBack :: mMainView =:" + mMainView);
         if (mMainView != null) {
-            mBrowsedHistory.pop();
-//            mMainView.loadUrl(mBrowsedHistory.peek());
-            mMainView.goBack();
-            for(int i = 0 ;i < mBrowsedHistory.size();i++){
+//            mBrowsedHistory.pop();
+            currentPos -= 1;
+            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.elementAt(currentPos - 1));
+            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
+            isGoBack = true;
+//            WebBackForwardList list = mMainView.copyBackForwardList();
+//            String url;
+//            for (int i = 0; i < list.getSize(); i++) {
+//                url = list.getItemAtIndex(i).getUrl();
+//                Log.e(TAG, "WebBackForwardList: 第 " + i +"项  :" + url);
+//            }
+//            mMainView.goBack();
+            for(int i = 0 ;i < mBrowsedHistory.size();i++) {
                 Log.e(TAG,"goBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
             }
         }
@@ -549,7 +583,10 @@ public class Tab {
 
     public void goForward() {
         if (mMainView != null) {
-            mMainView.goForward();
+            currentPos += 1;
+            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.elementAt(currentPos - 1));
+            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
+            isGoBack = true;
         }
     }
 

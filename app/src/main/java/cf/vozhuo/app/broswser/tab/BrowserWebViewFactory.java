@@ -51,6 +51,8 @@ public class BrowserWebViewFactory implements WebViewFactory {
         String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + APP_CACHE_DIRNAME;
         //设置  Application Caches 缓存目录
         webSettings.setAppCachePath(cacheDirPath);
+        //设置缓存模式
+//        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
         SharedPreferences sp;
         Boolean state;

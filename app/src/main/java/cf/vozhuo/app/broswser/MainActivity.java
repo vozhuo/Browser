@@ -29,11 +29,13 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
@@ -77,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private boolean mIsInMain = true;
     private RecyclerView mRecyclerView;
 
+//    @BindView(R.id.iv_gesture_back)
+//    ImageView iv_gesture_back;
+
     @BindView(R.id.refreshLayout)
     SwipeRefreshLayout refreshLayout;
 
@@ -114,27 +119,19 @@ public class MainActivity extends AppCompatActivity implements UiController {
         overridePendingTransition(0, 0);
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if(requestCode == 0 && resultCode == 1) {
-//            String query = data.getStringExtra("query");
-//            if(query != null) {
-//                load(query);
-//                data.removeExtra("query"); //解决返回时再次搜索的问题
-//            }
-//        }
-//    }
-
     @OnClick(R.id.ivMenu)
     public void showMainSettings(View view) {
         FragmentManager fm = getSupportFragmentManager();
         BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
         bottomDialogFragment.show(fm, "fragment_bottom_dialog");
     }
+    private boolean isReload = false;
     //for Fragment use
     public void refreshPage() {
-        if(mActiveTab != null) mActiveTab.reloadPage();
+        if(mActiveTab != null) {
+            mActiveTab.reloadPage();
+            isReload = true;
+        }
     }
     public String getPageUrl() {
         return mActiveTab.getUrl();
@@ -209,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 refreshPage();
             }
         });
-        refreshLayout.setProgressViewOffset(false, 0, 100);
+        refreshLayout.setProgressViewOffset(true, 0, 100);
         refreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorPrimary),
                 getResources().getColor(R.color.colorAccent));
 
@@ -241,17 +238,27 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (e1.getX() - e2.getX() > 120) { //左滑，前进
-                    Log.e(TAG, "onFling: 左");
-                    if(mActiveTab.canGoForward())
-                        Log.e(TAG, "onFling: 前进");
+                if (e1.getX() - e2.getX() > 150) { //左滑，前进
+                    Log.e(TAG, "onFling: 左 " + mActiveTab.canGoForward());
+                    if(mActiveTab.canGoForward()) {
+                        if(mIsInMain) switchToTab();
                         mActiveTab.goForward();
                         updateSearchBar();
+                    }
                 }
-                if (e1.getX() - e2.getX() < -120) { //右滑，后退
-                    if(mActiveTab.canGoBack()) {
-                        Log.e(TAG, "onFling: 右");
-                        mActiveTab.goBack();
+                if (e1.getX() - e2.getX() < -150) { //右滑，后退
+                    Log.e(TAG, "onFling: " + mActiveTab.canGoBack());
+                    if (mActiveTab.canGoBack()) {
+
+                        Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
+                        if (mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)) { //到达最前页
+                            if (!mIsInMain) {
+                                mActiveTab.setCurrentPos(mActiveTab.getCurrentPos() - 1);
+                                switchToMain(); //返回至主页
+                            }
+                        } else { //正常返回
+                            mActiveTab.goBack();
+                        }
                         updateSearchBar();
                     }
                 }
@@ -273,70 +280,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private void removeTab(int index) {
         mTabController.removeTab(index);
     }
-    private long mExitTime = 0;
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if(keyCode == KeyEvent.KEYCODE_BACK) {
-//            if (mActiveTab != null) {
-//                if(mActiveTab.canGoBack()) {
-//                    if(mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)){
-//                        if(!mIsInMain) switchToMain();
-//                    } else {
-//                        if(mIsInMain) switchToTab();
-//                    }
-//                    mActiveTab.goBack();
-//                    updateSearchBar();
-//                }
-//            } else {
-//                if(!mIsInMain) {
-//                    mActiveTab.clearTabData();
-//                    switchToMain();
-//                } else { //位于主页
-//                    if ((System.currentTimeMillis() - mExitTime) > 2000) {
-//                        Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
-//                        mExitTime = System.currentTimeMillis();// 更新mExitTime
-//                    } else {
-//                        System.exit(0);
-//                    }
-//                }
-//            }
-//            return true;
-//        }
-//        return super.onKeyDown(keyCode, event);
-//    }
-
-    @Override
-    public void onBackPressed() {
-        if (mActiveTab != null) {
-            Log.e(TAG, "onBackPressed: "+ mActiveTab.canGoBack());
-            if (mActiveTab.canGoBack()) {
-
-                Log.e(TAG,mActiveTab.getCurrentUrl() +"---" + mActiveTab.getPreUrl());
-                if(mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)){
-                    if(!mIsInMain) {
-                        // mActiveTab.popBrowsedHistory();
-                        switchToMain();
-                    }
-                } else {
-                    if(mIsInMain){
-                        switchToTab();
-                    }
-                }
-                Log.e(TAG,"isInMan = ;" + mIsInMain);
-                mActiveTab.goBack();
-                updateSearchBar();
-                return;
-            } else {
-                if(!mIsInMain) {
-                    mActiveTab.clearTabData();
-                    switchToMain();
-                    return;
-                }
-            }
-        }
-        super.onBackPressed();
-    }
-
 
     @OnLongClick(R.id.tvPagerNum)
     boolean longClick(View view) {
@@ -420,6 +363,37 @@ public class MainActivity extends AppCompatActivity implements UiController {
         });
         mGesture.onTouchEvent(ev);
         return super.dispatchTouchEvent(ev);
+    }
+    private long mExitTime = 0;
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if(event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (mActiveTab != null) {
+                if (mActiveTab.canGoBack()) {
+                    Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
+                    if (mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)) { //到达最前页
+                        if (!mIsInMain) {
+                            switchToMain(); //返回至主页
+                        }
+                    } else { //正常返回
+                        mActiveTab.goBack();
+                    }
+                    updateSearchBar();
+                    return true;
+                } else {
+
+                    if ((System.currentTimeMillis() - mExitTime) > 2000) {
+                        Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                        mExitTime = System.currentTimeMillis();// 更新mExitTime
+                        return true;
+                    } else {
+                        Log.e(TAG, "dispatchKeyEvent: ");
+                        System.exit(0);
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     private void showTabs() {
@@ -507,6 +481,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
             mContentWrapper.addView(view, lp);
         }
+        siteTitle.setVisibility(View.VISIBLE);
         mIsInMain = false;
     }
     private void switchToMain(){
@@ -517,6 +492,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         removeWebView();
         mActiveTab.stopLoading();
         mIsInMain = true;
+        siteTitle.setVisibility(View.INVISIBLE);
     }
     //移除当前WebView
     private void removeWebView() {
@@ -543,15 +519,15 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     @Override
     public boolean shouldOverrideUrlLoading(Tab tab, WebView view, String url) {
+        Log.e(TAG, "shouldOverrideUrlLoading: " + redirect + loadingFinished);
+
         if (!loadingFinished) {
             redirect = true;
         }
         loadingFinished = false;
-//        mActiveTab.loadUrl(url, null, true);
+//        tab.loadUrl(url, null, false); //解决goBack无效的问题
         return true;
     }
-
-    private boolean canSave = false;
     private static final String TABLE = "histories";
     @Override
     public void onPageFinished(Tab tab) {
@@ -561,10 +537,6 @@ public class MainActivity extends AppCompatActivity implements UiController {
         }
         if (loadingFinished && !redirect) {
 
-            tab.add(tab.getUrl());
-            Log.e(TAG, "saveAsHistory");
-            saveAsHistory(tab);
-            loadingFinished = false;
         } else {
             redirect = false;
         }
@@ -591,7 +563,15 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public void onReceivedTitle(Tab tab, String title) {
         siteTitle.setText(title);
-        Log.e(TAG, "onReceivedTitle: "+ tab.getUrl() + " " + tab.getTitle());
+        Log.e(TAG, "onReceivedTitle: " + tab.getUrl() + " " + tab.getTitle() + redirect + isReload);
+        if(!redirect && !isReload &&!tab.isGoBack) {
+            Log.e(TAG, "ADD");
+            tab.add(tab.getUrl());
+            saveAsHistory(tab);
+        }
+        tab.showHistory();
+        isReload = false;
+        tab.isGoBack = false;
     }
 
     private void saveAsHistory(Tab tab) {
