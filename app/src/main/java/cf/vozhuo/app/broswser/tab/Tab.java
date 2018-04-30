@@ -511,7 +511,7 @@ public class Tab {
 //        mCurrentState.mFavicon = view.getFavicon();
     }
     public void add(String url) {
-        mBrowsedHistory.push(url);
+        if(!mBrowsedHistory.peek().equals(url)) mBrowsedHistory.push(url);
 //        currentPos = mBrowsedHistory.size();
         if(!mForwardHistory.isEmpty()) mForwardHistory.clear();
     }

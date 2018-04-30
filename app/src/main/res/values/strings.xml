@@ -14,6 +14,7 @@
 
     <string name="title_bar_loading">loading</string>
     <string name="setting">设置</string>
+    <string name="download">下载</string>
     <string name="defaultBrowser">设置默认浏览器</string>
     <string name="close">CLOSE</string>
     <string name="untitled">无标题</string>

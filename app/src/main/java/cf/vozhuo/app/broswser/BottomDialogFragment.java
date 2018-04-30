@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 
@@ -79,6 +80,7 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         view.findViewById(R.id.track).setOnClickListener(this);
         view.findViewById(R.id.refresh).setOnClickListener(this);
         view.findViewById(R.id.dark).setOnClickListener(this);
+        view.findViewById(R.id.download).setOnClickListener(this);
 
         refresh = view.findViewById(R.id.refresh);
         //检测智能无图模式是否开启
@@ -111,7 +113,8 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         cb_dark = view.findViewById(R.id.dark);
         cb_dark.setChecked(state);
         //刷新、收藏Checkbox是否可点击
-        if(((MainActivity)getActivity()).getPageUrl().equals("file:///android_asset/index.html")) {
+        Log.e(TAG, "onViewCreated: " +((MainActivity)getActivity()).getPageUrl());
+        if(((MainActivity)getActivity()).getPageUrl().isEmpty()) {
             refresh.setEnabled(false);
             collect.setEnabled(false);
         }
@@ -151,6 +154,11 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
             case R.id.dark:
                 Log.e(TAG, "DarkClick");
                 darkClick();
+                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                break;
+            case R.id.download:
+                Log.e(TAG, "DownloadClick");
+                startActivity(new Intent(getActivity(), DownloadActivity.class));
                 getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
                 break;
         }

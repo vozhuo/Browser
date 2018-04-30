@@ -10,7 +10,9 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +32,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.webkit.CookieManager;
+import android.webkit.DownloadListener;
+import android.webkit.URLUtil;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -42,9 +47,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.arialyy.annotations.Download;
+import com.arialyy.aria.core.Aria;
+import com.arialyy.aria.core.download.DownloadTask;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -54,6 +65,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
+import cf.vozhuo.app.broswser.download.DownloadActivity;
+import cf.vozhuo.app.broswser.download.DownloadDao;
+import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 import cf.vozhuo.app.broswser.tab.BrowserWebViewFactory;
@@ -270,7 +284,53 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 return false;
             }
         });
+
+        mActiveTab.getWebView().setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
+                String fileName = URLUtil.guessFileName(url, contentDisposition, mimeType);
+
+                Log.e("onDownloadStart", "url===" + url + "---contentDisposition=" + contentDisposition +  "---mimitype" + fileName);
+                NoticeDialogFragment noticeDialogFragment = new NoticeDialogFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("download", "download");
+                bundle.putString("fileName", URLUtil.guessFileName(url, contentDisposition, mimeType));
+                bundle.putString("fileSize", DownloadUtil.getFileSize(contentLength));
+                bundle.putString("url", url);
+                noticeDialogFragment.setArguments(bundle);
+                noticeDialogFragment.show(getSupportFragmentManager(), "fragment_notice_dialog");
+
+                fileUrl = url;
+                size = DownloadUtil.getFileSize(contentLength);
+            }
+        });
     }
+
+
+    private String size;
+    private String fileUrl;
+    public void doDownload(String fileName, String url) {
+        String destPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                .getAbsolutePath() + File.separator + fileName;
+        Log.e(TAG, "doDownload: "+ destPath + size + fileUrl);
+//        new DownloadTask().execute(url, destPath);
+        Aria.download(this)
+                .load(url)
+                .setFilePath(destPath)
+                .start();
+
+        DownloadDao downloadDao = new DownloadDao(this);
+        downloadDao.insert(null, url, fileName, size ,destPath);
+
+        Snackbar.make(mContentWrapper, "正在下载",
+                Snackbar.LENGTH_LONG).setAction("点击查看", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, DownloadActivity.class));
+            }
+        }).show();
+    }
+
     private String nightCode;
     private void addTab(boolean second) {
         if(second) switchToMain();
@@ -547,6 +607,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
         }
         refreshLayout.setRefreshing(false);
 //        darkMode();
+        CookieManager cookieManager = CookieManager.getInstance();
+        String cookieStr = cookieManager.getCookie(tab.getUrl()); // 获取到cookie字符串值
     }
 
     public void darkMode() {

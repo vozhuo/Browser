@@ -130,7 +130,7 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
     @Override
     public void showFragment(int position) {
         FragmentManager fm = getSupportFragmentManager();
-        NoticeDialogFragment bottomDialogFragment = new NoticeDialogFragment();
+        NoticeDialogFragment noticeDialogFragment = new NoticeDialogFragment();
         Bundle bundle = new Bundle();
         if(position == 1) {
             bundle.putString("search_engine", "search_engine");
@@ -139,7 +139,7 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
         } else if(position == 3) {
             bundle.putString("clear", "clear");
         }
-        bottomDialogFragment.setArguments(bundle);
-        bottomDialogFragment.show(fm, "fragment_notice_dialog");
+        noticeDialogFragment.setArguments(bundle);
+        noticeDialogFragment.show(fm, "fragment_notice_dialog");
     }
 }

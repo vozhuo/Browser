@@ -2,13 +2,18 @@ package cf.vozhuo.app.broswser;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -20,12 +25,15 @@ import android.webkit.CookieSyncManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.HistoryFragment;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 
@@ -34,6 +42,13 @@ import static android.content.ContentValues.TAG;
 public class NoticeDialogFragment extends DialogFragment implements View.OnClickListener {
     private TextView tv_notice;
     private LinearLayout notice_content;
+    MainActivity activity;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        activity = (MainActivity)context;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,7 +79,7 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         tv_notice = view.findViewById(R.id.tv_notice);
         notice_content = view.findViewById(R.id.notice_content);
-        Bundle bundle = getArguments();
+        final Bundle bundle = getArguments();
         String []engine = new String[]{"百度", "谷歌", "必应", "搜狗"};
         String []ua = new String[]{"Android", "PC", "iPhone"};
         String []clear = new String[]{"搜索记录", "帐号密码", "Cookies", "历史记录", "缓存文件"};
@@ -99,7 +114,7 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putString("search_engine", btn.getText().toString());
                         editor.apply();
-                        getFragmentManager().beginTransaction().remove(NoticeDialogFragment.this).commit();
+                        dismiss();
                     }
                 });
 
@@ -133,7 +148,7 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putString("ua", btn.getText().toString());
                         editor.apply();
-                        getFragmentManager().beginTransaction().remove(NoticeDialogFragment.this).commit();
+                        dismiss();
                     }
                 });
             } else if (bundle.getString("clear") != null) {
@@ -158,7 +173,6 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                 submit.setBackgroundResource(R.drawable.shape_button);
                 notice_content.addView(submit, lp);
 
-
                 submit.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -175,11 +189,65 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                         } else if(isCheck[4]) {
                             MainActivity.ClearCache();
                         }
-                        getFragmentManager().beginTransaction().remove(NoticeDialogFragment.this).commit();
-                        Toast.makeText(getContext(), "清理成功",  Toast.LENGTH_LONG).show();
+                        dismiss();
+                        Toast.makeText(getContext(), "清理成功",  Toast.LENGTH_SHORT).show();
                     }
                 });
 
+            } else if(bundle.getString("download") != null) { //下载Fragment
+                notice_content.setOrientation(LinearLayout.VERTICAL);
+                tv_notice.setText("下载");
+                tv_notice.setTextColor(Color.BLACK);
+                final EditText fileName = new EditText(getContext());
+                TextView fileSize = new TextView(getContext());
+                Button back = new Button(getContext());
+                Button confirm = new Button(getContext());
+
+                back.setText("返回");
+                back.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                back.setTextSize(14);
+                confirm.setText("确认");
+                confirm.setTextSize(14);
+                confirm.setTextColor(Color.BLUE);
+                confirm.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                RelativeLayout layout = new RelativeLayout(getContext());
+                RelativeLayout.LayoutParams lp_left
+                        = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams lp_right
+                        = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+                lp_left.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                lp_right.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                layout.addView(back, lp_left);
+                layout.addView(confirm, lp_right);
+
+                fileName.setText(bundle.getString("fileName"));
+                fileName.setBackgroundResource(R.drawable.shape_textarea);
+
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.gravity = Gravity.CENTER;
+                fileSize.setLayoutParams(lp);
+                fileSize.setText(bundle.getString("fileSize"));
+                fileSize.setTextSize(12);
+
+                notice_content.addView(fileName);
+                notice_content.addView(fileSize);
+                notice_content.addView(layout);
+
+                back.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dismiss();
+                    }
+                });
+                final String url = bundle.getString("url");
+                confirm.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                       MainActivity.instance.doDownload(fileName.getText().toString(), url);
+                       dismiss();
+                    }
+                });
             }
         }
     }
