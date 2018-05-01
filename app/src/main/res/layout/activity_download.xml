@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -25,6 +26,18 @@
             android:text="@string/download"
             android:textColor="@color/black"
             android:textSize="18sp" />
+
+        <ImageButton
+            android:id="@+id/ib_download_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@null"
+            android:visibility="gone"
+            android:layout_gravity="end"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/trash"
+            tools:visibility="visible" />
     </android.support.v7.widget.Toolbar>
 
     <android.support.v7.widget.RecyclerView

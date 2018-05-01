@@ -291,14 +291,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 String fileName = URLUtil.guessFileName(url, contentDisposition, mimeType);
 
                 Log.e("onDownloadStart", "url===" + url + "---contentDisposition=" + contentDisposition +  "---mimitype" + fileName);
-                NoticeDialogFragment noticeDialogFragment = new NoticeDialogFragment();
+                ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("download", "download");
                 bundle.putString("fileName", URLUtil.guessFileName(url, contentDisposition, mimeType));
                 bundle.putString("fileSize", DownloadUtil.getFileSize(contentLength));
                 bundle.putString("url", url);
-                noticeDialogFragment.setArguments(bundle);
-                noticeDialogFragment.show(getSupportFragmentManager(), "fragment_notice_dialog");
+                confirmDialogFragment.setArguments(bundle);
+                confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
 
                 fileUrl = url;
                 size = DownloadUtil.getFileSize(contentLength);
@@ -314,13 +314,14 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 .getAbsolutePath() + File.separator + fileName;
         Log.e(TAG, "doDownload: "+ destPath + size + fileUrl);
 //        new DownloadTask().execute(url, destPath);
+
         Aria.download(this)
                 .load(url)
                 .setFilePath(destPath)
                 .start();
-
-        DownloadDao downloadDao = new DownloadDao(this);
-        downloadDao.insert(null, url, fileName, size ,destPath);
+        Aria.get(this).getDownloadConfig().setConvertSpeed(true);
+//        DownloadDao downloadDao = new DownloadDao(this);
+//        downloadDao.insert(null, url, fileName, size , destPath);
 
         Snackbar.make(mContentWrapper, "正在下载",
                 Snackbar.LENGTH_LONG).setAction("点击查看", new View.OnClickListener() {

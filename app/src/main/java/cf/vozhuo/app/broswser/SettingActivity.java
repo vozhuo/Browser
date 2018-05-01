@@ -104,7 +104,6 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
             }
         });
 
-
         Log.e(TAG, "onCreate: " + getPackageName());
         list.add("设置默认浏览器");
         list.add("搜索引擎");
@@ -124,7 +123,6 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
                 outRect.set(20, 20, 10, 20);
             }
         });
-
     }
 
     @Override

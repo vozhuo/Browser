@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -33,13 +34,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+
 import cf.vozhuo.app.broswser.download.DownloadActivity;
+import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.HistoryFragment;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 
 import static android.content.ContentValues.TAG;
 
-public class NoticeDialogFragment extends DialogFragment implements View.OnClickListener {
+public class NoticeDialogFragment extends DialogFragment{
     private TextView tv_notice;
     private LinearLayout notice_content;
     MainActivity activity;
@@ -198,6 +202,12 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                 notice_content.setOrientation(LinearLayout.VERTICAL);
                 tv_notice.setText("下载");
                 tv_notice.setTextColor(Color.BLACK);
+
+                final TextView warning = new TextView(getContext());
+                warning.setText("已存在同名文件");
+                warning.setTextSize(12);
+                warning.setTextColor(Color.RED);
+                warning.setVisibility(View.GONE);
                 final EditText fileName = new EditText(getContext());
                 TextView fileSize = new TextView(getContext());
                 Button back = new Button(getContext());
@@ -230,6 +240,7 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                 fileSize.setText(bundle.getString("fileSize"));
                 fileSize.setTextSize(12);
 
+                notice_content.addView(warning);
                 notice_content.addView(fileName);
                 notice_content.addView(fileSize);
                 notice_content.addView(layout);
@@ -244,8 +255,14 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
                 confirm.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                       MainActivity.instance.doDownload(fileName.getText().toString(), url);
-                       dismiss();
+                       String destPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                                .getAbsolutePath() + File.separator + fileName;
+                       if(DownloadUtil.isFileExists(destPath)) {
+                            warning.setVisibility(View.VISIBLE);
+                       } else {
+                           MainActivity.instance.doDownload(fileName.getText().toString(), url);
+                           dismiss();
+                       }
                     }
                 });
             }
@@ -258,12 +275,4 @@ public class NoticeDialogFragment extends DialogFragment implements View.OnClick
             isCheck[buttonView.getId()] = isChecked;
         }
     };
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        switch (id) {
-            default:
-                break;
-        }
-    }
 }

@@ -18,4 +18,6 @@
     <string name="defaultBrowser">设置默认浏览器</string>
     <string name="close">CLOSE</string>
     <string name="untitled">无标题</string>
+    <string name="back">返回</string>
+    <string name="confirm">确认</string>
 </resources>

@@ -9,7 +9,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import cf.vozhuo.app.broswser.favorites.FavHisEntity;
 import cf.vozhuo.app.broswser.favorites.SQLiteHelper;
 
 import static android.content.ContentValues.TAG;
@@ -52,20 +51,27 @@ public class DownloadDao {
         db.update(TABLE, values, "path = ?", new String[]{path});
     }
 
+//    public void updateSpeed(String speed, int progress, String path) {
+//        SQLiteDatabase db = openHelper.getWritableDatabase();
+//        ContentValues values = new ContentValues();
+//        values.put("speed",speed);
+//        values.put("speed",speed);
+//        db.update(TABLE, values, "path = ?", new String[]{path});
+//    }
     //查询所有
-    public List<DownloadEntity> queryAll() {
+    public List<MyDownloadEntity> queryAll() {
         SQLiteDatabase db = openHelper.getReadableDatabase();
         String[] columns = {"_id","url","name","size","path"};
         Cursor cursor = db.query(TABLE, columns, null, null, null, null, null);
         if(cursor != null && cursor.getCount() > 0) {
-            List<DownloadEntity> list = new ArrayList<>();
+            List<MyDownloadEntity> list = new ArrayList<>();
             while(cursor.moveToNext()) {
                 int _id = cursor.getInt(cursor.getColumnIndex("_id"));
                 String url = cursor.getString(cursor.getColumnIndex("url"));
                 String name = cursor.getString(cursor.getColumnIndex("name"));
                 String size = cursor.getString(cursor.getColumnIndex("size"));
                 String path = cursor.getString(cursor.getColumnIndex("path"));
-                list.add(new DownloadEntity(_id, url, name, size, path));
+                list.add(new MyDownloadEntity(_id, url, name, size, path));
             }
             cursor.close();
             return list;
