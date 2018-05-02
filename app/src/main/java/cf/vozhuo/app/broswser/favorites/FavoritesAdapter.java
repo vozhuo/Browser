@@ -89,6 +89,7 @@ public class FavoritesAdapter extends RecyclerAdapter<FavHisEntity> {
 
                     TextView tv_del = contentView.findViewById(R.id.fav_del);
                     TextView tv_mod = contentView.findViewById(R.id.fav_mod);
+                    TextView tv_add = contentView.findViewById(R.id.fav_add);
                     tv_del.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -103,6 +104,16 @@ public class FavoritesAdapter extends RecyclerAdapter<FavHisEntity> {
                         @Override
                         public void onClick(View v) {
                             mController.modify(favorites);
+                            popupWindow.dismiss();
+                        }
+                    });
+                    tv_add.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            List<FavHisEntity> list = MainActivity.instance.getList();
+                            list.add(favorites);
+                            MainActivity.instance.setList(list);
+                            Toast.makeText(mContext, "添加成功", Toast.LENGTH_SHORT).show();
                             popupWindow.dismiss();
                         }
                     });

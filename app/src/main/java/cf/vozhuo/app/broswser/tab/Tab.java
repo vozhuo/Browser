@@ -232,7 +232,7 @@ public class Tab {
         mWebViewController.onSetWebView(this, w);
 
         if (mMainView != null) {
-            mMainView.setPictureListener(null);
+//            mMainView.setPictureListener(null);
             if (w != null) {
                 syncCurrentState(w, null);
             } else {

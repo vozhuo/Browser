@@ -79,6 +79,13 @@ public class FavoriteFragment extends Fragment implements FavoritesController {
         favHisDao.delete(favorites.getUrl());
         mAdapter.removeData(favorites, false);
     }
+    private static final String TABLE_QA = "quickAccess";
+    @Override
+    public void add(FavHisEntity favorites) {
+        favHisDao = new FavHisDao(getContext(), TABLE_QA);
+        favHisDao.insert(null, favorites.getTitle(),
+                favorites.getUrl(), favorites.getTime(), favorites.getFavicon());
+    }
 
     public void updateFavorite(FavHisEntity favorites) {
         favHisDao.update(favorites.getTitle(), favorites.getUrl());

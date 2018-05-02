@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -18,6 +19,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
@@ -50,6 +52,7 @@ import android.widget.Toast;
 import com.arialyy.annotations.Download;
 import com.arialyy.aria.core.Aria;
 import com.arialyy.aria.core.download.DownloadTask;
+import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +60,9 @@ import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -69,6 +74,8 @@ import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.download.DownloadDao;
 import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
+import cf.vozhuo.app.broswser.favorites.FavHisEntity;
+import cf.vozhuo.app.broswser.favorites.SQLiteHelper;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 import cf.vozhuo.app.broswser.tab.BrowserWebViewFactory;
 import cf.vozhuo.app.broswser.tab.Tab;
@@ -82,9 +89,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     public static MainActivity instance;
     private static final int REQUEST_CODE = 0;
-    private WebSettings settings;
-    private EditText editText;
 
+    private FavHisDao favHisDao;
+    private SQLiteHelper openHelper;
+    private static final String TABLE_HIS = "histories";
+    private static final String TABLE_QA = "quickAccess";
+
+    HomeAdapter mHomeAdapter;
     TabAdapter mTabAdapter;
 
     static TabController mTabController;
@@ -92,9 +103,19 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private WebViewFactory mFactory;
     private boolean mIsInMain = true;
     private RecyclerView mRecyclerView;
+    private List<FavHisEntity> mList = new ArrayList<>();
 
-//    @BindView(R.id.iv_gesture_back)
+    public List<FavHisEntity> getList() {
+        return mList;
+    }
+
+    public void setList(List<FavHisEntity> list) {
+        this.mList = list;
+    }
+    //    @BindView(R.id.iv_gesture_back)
 //    ImageView iv_gesture_back;
+//    @BindView(R.id.snpl_moment_add_photos)
+//    BGASortableNinePhotoLayout mPhotosSnpl;
 
     @BindView(R.id.refreshLayout)
     SwipeRefreshLayout refreshLayout;
@@ -120,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @BindView(R.id.BottomBar)
     ConstraintLayout mBottomBar;
 
+    @BindView(R.id.showQuickAccessList)
+    RecyclerView mQARecyclerView;
     private boolean mTabsManagerUIShown = false;
 
     @OnClick({R.id.searchBox, R.id.siteTitle})
@@ -304,8 +327,37 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 size = DownloadUtil.getFileSize(contentLength);
             }
         });
-    }
 
+        if(mIsInMain) refreshLayout.setEnabled(false);
+
+        openHelper = new SQLiteHelper(getContext());
+        openHelper.getReadableDatabase();
+        favHisDao = new FavHisDao(getContext(), TABLE_QA);
+
+        mList = favHisDao.queryAll();
+        mHomeAdapter = new HomeAdapter(R.layout.quick_list_item, mList);
+        mHomeAdapter.setNewData(mList);
+
+        mQARecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        mQARecyclerView.setAdapter(mHomeAdapter);
+
+        mHomeAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                QuickAccessItem item = (QuickAccessItem)adapter.getItem(position);
+//                Toast.makeText(MainActivity.this, item.getUrl(), Toast.LENGTH_SHORT).show();
+                load(item.getUrl());
+            }
+        });
+        mHomeAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
+                Log.e(TAG, "onItemLongClick: ");
+                view.findViewById(R.id.ib_qa_close).setVisibility(View.VISIBLE);
+                return false;
+            }
+        });
+    }
 
     private String size;
     private String fileUrl;
@@ -320,6 +372,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 .setFilePath(destPath)
                 .start();
         Aria.get(this).getDownloadConfig().setConvertSpeed(true);
+
 //        DownloadDao downloadDao = new DownloadDao(this);
 //        downloadDao.insert(null, url, fileName, size , destPath);
 
@@ -401,8 +454,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
         });
     }
-    private int startX;
-    private int scrollSize = 100;
+
     private GestureDetector mGesture;
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -511,17 +563,18 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public void closeTab(Tab tab) {
         Log.e(TAG, "closeTab: "+ mTabController.getCurrentPosition());
-        if(mActiveTab == tab && mTabController.getTabCount()>1) { //移除当前Tab，选择上一个创建的Tab显示
-            selectTab(mTabController.getTab(
-                    mTabController.getCurrentPosition()-1));
-        }
-        mTabController.removeTab(tab);
-        mTabAdapter.removeData(tab, false);
+        if(mActiveTab == tab) { //移除当前Tab，选择上一个创建的Tab显示
+            if(mTabController.getTabCount() > 1) {
+                selectTab(mTabController.getTab(
+                        mTabController.getCurrentPosition()-1));
+            } else {
+                addTab(true);
+                popupWindow.dismiss();
+            }
 
-        if(mTabController.getTabCount() <= 0) {
-            popupWindow.dismiss();
-            addTab(true);
         }
+        mTabController.removeTab(tab); //执行Destroy前移除WebView// iew，解决内存泄漏的问题
+        mTabAdapter.removeData(tab, false);
     }
 
     public void load(String url) {
@@ -553,14 +606,16 @@ public class MainActivity extends AppCompatActivity implements UiController {
         mIsInMain = false;
     }
     private void switchToMain(){
+        removeWebView();
         if(mainView.getParent() == null){
             mContentWrapper.addView(mainView);
         }
-        mainView.bringToFront();
-        removeWebView();
+//        mainView.bringToFront();
+
         mActiveTab.stopLoading();
         mIsInMain = true;
         siteTitle.setVisibility(View.INVISIBLE);
+        searchProgress.setProgress(View.GONE);
     }
     //移除当前WebView
     private void removeWebView() {
@@ -594,7 +649,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
 //        tab.loadUrl(url, null, false); //解决goBack无效的问题
         return true;
     }
-    private static final String TABLE = "histories";
+
     @Override
     public void onPageFinished(Tab tab) {
         searchProgress.setVisibility(View.INVISIBLE);
@@ -607,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
             redirect = false;
         }
         refreshLayout.setRefreshing(false);
-//        darkMode();
+        darkMode();
         CookieManager cookieManager = CookieManager.getInstance();
         String cookieStr = cookieManager.getCookie(tab.getUrl()); // 获取到cookie字符串值
     }
@@ -616,10 +671,10 @@ public class MainActivity extends AppCompatActivity implements UiController {
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean darkMode = sp.getBoolean("dark_state", false);
         if(darkMode) {
-            mActiveTab.getWebView().loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
+            mActiveTab.loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
                     + "var style = document.createElement('style');"
                     + "style.type = 'text/css';" + "style.innerHTML = window.atob('" + nightCode + "');"
-                    + "parent.appendChild(style)" + "})();");
+                    + "parent.appendChild(style)" + "})();", null, false);
         }
     }
     @Override
@@ -646,7 +701,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean noTrack = sp.getBoolean("track_state", false);
         if (!noTrack && NetworkUtil.isNetworkConnected(this) && !mIsInMain) {
-            FavHisDao favHisDao = new FavHisDao(this, TABLE);
+            FavHisDao favHisDao = new FavHisDao(this, TABLE_HIS);
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());
             String url = tab.getUrl();

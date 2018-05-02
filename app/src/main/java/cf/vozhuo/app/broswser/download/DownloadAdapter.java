@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.arialyy.aria.core.Aria;
 import com.arialyy.aria.core.download.DownloadEntity;
 
 import java.util.ArrayList;
@@ -29,14 +30,14 @@ import cf.vozhuo.app.broswser.tab.RecyclerAdapter;
 import static android.support.constraint.Constraints.TAG;
 
 
-public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements View.OnClickListener, View.OnLongClickListener{
+public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> {
 
     private List<MyDownloadEntity> mDownload;
     private List<DownloadEntity> mList;
     private DownloadController mController;
     private boolean isShowBox = false;
     private Map<Integer, Boolean> map = new HashMap<>();
-    private RecyclerViewOnItemClickListener onItemClickListener;
+//    private RecyclerViewOnItemClickListener onItemClickListener;
 
     public DownloadAdapter(Context context, DownloadController controller) {
         super(context);
@@ -68,32 +69,32 @@ public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements 
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.download_list_item,
                 parent, false);
-        view.setOnClickListener(this);
-        view.setOnLongClickListener(this);
+//        view.setOnClickListener(this);
+//        view.setOnLongClickListener(this);
         return new DownloadHolder(view);
     }
 
-    @Override
-    public void onClick(View v) {
-        if (onItemClickListener != null) {
-            //注意这里使用getTag方法获取数据
-            if(v == null) Log.e(TAG, "v null");
-           Log.e(TAG, "v.getTag() null" + v.getId() + " ");
-//            onItemClickListener.onItemClickListener(v, (Integer) v.getTag());
-        }
-    }
+//    @Override
+//    public void onClick(View v) {
+//        if (onItemClickListener != null) {
+//            //注意这里使用getTag方法获取数据
+//            if(v == null) Log.e(TAG, "v null");
+//           Log.e(TAG, "v.getTag() null" + v.getId() + " ");
+////            onItemClickListener.onItemClickListener(v, (Integer) v.getTag());
+//        }
+//    }
 
-    @Override
-    public boolean onLongClick(View v) {
-        //不管显示隐藏，清空状态
-        initMap();
-        return onItemClickListener != null && onItemClickListener.onItemLongClickListener(v, (Integer) v.getTag());
-    }
+//    @Override
+//    public boolean onLongClick(View v) {
+//        //不管显示隐藏，清空状态
+//        initMap();
+//        return onItemClickListener != null && onItemClickListener.onItemLongClickListener(v, (Integer) v.getTag());
+//    }
 
-    //设置点击事件
-    public void setRecyclerViewOnItemClickListener(RecyclerViewOnItemClickListener onItemClickListener) {
-        this.onItemClickListener = onItemClickListener;
-    }
+//    //设置点击事件
+//    public void setRecyclerViewOnItemClickListener(RecyclerViewOnItemClickListener onItemClickListener) {
+//        this.onItemClickListener = onItemClickListener;
+//    }
 
     //设置是否显示CheckBox
     public void setShowBox() {
@@ -117,14 +118,14 @@ public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements 
         return map;
     }
 
-    //接口回调设置点击事件
-    public interface RecyclerViewOnItemClickListener {
-        //点击事件
-        void onItemClickListener(View view, int position);
-
-        //长按事件
-        boolean onItemLongClickListener(View view, int position);
-    }
+//    //接口回调设置点击事件
+//    public interface RecyclerViewOnItemClickListener {
+//        //点击事件
+//        void onItemClickListener(View view, int position);
+//
+//        //长按事件
+//        boolean onItemLongClickListener(View view, int position);
+//    }
 
     class DownloadHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
 
@@ -145,7 +146,7 @@ public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements 
         DownloadEntity data;
         int position;
 
-        public DownloadHolder(View itemView) {
+        DownloadHolder(View itemView) {
             super(itemView);
             this.itemView = itemView;
             ButterKnife.bind(this, itemView);
@@ -155,6 +156,7 @@ public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements 
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.iv_download_control:
+                    iv_download_control.setSelected(!iv_download_control.isSelected());
                     mController.suspendTask(data.getUrl(), position);
                     break;
                 case R.id.tv_download_name:
@@ -179,7 +181,6 @@ public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements 
             this.position = position;
 
             iv_download_control.setOnClickListener(this);
-//            Log.e(TAG, "bind: "+ data.getDownloadPath());
             tv_download_name.setOnClickListener(this);
             tv_download_name.setOnLongClickListener(this);
             tv_download_size.setOnClickListener(this);
@@ -187,16 +188,19 @@ public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> implements 
 
             tv_download_name.setText(DownloadUtil.getFileName(data.getDownloadPath()));
 
-            Log.e(TAG, "bind: "+ data.getFileSize());
+//            Log.e(TAG, "bind: "+ data.getFileSize() + data.getCurrentProgress());
             tv_download_size.setText(DownloadUtil.getFileSize(data.getFileSize()));
             //文件未下载完成
             if(!data.isComplete()) {
-
-                Log.e(TAG, "bind: "+ data.getCurrentProgress() + " " + data.getFileSize());
-
-                progressBar.setProgress(data.getPercent());
-                tv_download_speed.setText("暂停");
                 iv_download_control.setVisibility(View.VISIBLE);
+                if(mController.isRunningTask(data.getUrl())) {  //正在下载
+                    iv_download_control.setSelected(false);
+                } else { //已暂停
+                    Log.e(TAG, "暂停");
+//                    progressBar.setProgress(getProcess());
+                    tv_download_speed.setText("暂停");
+                    iv_download_control.setSelected(true);
+                }
             }
 
             if (isShowBox) {
