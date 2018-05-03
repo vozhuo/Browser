@@ -1,6 +1,5 @@
 package cf.vozhuo.app.broswser.favorites;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,19 +14,22 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
 
-public class HistoryFragment extends Fragment implements HistoriesController{
+public class HistoryFragment extends Fragment{
     private static final String TABLE = "histories";
     private static FavHisDao favHisDao;
-    private SQLiteHelper openHelper;
     private List<FavHisEntity> list = new ArrayList<>();
+    HistoriesAdapter mAdapter;
 
     @BindView(R.id.showHisList)
     RecyclerView mRecyclerView;
@@ -36,11 +38,11 @@ public class HistoryFragment extends Fragment implements HistoriesController{
 
     @OnClick(R.id.iv_clear_history)
     void onClick() {
-        deleteHistory();
-        mAdapter.clearData();
+        favHisDao.deleteAll();
+        mAdapter.setNewData(new ArrayList<FavHisEntity>());
         Toast.makeText(getActivity(), "清理成功", Toast.LENGTH_SHORT).show();
     }
-    HistoriesAdapter mAdapter;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -52,8 +54,6 @@ public class HistoryFragment extends Fragment implements HistoriesController{
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
 
-        openHelper = new SQLiteHelper(getContext());
-        SQLiteDatabase db = openHelper.getReadableDatabase();
         favHisDao = new FavHisDao(getContext(), TABLE);
 
         list = favHisDao.queryAll();
@@ -61,8 +61,7 @@ public class HistoryFragment extends Fragment implements HistoriesController{
             iv_clear_history.setVisibility(View.GONE);
         }
 
-        mAdapter = new HistoriesAdapter(getContext(), this);
-        mAdapter.updateData(list);
+        mAdapter = new HistoriesAdapter(R.layout.history_list_item, list);
 
         LinearLayoutManager layout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layout);
@@ -74,12 +73,26 @@ public class HistoryFragment extends Fragment implements HistoriesController{
                 outRect.set(10, 10, 10,10);//设置item偏移
             }
         });
-    }
 
-    @Override
-    public void delete(FavHisEntity histories) {
-        favHisDao.delete(histories.getUrl());
-        mAdapter.removeData(histories, false);
+        mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                FavHisEntity item = mAdapter.getItem(position);
+                MainActivity.instance.load(item.getUrl()); //调用MainActivity的方法
+                getActivity().finish(); //结束Activity
+                getActivity().overridePendingTransition(0, 0);
+            }
+        });
+        mAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                FavHisEntity item = mAdapter.getItem(position);
+                if(view.getId() == R.id.ib_his_close) {
+                    favHisDao.delete(item.getUrl());
+                    mAdapter.remove(position);
+                }
+            }
+        });
     }
 
     public static void deleteHistory() {

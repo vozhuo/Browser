@@ -63,14 +63,14 @@ public class SearchHistoryAdapter extends BaseAdapter {
         }
         holder.textView.setText(mHistories.get(position).getContent());
 
-        holder.textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onSearchHistoryListener != null) {
-                    onSearchHistoryListener.onSelect(mHistories.get(position).getContent());
-                }
-            }
-        });
+//        holder.textView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (onSearchHistoryListener != null) {
+//                    onSearchHistoryListener.onSelect(mHistories.get(position).getContent());
+//                }
+//            }
+//        });
 
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override

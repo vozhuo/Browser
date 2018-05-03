@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -17,13 +16,10 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
-
 import android.util.Base64;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -33,32 +29,25 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.URLUtil;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-
-
-import android.widget.EditText;
-import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.arialyy.annotations.Download;
 import com.arialyy.aria.core.Aria;
-import com.arialyy.aria.core.download.DownloadTask;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,7 +60,6 @@ import butterknife.OnClick;
 import butterknife.OnLongClick;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
 import cf.vozhuo.app.broswser.download.DownloadActivity;
-import cf.vozhuo.app.broswser.download.DownloadDao;
 import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.favorites.FavHisEntity;
@@ -94,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     private SQLiteHelper openHelper;
     private static final String TABLE_HIS = "histories";
     private static final String TABLE_QA = "quickAccess";
-
+    private boolean isEditMode = false;
     HomeAdapter mHomeAdapter;
     TabAdapter mTabAdapter;
 
@@ -209,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
         ButterKnife.bind(this);
 
+//        mTabAdapter = new TabAdapter(R.layout.tab_list_item, this);
         mTabAdapter = new TabAdapter(this, this);
         mTabController = new TabController(this, this);
         mFactory = new BrowserWebViewFactory(this);
@@ -335,28 +324,50 @@ public class MainActivity extends AppCompatActivity implements UiController {
         favHisDao = new FavHisDao(getContext(), TABLE_QA);
 
         mList = favHisDao.queryAll();
+
         mHomeAdapter = new HomeAdapter(R.layout.quick_list_item, mList);
         mHomeAdapter.setNewData(mList);
 
-        mQARecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        mQARecyclerView.setAdapter(mHomeAdapter);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 5);
 
+//        layoutManager.setReverseLayout(true);
+        mQARecyclerView.setLayoutManager(layoutManager);
+        mQARecyclerView.setAdapter(mHomeAdapter);
         mHomeAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                QuickAccessItem item = (QuickAccessItem)adapter.getItem(position);
-//                Toast.makeText(MainActivity.this, item.getUrl(), Toast.LENGTH_SHORT).show();
+                FavHisEntity item = (FavHisEntity)adapter.getItem(position);
                 load(item.getUrl());
             }
         });
         mHomeAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
-                Log.e(TAG, "onItemLongClick: ");
-                view.findViewById(R.id.ib_qa_close).setVisibility(View.VISIBLE);
-                return false;
+                isEditMode = true;
+                mHomeAdapter.setShowClose();
+                return true;
             }
         });
+        mHomeAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                if(view.getId() == R.id.ib_qa_close) {
+                    FavHisEntity item = (FavHisEntity)adapter.getItem(position);
+                    Log.e(TAG, "onItemChildClick: "+ item.getUrl());
+                    favHisDao.delete(item.getUrl());
+                    mHomeAdapter.remove(position);
+                    mHomeAdapter.notifyItemRemoved(position);
+                    mHomeAdapter.notifyItemRangeChanged(position, mHomeAdapter.getItemCount());
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mList = favHisDao.queryAll();
+        mHomeAdapter.setNewData(mList);
     }
 
     private String size;
@@ -365,16 +376,12 @@ public class MainActivity extends AppCompatActivity implements UiController {
         String destPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 .getAbsolutePath() + File.separator + fileName;
         Log.e(TAG, "doDownload: "+ destPath + size + fileUrl);
-//        new DownloadTask().execute(url, destPath);
 
         Aria.download(this)
                 .load(url)
                 .setFilePath(destPath)
                 .start();
         Aria.get(this).getDownloadConfig().setConvertSpeed(true);
-
-//        DownloadDao downloadDao = new DownloadDao(this);
-//        downloadDao.insert(null, url, fileName, size , destPath);
 
         Snackbar.make(mContentWrapper, "正在下载",
                 Snackbar.LENGTH_LONG).setAction("点击查看", new View.OnClickListener() {
@@ -455,12 +462,37 @@ public class MainActivity extends AppCompatActivity implements UiController {
         });
     }
 
+    private boolean isShouldExit(View v, MotionEvent event) {
+        if (v != null && (v instanceof ImageButton)) {
+            int[] l = {0, 0};
+            v.getLocationInWindow(l);
+            int left = l[0],
+                    top = l[1],
+                    bottom = top + v.getHeight(),
+                    right = left + v.getWidth();
+            if (event.getX() > left && event.getX() < right
+                    && event.getY() > top && event.getY() < bottom) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private GestureDetector mGesture;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
+            if(ev.getAction() == MotionEvent.ACTION_DOWN && isEditMode) { //退出QuickAccess编辑模式
+            Log.e(TAG, "dispatchTouchEvent: "+getCurrentFocus());
+                isEditMode = false;
+                if(isShouldExit(getCurrentFocus(), ev)) {
+                    mHomeAdapter.setShowClose();
+                    return true;
+                }
+        }
         final WebView webView = mActiveTab.getWebView();
-
         webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -486,6 +518,13 @@ public class MainActivity extends AppCompatActivity implements UiController {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if(isEditMode) { //退出QuickAccess编辑模式
+                mHomeAdapter.setShowClose();
+//                mHomeAdapter.notifyDataSetChanged();
+                isEditMode = false;
+                return true;
+            }
+
             if (mActiveTab != null) {
                 if (mActiveTab.canGoBack()) {
                     Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
@@ -515,6 +554,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
 
     private void showTabs() {
+//        mTabAdapter.setNewData(mTabController.getTabs());
+
         mTabAdapter.updateData(mTabController.getTabs());
         Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
 
@@ -534,6 +575,10 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     @Override
     public void selectTab(Tab tab) {
+        if(mActiveTab == tab) {
+            popupWindow.dismiss();
+            return;
+        }
         removeWebView();
         mActiveTab = tab;
 
@@ -573,7 +618,8 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
 
         }
-        mTabController.removeTab(tab); //执行Destroy前移除WebView// iew，解决内存泄漏的问题
+//        mTabAdapter.remove(mTabController.getTabPosition(tab));
+        mTabController.removeTab(tab); //执行Destroy前移除WebView，解决内存泄漏的问题
         mTabAdapter.removeData(tab, false);
     }
 

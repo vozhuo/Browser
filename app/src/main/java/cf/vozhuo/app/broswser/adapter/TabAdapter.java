@@ -1,16 +1,13 @@
 package cf.vozhuo.app.broswser.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +17,6 @@ import butterknife.ButterKnife;
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.RecyclerAdapter;
 import cf.vozhuo.app.broswser.tab.Tab;
-import cf.vozhuo.app.broswser.tab.TabController;
 import cf.vozhuo.app.broswser.tab.UiController;
 
 import static android.content.ContentValues.TAG;
@@ -98,13 +94,12 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
                 }
             } else if(v == tv_title) {
                 if(mController != null) {
+                    mController.selectTab(tab);
                     if(position == lastSelectedPos) return;
-
                     notifyItemChanged(lastSelectedPos);
                     Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
                     lastSelectedPos = position;
                     notifyItemChanged(lastSelectedPos);
-                    mController.selectTab(tab);
                 }
             }
         }
@@ -120,3 +115,47 @@ public class TabAdapter extends RecyclerAdapter<Tab> {
         }
     }
 }
+//
+//public class TabAdapter extends BaseQuickAdapter<Tab, BaseViewHolder> implements BaseQuickAdapter.OnItemChildClickListener{
+//    private UiController mController;
+//    private int lastSelectedPos = 0;
+//
+//    public TabAdapter(int layoutResId, UiController controller) {
+//        super(layoutResId);
+//        mController = controller;
+//    }
+//
+//    @Override
+//    protected void convert(BaseViewHolder helper, Tab item) {
+//        helper.setText(R.id.tv_tab_title, item.getTitle())
+//                .setImageBitmap(R.id.iv_tab_icon, item.getFavicon())
+//                .addOnClickListener(R.id.tabClose)
+//                .addOnClickListener(R.id.tv_tab_title)
+//                .itemView.setSelected(lastSelectedPos == helper.getLayoutPosition());
+//    }
+//
+//    @Override
+//    public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+//        Tab tab = (Tab)adapter.getItem(position);
+//        switch (view.getId()) {
+//            case R.id.tv_tab_title:
+//                mController.selectTab(tab);
+//                if(position == lastSelectedPos) return;
+//                notifyItemChanged(lastSelectedPos);
+//                Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
+//                lastSelectedPos = position;
+//                notifyItemChanged(lastSelectedPos);
+//                break;
+//            case R.id.tabClose:
+//                mController.closeTab(tab);
+//                notifyItemRemoved(position);
+//                notifyItemRangeChanged(position, getItemCount());
+//                view.setVisibility(View.GONE);
+//                break;
+//        }
+//    }
+//
+//    public void setlastSelectedPos() {
+//        lastSelectedPos = getItemCount();
+//    }
+//}

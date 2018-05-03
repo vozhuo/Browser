@@ -67,8 +67,8 @@ public class ModifyFragment extends DialogFragment {
     void updateFavorite() {
         favorites.setTitle(et_title.getText().toString());
         favorites.setUrl(et_url.getText().toString());
-
-        ((FavoriteFragment)getParentFragment()).updateFavorite(favorites); //调用FavoriteFragment的方法
+        Bundle bundle = getArguments();
+        ((FavoriteFragment)getParentFragment()).updateFavorite(favorites, bundle.getInt("position")); //调用FavoriteFragment的方法
         getFragmentManager().beginTransaction().remove(ModifyFragment.this).commit();
     }
 
