@@ -1,5 +1,6 @@
 package cf.vozhuo.app.broswser;
 
+import android.databinding.Bindable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -14,6 +15,7 @@ public class BitmapUtil {
     }
 
     // convert from byte array to bitmap
+
     public static Bitmap getImage(byte[] image) {
         return BitmapFactory.decodeByteArray(image, 0, image.length);
     }

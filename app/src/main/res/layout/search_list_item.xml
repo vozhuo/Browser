@@ -1,41 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/search_item"
-    android:clickable="true"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:minHeight="35dp"
-    android:focusable="true">
+    android:layout_height="35dp">
 
     <TextView
-        android:id="@+id/tv_searchhistory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:clickable="true"
+        android:id="@+id/tv_search_history"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:drawableLeft="@drawable/home_search_history"
-        android:drawablePadding="4dp"
         android:drawableStart="@drawable/home_search_history"
-        android:focusable="true"
-        android:paddingBottom="15dp"
-        android:paddingLeft="8dp"
-        android:paddingStart="8dp"
-        android:paddingTop="15dp"
-        android:singleLine="true" />
+        android:drawablePadding="8dp"
+        android:gravity="fill_vertical"
+        android:padding="8dp"
+        android:singleLine="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <!--<LinearLayout-->
-            <!--android:id="@+id/ll_search_close"-->
-            <!--android:layout_width="32dp"-->
-            <!--android:layout_height="32dp"-->
-            <!--android:layout_marginRight="32dp"-->
-            <!--android:gravity="center">-->
-
-            <!--<ImageView-->
-                <!--android:id="@+id/iv_search_close"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:background="@drawable/home_search_close" />-->
-        <!--</LinearLayout>-->
-
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

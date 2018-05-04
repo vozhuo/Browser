@@ -1,6 +1,7 @@
 package cf.vozhuo.app.broswser.favorites;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -23,10 +24,9 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.databinding.FragmentFavoriteBinding;
 
 public class FavoriteFragment extends Fragment {
     private static final String TAG = "FavoriteFragment";
@@ -34,25 +34,28 @@ public class FavoriteFragment extends Fragment {
     private FavHisDao favHisDao;
     private List<FavHisEntity> list = new ArrayList<>();
     private static final String TABLE_QA = "quickAccess";
-    FavoritesAdapter mAdapter;
-
-    @BindView(R.id.showFavList)
-    RecyclerView mRecyclerView;
+    private FavoritesAdapter mAdapter;
+    private FragmentFavoriteBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_favorite, container, false);
+        binding = DataBindingUtil.inflate(inflater,
+                R.layout.fragment_favorite, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
+
+        RecyclerView mRecyclerView = binding.showFavList;
         favHisDao = new FavHisDao(getContext(), TABLE);
 
         list = favHisDao.queryAll();
         mAdapter = new FavoritesAdapter(R.layout.favorite_list_item, list);
+
+//        if(list == null || list.size() == 0) mAdapter.setEmptyView(getView());
 
         LinearLayoutManager layout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layout);

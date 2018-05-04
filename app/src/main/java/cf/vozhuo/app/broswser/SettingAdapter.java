@@ -2,168 +2,68 @@ package cf.vozhuo.app.broswser;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SwitchCompat;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
+import com.chad.library.adapter.base.BaseViewHolder;
+
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import cf.vozhuo.app.broswser.tab.RecyclerAdapter;
+import cf.vozhuo.app.broswser.tab.SettingEntity;
 
-import static android.content.ContentValues.TAG;
+public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, BaseViewHolder> {
 
-public class SettingAdapter extends RecyclerAdapter<String> {
-
-    private static final int ITEM_TYPE_SWITCH = 0;
-    private static final int ITEM_TYPE_TEXT = 1;
-    private List<String> mTitles;
-    private SettingController mController;
-    public SettingAdapter(Context context, SettingController controller) {
-        super(context);
-        mTitles = new ArrayList<>();
-        mController = controller;
+    /**
+     * Same as QuickAdapter#QuickAdapter(Context,int) but with
+     * some initialization data.
+     *
+     * @param data A new list is created out of this one to avoid mutable list
+     */
+    public SettingAdapter(List<SettingEntity> data) {
+        super(data);
+        addItemType(SettingEntity.CHECKBOX, R.layout.menu_switch_item);
+        addItemType(SettingEntity.TEXT, R.layout.layout_menu_item);
     }
 
     @Override
-    public int getItemViewType(int position) {
-        if(position == 0) {
-            return ITEM_TYPE_SWITCH;
-        } else return ITEM_TYPE_TEXT;
-    }
-
-    @Override
-    public int getItemCount() {
-        return super.getItemCount();
-    }
-
-    @Override
-    public void bindView(String data, int position, RecyclerView.ViewHolder holder) {
-        if(holder instanceof SwitchHolder) {
-            ((SwitchHolder) holder).bind(data, position);
-        } else if(holder instanceof TextHolder) {
-            ((TextHolder) holder).bind(data, position);
-        }
-    }
-
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if(viewType == ITEM_TYPE_SWITCH) {
-            return new SwitchHolder(mInflater.inflate(R.layout.menu_switch_item,
-                    parent, false));
-        } else {
-            return new TextHolder(mInflater.inflate(R.layout.layout_menu_item,
-                    parent, false));
-        }
-
-    }
-    class SwitchHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-        @BindView(R.id.switch_default)
-        SwitchCompat switch_default;
-
-        String data;
-        int position;
-        SwitchHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.switch_default:
-                    mController.clearDefaultAndSet(switch_default.isChecked());
-                    break;
-            }
-        }
-
-        public void bind(String data, int position) {
-            switch_default.setText(data);
-            switch_default.setChecked(mController.isDefaultBrowser());
-            switch_default.setOnClickListener(this);
-            this.data = data;
-            this.position = position;
-        }
-    }
-
-    class TextHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        @BindView(R.id.tv_menu_title)
-        TextView title;
-        @BindView(R.id.tv_menu_content)
-        TextView content;
-        @BindView(R.id.iv_menu_forward)
-        ImageView forward;
-        @BindView(R.id.menu_item)
-        ConstraintLayout menu_item;
-        String data;
-        int position;
-        TextHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.menu_item:
-                    mController.showFragment(position);
-                    break;
-                    default:break;
-            }
-        }
-
-        public void bind(String data, int position) {
-            title.setText(data);
-            title.setTextColor(Color.BLACK);
-            menu_item.setOnClickListener(this);
-
-            SharedPreferences sp = mContext.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-
-            if(position == 1) {
-                content.setText(sp.getString("search_engine", "百度"));
-                sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-                    @Override
-                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                        switch (key) {
-                        case "search_engine":
-                            content.setText(sharedPreferences.getString(key, "百度"));
-                            break;
-                        default: break;
-                        }
-                    }
-                });
-            }
-            else if (position == 2) {
-                content.setText(sp.getString("ua", "Android"));
-                sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-                    @Override
-                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                        switch (key) {
-                            case "ua":
-                                content.setText(sharedPreferences.getString(key, "Android"));
-                                break;
-                            default: break;
-                        }
-                    }
-                });
-            }
-
-
-            this.data = data;
-            this.position = position;
+    protected void convert(final BaseViewHolder helper, SettingEntity item) {
+        SharedPreferences sp = mContext.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        switch (helper.getItemViewType()) {
+            case SettingEntity.TEXT:
+                helper.setText(R.id.tv_menu_title, item.getContent());
+                switch (item.getContent()) {
+                    case "搜索引擎":
+                        helper.setText(R.id.tv_menu_content, sp.getString("search_engine", "百度"));
+                        sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+                            @Override
+                            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                                switch (key) {
+                                    case "search_engine":
+                                        helper.setText(R.id.tv_menu_content, sharedPreferences.getString(key, "百度"));
+                                        break;
+                                    default: break;
+                                }
+                            }
+                        });
+                        break;
+                    case "设置UA":
+                        helper.setText(R.id.tv_menu_content, sp.getString("ua", "Android"));
+                        sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+                            @Override
+                            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                                switch (key) {
+                                    case "ua":
+                                        helper.setText(R.id.tv_menu_content, sharedPreferences.getString(key, "Android"));
+                                        break;
+                                    default: break;
+                                }
+                            }
+                        });
+                        break;
+                }
+                break;
+            case SettingEntity.CHECKBOX:
+                helper.setText(R.id.switch_default, item.getContent());
+                break;
         }
     }
 }

@@ -96,6 +96,8 @@ public class DownloadActivity extends AppCompatActivity{
 
         if(!(mList == null || mList.isEmpty())) {
             ib_download_clear.setVisibility(View.VISIBLE);
+        } else {
+            mAdapter.setEmptyView(getWindow().getDecorView());
         }
 
         mAdapter = new DownloadAdapter(R.layout.download_list_item, mList);

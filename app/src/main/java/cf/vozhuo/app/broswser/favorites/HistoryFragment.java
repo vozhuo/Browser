@@ -57,10 +57,9 @@ public class HistoryFragment extends Fragment{
         favHisDao = new FavHisDao(getContext(), TABLE);
 
         list = favHisDao.queryAll();
-        if(list == null) {
+        if(list == null || list.size() == 0) {
             iv_clear_history.setVisibility(View.GONE);
         }
-
         mAdapter = new HistoriesAdapter(R.layout.history_list_item, list);
 
         LinearLayoutManager layout = new LinearLayoutManager(getContext());

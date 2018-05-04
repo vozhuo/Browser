@@ -1,48 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="35dp">
+<layout>
+    <data>
+        <variable name="favorites" type="cf.vozhuo.app.broswser.favorites.FavHisEntity"/>
+    </data>
 
-    <ImageView
-        android:id="@+id/iv_web_icon"
-        android:layout_width="30dp"
-        android:layout_height="wrap_content"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/web" />
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="35dp">
+        <ImageView
+            android:id="@+id/iv_web_icon"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
 
-    <TextView
-        android:id="@+id/fav_web_title"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:gravity="fill_vertical"
-        android:paddingLeft="@dimen/dimen_8dp"
-        android:paddingRight="@dimen/dimen_8dp"
-        android:singleLine="true"
-        android:text="TextView"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/iv_web_icon"
-        app:layout_constraintTop_toTopOf="parent" />
+            app:srcCompat="@drawable/web" />
 
-    <!--<ImageView-->
-        <!--android:id="@+id/iv_edit"-->
-        <!--android:layout_width="30dp"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:clickable="true"-->
-        <!--android:focusable="true"-->
-        <!--android:padding="5dp"-->
-        <!--android:scaleType="fitCenter"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintEnd_toEndOf="parent"-->
-        <!--app:layout_constraintStart_toEndOf="@+id/fav_web_title"-->
-        <!--app:layout_constraintTop_toTopOf="parent"-->
-        <!--app:srcCompat="@drawable/edit" />-->
-</android.support.constraint.ConstraintLayout>
+        <!--app:srcCompat="@drawable/web"-->
+        <TextView
+            android:id="@+id/fav_web_title"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="fill_vertical"
+            android:paddingLeft="@dimen/dimen_8dp"
+            android:paddingRight="@dimen/dimen_8dp"
+            android:singleLine="true"
+            android:text="@{favorites.title}"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_web_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
+</layout>

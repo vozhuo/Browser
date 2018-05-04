@@ -1,161 +1,125 @@
 package cf.vozhuo.app.broswser.adapter;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import cf.vozhuo.app.broswser.R;
-import cf.vozhuo.app.broswser.tab.RecyclerAdapter;
-import cf.vozhuo.app.broswser.tab.Tab;
-import cf.vozhuo.app.broswser.tab.UiController;
-
-import static android.content.ContentValues.TAG;
-
-
-public class TabAdapter extends RecyclerAdapter<Tab> {
-    private UiController mController;
-//    TabController mTabController;
-    private int mCurrent;
-    private List<Tab> mTabs;
-
-    public TabAdapter(Context context, UiController controller) {
-        super(context);
-        mController = controller;
-        mTabs = new ArrayList<>();
-        mCurrent = -1;
-    }
-    @Override
-    public Tab getItem(int position) {
-        return super.getItem(position);
-    }
-
-    @Override
-    public int getItemCount() {
-        return super.getItemCount();
-    }
-
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new TabViewHolder(mInflater.inflate(R.layout.tab_list_item, parent, false));
-    }
-
-    public long getItemId(int position){
-        return position;
-    }
-    public void setCurrent(int index){
-        mCurrent = index;
-    }
-    @Override
-    public void bindView(Tab tab, int position, RecyclerView.ViewHolder holder) {
-        TabViewHolder pagerViewHolder = (TabViewHolder) holder;
-        pagerViewHolder.itemView.setSelected(lastSelectedPos == position);
-        pagerViewHolder.bind(tab,position);
-    }
-
-    public void setlastSelectedPos() {
-        lastSelectedPos = getItemCount();
-    }
-    private int lastSelectedPos = 0;
-
-    class TabViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        @BindView(R.id.tv_tab_title)
-        TextView tv_title;
-        @BindView(R.id.tabClose)
-        ImageView iv_close;
-        @BindView(R.id.iv_tab_icon)
-        ImageView iv_tab_icon;
-        int position;
-        Tab tab;
-
-        public TabViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if(v == iv_close){
-                if(mController != null) {
-                    mController.closeTab(tab);
-                    notifyItemRemoved(position);
-                    notifyItemRangeChanged(position, getItemCount());
-                    v.setVisibility(View.GONE);
-                }
-            } else if(v == tv_title) {
-                if(mController != null) {
-                    mController.selectTab(tab);
-                    if(position == lastSelectedPos) return;
-                    notifyItemChanged(lastSelectedPos);
-                    Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
-                    lastSelectedPos = position;
-                    notifyItemChanged(lastSelectedPos);
-                }
-            }
-        }
-        public void bind(Tab tab, int position) {
-            String title = tab.getTitle();
-            tv_title.setText(title);
-            iv_tab_icon.setImageBitmap(tab.getFavicon());
-            iv_tab_icon.setOnClickListener(this);
-            tv_title.setOnClickListener(this);
-            iv_close.setOnClickListener(this);
-            this.tab = tab;
-            this.position = position;
-        }
-    }
-}
-//
-//public class TabAdapter extends BaseQuickAdapter<Tab, BaseViewHolder> implements BaseQuickAdapter.OnItemChildClickListener{
+//public class TabAdapter extends RecyclerAdapter<Tab> {
 //    private UiController mController;
-//    private int lastSelectedPos = 0;
+////    TabController mTabController;
+//    private int mCurrent;
+//    private List<Tab> mTabs;
 //
-//    public TabAdapter(int layoutResId, UiController controller) {
-//        super(layoutResId);
+//    public TabAdapter(Context context, UiController controller) {
+//        super(context);
 //        mController = controller;
+//        mTabs = new ArrayList<>();
+//        mCurrent = -1;
+//    }
+//    @Override
+//    public Tab getItem(int position) {
+//        return super.getItem(position);
 //    }
 //
 //    @Override
-//    protected void convert(BaseViewHolder helper, Tab item) {
-//        helper.setText(R.id.tv_tab_title, item.getTitle())
-//                .setImageBitmap(R.id.iv_tab_icon, item.getFavicon())
-//                .addOnClickListener(R.id.tabClose)
-//                .addOnClickListener(R.id.tv_tab_title)
-//                .itemView.setSelected(lastSelectedPos == helper.getLayoutPosition());
+//    public int getItemCount() {
+//        return super.getItemCount();
 //    }
 //
+//    @NonNull
 //    @Override
-//    public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
-//        Tab tab = (Tab)adapter.getItem(position);
-//        switch (view.getId()) {
-//            case R.id.tv_tab_title:
-//                mController.selectTab(tab);
-//                if(position == lastSelectedPos) return;
-//                notifyItemChanged(lastSelectedPos);
-//                Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
-//                lastSelectedPos = position;
-//                notifyItemChanged(lastSelectedPos);
-//                break;
-//            case R.id.tabClose:
-//                mController.closeTab(tab);
-//                notifyItemRemoved(position);
-//                notifyItemRangeChanged(position, getItemCount());
-//                view.setVisibility(View.GONE);
-//                break;
-//        }
+//    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+//        return new TabViewHolder(mInflater.inflate(R.layout.tab_list_item, parent, false));
+//    }
+//
+//    public long getItemId(int position){
+//        return position;
+//    }
+//    public void setCurrent(int index){
+//        mCurrent = index;
+//    }
+//    @Override
+//    public void bindView(Tab tab, int position, RecyclerView.ViewHolder holder) {
+//        TabViewHolder pagerViewHolder = (TabViewHolder) holder;
+//        pagerViewHolder.itemView.setSelected(lastSelectedPos == position);
+//        pagerViewHolder.bind(tab,position);
 //    }
 //
 //    public void setlastSelectedPos() {
 //        lastSelectedPos = getItemCount();
 //    }
+//    private int lastSelectedPos = 0;
+//
+//    class TabViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+//        @BindView(R.id.tv_tab_title)
+//        TextView tv_title;
+//        @BindView(R.id.tabClose)
+//        ImageView iv_close;
+//        @BindView(R.id.iv_tab_icon)
+//        ImageView iv_tab_icon;
+//        int position;
+//        Tab tab;
+//
+//        public TabViewHolder(View itemView) {
+//            super(itemView);
+//            ButterKnife.bind(this, itemView);
+//        }
+//
+//        @Override
+//        public void onClick(View v) {
+//            if(v == iv_close){
+//                if(mController != null) {
+//                    mController.closeTab(tab);
+//                    notifyItemRemoved(position);
+//                    notifyItemRangeChanged(position, getItemCount());
+//                    v.setVisibility(View.GONE);
+//                }
+//            } else if(v == tv_title) {
+//                if(mController != null) {
+//                    mController.selectTab(tab);
+//                    if(position == lastSelectedPos) return;
+//                    notifyItemChanged(lastSelectedPos);
+//                    Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
+//                    lastSelectedPos = position;
+//                    notifyItemChanged(lastSelectedPos);
+//                }
+//            }
+//        }
+//        public void bind(Tab tab, int position) {
+//            String title = tab.getTitle();
+//            tv_title.setText(title);
+//            iv_tab_icon.setImageBitmap(tab.getFavicon());
+//            iv_tab_icon.setOnClickListener(this);
+//            tv_title.setOnClickListener(this);
+//            iv_close.setOnClickListener(this);
+//            this.tab = tab;
+//            this.position = position;
+//        }
+//    }
 //}
+
+import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.BaseViewHolder;
+
+import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.tab.Tab;
+
+public class TabAdapter extends BaseQuickAdapter<Tab, BaseViewHolder> {
+    private int lastSelectedPos = 0;
+
+    public int getLastSelectedPos() {
+        return lastSelectedPos;
+    }
+
+    public void setLastSelectedPos(int lastSelectedPos) {
+        this.lastSelectedPos = lastSelectedPos;
+    }
+
+    public TabAdapter(int layoutResId) {
+        super(layoutResId);
+    }
+
+    @Override
+    protected void convert(BaseViewHolder helper, Tab item) {
+        helper.setText(R.id.tv_tab_title, item.getTitle())
+                .setImageBitmap(R.id.iv_tab_icon, item.getFavicon())
+                .addOnClickListener(R.id.tabClose)
+                .itemView.setSelected(lastSelectedPos == helper.getLayoutPosition());
+    }
+}

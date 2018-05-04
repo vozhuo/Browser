@@ -52,7 +52,7 @@ public class SearchPresenterImpl implements SearchPresenter, OnSearchListener {
 
     @Override
     public void onSortSuccess(ArrayList<SearchBean> results) {
-        searchView.showHistories(results);
+        searchView.showContains(results);
     }
 
     @Override

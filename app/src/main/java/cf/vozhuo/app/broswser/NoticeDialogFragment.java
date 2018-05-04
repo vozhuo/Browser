@@ -2,7 +2,6 @@ package cf.vozhuo.app.broswser;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -10,12 +9,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ClickableSpan;
-import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,22 +31,19 @@ import android.widget.Toast;
 
 import java.io.File;
 
-import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.HistoryFragment;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 
-import static android.content.ContentValues.TAG;
-
 public class NoticeDialogFragment extends DialogFragment{
     private TextView tv_notice;
     private LinearLayout notice_content;
-    MainActivity activity;
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        activity = (MainActivity)context;
-    }
+
+//    @Override
+//    public void onAttach(Context context) {
+//        super.onAttach(context);
+//        activity = (MainActivity)context;
+//    }
 
     @Nullable
     @Override
@@ -86,7 +78,7 @@ public class NoticeDialogFragment extends DialogFragment{
         final Bundle bundle = getArguments();
         String []engine = new String[]{"百度", "谷歌", "必应", "搜狗"};
         String []ua = new String[]{"Android", "PC", "iPhone"};
-        String []clear = new String[]{"搜索记录", "帐号密码", "Cookies", "历史记录", "缓存文件"};
+        String []clear = new String[]{"搜索记录", "Cookies", "历史记录", "缓存文件"};
         if (bundle != null) {
             if(bundle.getString("search_engine") != null) {
                 notice_content.setOrientation(LinearLayout.HORIZONTAL);
@@ -160,12 +152,12 @@ public class NoticeDialogFragment extends DialogFragment{
                 tv_notice.setText("清除缓存");
                 tv_notice.setTextColor(Color.BLACK);
 
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < 4; i++) {
                     CheckBox checkBox = new CheckBox(getContext());
                     checkBox.setId(i);
                     checkBox.setText(clear[i]);
                     checkBox.setOnCheckedChangeListener(listener);
-                    if(i == 0 || i == 3 || i == 4) checkBox.setChecked(true);
+                    if(i == 0 || i == 2) checkBox.setChecked(true);
                     notice_content.addView(checkBox);
                 }
                 Button submit = new Button(getContext());
@@ -180,17 +172,15 @@ public class NoticeDialogFragment extends DialogFragment{
                 submit.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(isCheck[0]) {
+                        if(sba.get(0)) {
                             SearchActivity.ClearSearch();
-                        } else if(isCheck[1]) {
-
-                        } else if(isCheck[2]) {
+                        } else if(sba.get(1)) {
                             CookieSyncManager.createInstance(getContext());
                             CookieSyncManager.getInstance().startSync();
                             CookieManager.getInstance().removeSessionCookie();
-                        } else if(isCheck[3]) {
+                        } else if(sba.get(2)) {
                             HistoryFragment.deleteHistory();
-                        } else if(isCheck[4]) {
+                        } else if(sba.get(3)) {
                             MainActivity.ClearCache();
                         }
                         dismiss();
@@ -268,11 +258,13 @@ public class NoticeDialogFragment extends DialogFragment{
             }
         }
     }
-    private boolean []isCheck = new boolean[5];
+    private SparseBooleanArray sba = new SparseBooleanArray(4);
+//    private boolean []isCheck = new boolean[4];
     private CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            isCheck[buttonView.getId()] = isChecked;
+            sba.put(buttonView.getId(), isChecked);
+//            isCheck[buttonView.getId()] = isChecked;
         }
     };
 }

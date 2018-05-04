@@ -1,14 +1,10 @@
 package cf.vozhuo.app.broswser;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.databinding.DataBindingUtil;
 import android.graphics.Rect;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -21,52 +17,24 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnCheckedChanged;
-import butterknife.OnClick;
+import cf.vozhuo.app.broswser.databinding.ActivitySettingBinding;
+import cf.vozhuo.app.broswser.tab.SettingEntity;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
-public class SettingActivity extends AppCompatActivity implements SettingController{
+public class SettingActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 0;
     private static final String TAG = "SettingActivity";
 
-    private List<String> list = new ArrayList<>();
-
-    SettingAdapter mAdapter;
-
-    @BindView(R.id.showMenuList)
-    RecyclerView mRecyclerView;
-
-    @BindView(R.id.toolbar_setting)
-    Toolbar toolbar;
-
-    public void clearDefaultAndSet(boolean isChecked) {
-        if (isChecked) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
-            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-            ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-
-            if("android".equals(info.activityInfo.packageName)) { //未设置默认浏览器
-                startActivity(intent);
-
-            } else {
-                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:" + info.activityInfo.packageName)), REQUEST_CODE);
-            }
-        }
-    }
+    private List<SettingEntity> list = new ArrayList<>();
+    private SettingAdapter mAdapter;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -79,7 +47,6 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
 //        }
     }
 
-    @Override
     public boolean isDefaultBrowser() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
         ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -89,9 +56,10 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_setting);
+        ActivitySettingBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_setting);
 
-        ButterKnife.bind(this);
+        Toolbar toolbar = binding.toolbarSetting;
+        RecyclerView mRecyclerView = binding.showMenuList;
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -104,14 +72,12 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
             }
         });
 
-        Log.e(TAG, "onCreate: " + getPackageName());
-        list.add("设置默认浏览器");
-        list.add("搜索引擎");
-        list.add("设置UA");
-        list.add("清理缓存");
+        list.add(new SettingEntity("设置默认浏览器", 1));
+        list.add(new SettingEntity("搜索引擎", 2));
+        list.add(new SettingEntity("设置UA", 2));
+        list.add(new SettingEntity("清理缓存", 2));
 
-        mAdapter = new SettingAdapter(this, this);
-        mAdapter.updateData(list);
+        mAdapter = new SettingAdapter(list);
 
         LinearLayoutManager layout = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layout);
@@ -123,9 +89,52 @@ public class SettingActivity extends AppCompatActivity implements SettingControl
                 outRect.set(20, 20, 10, 20);
             }
         });
+        mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                SettingEntity item = mAdapter.getItem(position);
+                if(item != null) {
+                    switch (item.getItemType()) {
+                        case 1:
+                            SwitchCompat switchCompat = view.findViewById(R.id.switch_default);
+                            Log.e(TAG, "onItemClick: " + switchCompat.isChecked());
+
+                            clearDefaultAndSet(switchCompat.isChecked());
+                            break;
+                        case 2:
+                            showFragment(position);
+                            break;
+                    }
+                }
+            }
+        });
+        mAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                if(view.getId() == R.id.switch_default) {
+                    SwitchCompat switchCompat = view.findViewById(R.id.switch_default);
+                    Log.e(TAG, "onItemChildClick: " + switchCompat.isChecked());
+                    clearDefaultAndSet(switchCompat.isChecked());
+                }
+            }
+        });
     }
 
-    @Override
+    public void clearDefaultAndSet(boolean isChecked) {
+        if (isChecked) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+            ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+
+            if("android".equals(info.activityInfo.packageName)) { //未设置默认浏览器
+                startActivity(intent);
+            } else {
+                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + info.activityInfo.packageName)), REQUEST_CODE);
+            }
+        }
+    }
+
     public void showFragment(int position) {
         FragmentManager fm = getSupportFragmentManager();
         NoticeDialogFragment noticeDialogFragment = new NoticeDialogFragment();
