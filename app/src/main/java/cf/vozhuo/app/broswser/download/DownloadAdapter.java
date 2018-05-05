@@ -215,8 +215,10 @@ public class DownloadAdapter extends BaseQuickAdapter<DownloadEntity, BaseViewHo
         super(layoutResId, data);
 
         //初始化map集合,默认为不选中
-        for (int i = 0; i < data.size(); i++) {
-            sba.put(i, false);
+        if(data != null) {
+            for (int i = 0; i < data.size(); i++) {
+                sba.put(i, false);
+            }
         }
     }
 

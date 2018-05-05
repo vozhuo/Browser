@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.webkit.WebView;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -33,6 +29,7 @@ import java.util.Locale;
 import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
+import cf.vozhuo.app.broswser.settings.SettingActivity;
 
 import static android.content.ContentValues.TAG;
 
@@ -128,38 +125,38 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         switch (id) {
             case R.id.refresh:
                 ((MainActivity)getActivity()).refreshPage();
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.mark:
                 startActivity(new Intent(getActivity(), FavHisActivity.class));
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.collect:
                 collectClick();
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.setting:
                 startActivity(new Intent(getActivity(), SettingActivity.class));
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.setImage:
                 setImageClick();
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.track:
                 Log.e(TAG, "TrackClick");
                 trackClick();
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.dark:
                 Log.e(TAG, "DarkClick");
                 darkClick();
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
             case R.id.download:
                 Log.e(TAG, "DownloadClick");
                 startActivity(new Intent(getActivity(), DownloadActivity.class));
-                getFragmentManager().beginTransaction().remove(BottomDialogFragment.this).commit();
+                dismiss();
                 break;
         }
     }

@@ -105,7 +105,6 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
         searchView.addTextChangedListener(textWatcher);
         mSearchPresenter.sortHistory();
-
     }
 
     @Override

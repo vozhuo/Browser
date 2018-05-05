@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser;
+package cf.vozhuo.app.broswser.settings;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,16 +17,17 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import cf.vozhuo.app.broswser.NoticeDialogFragment;
+import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.databinding.ActivitySettingBinding;
 import cf.vozhuo.app.broswser.tab.SettingEntity;
-
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -39,18 +40,34 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        finishActivity(REQUEST_CODE);
-//        if(hasDefaultBrowser()) {
-//
-//        } else {
-        if(requestCode == REQUEST_CODE) startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse("http://")), REQUEST_CODE);
-//        }
+        if(requestCode == REQUEST_CODE) startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://")));
     }
 
     public boolean isDefaultBrowser() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
         ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
         return getPackageName().equals(info.activityInfo.packageName);
+    }
+
+    public void clearDefaultAndSet(boolean isChecked) {
+        if (isChecked) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+
+            if("android".equals(info.activityInfo.packageName)) { //未设置默认浏览器
+                intent.putExtra("SetDefault", true);
+                startActivity(intent);
+            } else {
+                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + info.activityInfo.packageName)), REQUEST_CODE);
+            }
+        } else { //取消默认设置
+            Log.e(TAG, "clearDefault");
+            getPackageManager().clearPackagePreferredActivities(getPackageName());
+//            Toast.makeText(this, "已清除默认设置", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -78,9 +95,7 @@ public class SettingActivity extends AppCompatActivity {
         list.add(new SettingEntity("清理缓存", 2));
 
         mAdapter = new SettingAdapter(list);
-
-        LinearLayoutManager layout = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(layout);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {
             @Override
@@ -97,8 +112,6 @@ public class SettingActivity extends AppCompatActivity {
                     switch (item.getItemType()) {
                         case 1:
                             SwitchCompat switchCompat = view.findViewById(R.id.switch_default);
-                            Log.e(TAG, "onItemClick: " + switchCompat.isChecked());
-
                             clearDefaultAndSet(switchCompat.isChecked());
                             break;
                         case 2:
@@ -113,25 +126,20 @@ public class SettingActivity extends AppCompatActivity {
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if(view.getId() == R.id.switch_default) {
                     SwitchCompat switchCompat = view.findViewById(R.id.switch_default);
-                    Log.e(TAG, "onItemChildClick: " + switchCompat.isChecked());
                     clearDefaultAndSet(switchCompat.isChecked());
                 }
             }
         });
-    }
 
-    public void clearDefaultAndSet(boolean isChecked) {
-        if (isChecked) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
-            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-            ResolveInfo info = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-
-            if("android".equals(info.activityInfo.packageName)) { //未设置默认浏览器
-                startActivity(intent);
+        if(getIntent().getStringExtra("NewIntent") != null) {
+            if(isDefaultBrowser()) {
+                Toast.makeText(this, "设置成功", Toast.LENGTH_SHORT)
+                        .show();
             } else {
-                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:" + info.activityInfo.packageName)), REQUEST_CODE);
+                Toast.makeText(this, "设置失败", Toast.LENGTH_SHORT)
+                        .show();
             }
+            getIntent().removeExtra("NewIntent");
         }
     }
 

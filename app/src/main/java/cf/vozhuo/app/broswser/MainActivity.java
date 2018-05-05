@@ -6,16 +6,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -70,6 +71,7 @@ import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.favorites.FavHisEntity;
 import cf.vozhuo.app.broswser.favorites.SQLiteHelper;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
+import cf.vozhuo.app.broswser.settings.SettingActivity;
 import cf.vozhuo.app.broswser.tab.BrowserWebViewFactory;
 import cf.vozhuo.app.broswser.tab.Tab;
 import cf.vozhuo.app.broswser.tab.TabController;
@@ -145,9 +147,8 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
     @OnClick(R.id.ivMenu)
     public void showMainSettings(View view) {
-        FragmentManager fm = getSupportFragmentManager();
         BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
-        bottomDialogFragment.show(fm, "fragment_bottom_dialog");
+        bottomDialogFragment.show(getSupportFragmentManager(), "fragment_bottom_dialog");
     }
     private boolean isReload = false;
     //for Fragment use
@@ -322,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 Log.e("onDownloadStart", "url===" + url + "---contentDisposition=" + contentDisposition +  "---mimitype" + fileName);
                 ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
                 Bundle bundle = new Bundle();
-                bundle.putString("download", "download");
+                bundle.putString("Confirm", "download");
                 bundle.putString("fileName", URLUtil.guessFileName(url, contentDisposition, mimeType));
                 bundle.putString("fileSize", DownloadUtil.getFileSize(contentLength));
                 bundle.putString("url", url);
@@ -767,6 +768,23 @@ public class MainActivity extends AppCompatActivity implements UiController{
             redirect = true;
         }
         loadingFinished = false;
+        Log.e(TAG, "shouldOverrideUrlLoading: "+ url);
+
+        if (!(url.startsWith("http") || url.startsWith("https") || url.startsWith("ftp"))) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            if(getContext().getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).size() > 0) { //应用已安装
+                ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("Confirm", "open_app");
+                bundle.putString("eventUrl", url);
+                confirmDialogFragment.setArguments(bundle);
+                confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
+                Log.e(TAG, "fragment_confirm_dialog");
+            } else {
+                Toast.makeText(getContext(), "应用未安装", Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }
 //        tab.loadUrl(url, null, false); //解决goBack无效的问题
         return true;
     }
@@ -877,6 +895,18 @@ public class MainActivity extends AppCompatActivity implements UiController{
     public static void ClearCache() {
         for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
             tab.getWebView().clearCache(true);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if(intent.getBooleanExtra("SetDefault", false)) {
+            intent = new Intent(MainActivity.this, SettingActivity.class);
+            intent.putExtra("NewIntent", "NewIntent");
+            startActivity(intent);
+            overridePendingTransition(0, 0);
         }
     }
 }

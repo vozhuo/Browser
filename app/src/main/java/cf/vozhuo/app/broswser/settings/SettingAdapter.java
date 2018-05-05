@@ -1,13 +1,15 @@
-package cf.vozhuo.app.broswser;
+package cf.vozhuo.app.broswser.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import java.util.List;
 
+import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.SettingEntity;
 
 public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, BaseViewHolder> {
@@ -20,8 +22,8 @@ public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, Bas
      */
     public SettingAdapter(List<SettingEntity> data) {
         super(data);
-        addItemType(SettingEntity.CHECKBOX, R.layout.menu_switch_item);
-        addItemType(SettingEntity.TEXT, R.layout.layout_menu_item);
+        addItemType(SettingEntity.CHECKBOX, R.layout.item_setting_switch);
+        addItemType(SettingEntity.TEXT, R.layout.item_setting_notice);
     }
 
     @Override
@@ -62,7 +64,10 @@ public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, Bas
                 }
                 break;
             case SettingEntity.CHECKBOX:
-                helper.setText(R.id.switch_default, item.getContent());
+                Log.e(TAG, "convert: "+((SettingActivity)mContext).isDefaultBrowser());
+                helper.setText(R.id.switch_default, item.getContent())
+                        .setChecked(R.id.switch_default, ((SettingActivity)mContext).isDefaultBrowser())
+                        .addOnClickListener(R.id.switch_default);
                 break;
         }
     }

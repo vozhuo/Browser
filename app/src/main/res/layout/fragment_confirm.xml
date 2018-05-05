@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable name="handlers" type="cf.vozhuo.app.broswser.ConfirmDialogFragment"/>
+    </data>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="8dp"
@@ -19,7 +22,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:text="Content"
         android:textColor="@color/black"
         app:layout_constraintBottom_toTopOf="@+id/ll_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -43,6 +45,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:background="@color/transparent"
+            android:onClick="@{handlers::onClick}"
             android:text="@string/back" />
 
         <Button
@@ -53,8 +56,8 @@
             android:layout_alignParentRight="true"
             android:layout_gravity="end"
             android:background="@color/transparent"
+            android:onClick="@{handlers::onClick}"
             android:text="@string/confirm" />
-
     </RelativeLayout>
 
     <LinearLayout
@@ -75,3 +78,4 @@
 
     </android.support.constraint.ConstraintLayout>
 </android.support.constraint.ConstraintLayout>
+</layout>

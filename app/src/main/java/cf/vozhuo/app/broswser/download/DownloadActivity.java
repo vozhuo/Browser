@@ -64,12 +64,36 @@ public class DownloadActivity extends AppCompatActivity{
 
         ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("download_clear", "download_clear");
+        bundle.putString("Confirm", "download_clear");
         bundle.putInt("count", count);
 
         confirmDialogFragment.setArguments(bundle);
         confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e(TAG, "onResume: ");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e(TAG, "onResume: ");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e(TAG, "onDestroy: ");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e(TAG, "onStop: ");
     }
 
     @Override
@@ -85,19 +109,17 @@ public class DownloadActivity extends AppCompatActivity{
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                finish();
+//            }
+//        });
 
         mList = Aria.download(this).getTaskList();
 
         if(!(mList == null || mList.isEmpty())) {
             ib_download_clear.setVisibility(View.VISIBLE);
-        } else {
-            mAdapter.setEmptyView(getWindow().getDecorView());
         }
 
         mAdapter = new DownloadAdapter(R.layout.download_list_item, mList);
