@@ -3,6 +3,7 @@ package cf.vozhuo.app.broswser;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -31,24 +32,24 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import cf.vozhuo.app.broswser.databinding.FragmentNoticeBinding;
 import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.HistoryFragment;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 
-public class NoticeDialogFragment extends DialogFragment{
-    private TextView tv_notice;
-    private LinearLayout notice_content;
+public class NoticeDialogFragment extends DialogFragment {
 
-//    @Override
-//    public void onAttach(Context context) {
-//        super.onAttach(context);
-//        activity = (MainActivity)context;
-//    }
-
+    private FragmentNoticeBinding binding;
+    private SparseBooleanArray sba = new SparseBooleanArray(4);
+    private final static String []engine = new String[]{"百度", "谷歌", "必应", "搜狗"};
+    private final static String []ua = new String[]{"Android", "PC", "iPhone"};
+    private final static String []clear = new String[]{"搜索记录", "Cookies", "历史记录", "缓存文件"};
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_notice, null);
+        binding = DataBindingUtil.inflate(inflater,
+                R.layout.fragment_notice, container, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -73,19 +74,15 @@ public class NoticeDialogFragment extends DialogFragment{
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        tv_notice = view.findViewById(R.id.tv_notice);
-        notice_content = view.findViewById(R.id.notice_content);
+        TextView tv_notice = binding.tvNotice;
+        LinearLayout notice_content = binding.noticeContent;
+
         final Bundle bundle = getArguments();
-        String []engine = new String[]{"百度", "谷歌", "必应", "搜狗"};
-        String []ua = new String[]{"Android", "PC", "iPhone"};
-        String []clear = new String[]{"搜索记录", "Cookies", "历史记录", "缓存文件"};
         if (bundle != null) {
             if(bundle.getString("search_engine") != null) {
-                notice_content.setOrientation(LinearLayout.HORIZONTAL);
                 tv_notice.setText("选择搜索引擎");
-                tv_notice.setTextColor(Color.BLACK);
 
-                SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+                SharedPreferences sp = getContext().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
                 String search_engine = sp.getString("search_engine", "百度");
 
                 RadioGroup radioGroup = new RadioGroup(getContext());
@@ -115,7 +112,6 @@ public class NoticeDialogFragment extends DialogFragment{
                 });
 
             } else if (bundle.getString("ua") != null) {
-                notice_content.setOrientation(LinearLayout.HORIZONTAL);
                 tv_notice.setText("选择UA");
                 tv_notice.setTextColor(Color.BLACK);
 
@@ -150,7 +146,6 @@ public class NoticeDialogFragment extends DialogFragment{
             } else if (bundle.getString("clear") != null) {
                 notice_content.setOrientation(LinearLayout.VERTICAL);
                 tv_notice.setText("清除缓存");
-                tv_notice.setTextColor(Color.BLACK);
 
                 for (int i = 0; i < 4; i++) {
                     CheckBox checkBox = new CheckBox(getContext());
@@ -191,7 +186,6 @@ public class NoticeDialogFragment extends DialogFragment{
             } else if(bundle.getString("download") != null) { //下载Fragment
                 notice_content.setOrientation(LinearLayout.VERTICAL);
                 tv_notice.setText("下载");
-                tv_notice.setTextColor(Color.BLACK);
 
                 final TextView warning = new TextView(getContext());
                 warning.setText("已存在同名文件");
@@ -258,13 +252,10 @@ public class NoticeDialogFragment extends DialogFragment{
             }
         }
     }
-    private SparseBooleanArray sba = new SparseBooleanArray(4);
-//    private boolean []isCheck = new boolean[4];
     private CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             sba.put(buttonView.getId(), isChecked);
-//            isCheck[buttonView.getId()] = isChecked;
         }
     };
 }

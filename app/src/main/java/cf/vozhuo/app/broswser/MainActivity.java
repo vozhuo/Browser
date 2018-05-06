@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,6 +21,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -60,16 +62,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnLongClick;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
+import cf.vozhuo.app.broswser.databinding.ActivityMainBinding;
 import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.favorites.FavHisEntity;
-import cf.vozhuo.app.broswser.favorites.SQLiteHelper;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 import cf.vozhuo.app.broswser.settings.SettingActivity;
 import cf.vozhuo.app.broswser.tab.BrowserWebViewFactory;
@@ -86,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private static final int REQUEST_CODE = 0;
 
     private FavHisDao favHisDao;
-    private SQLiteHelper openHelper;
     private static final String TABLE_HIS = "histories";
     private static final String TABLE_QA = "quickAccess";
     private boolean isEditMode = false;
@@ -100,56 +97,42 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private RecyclerView mRecyclerView;
     private List<FavHisEntity> mList = new ArrayList<>();
 
-    public List<FavHisEntity> getList() {
-        return mList;
-    }
-
-    public void setList(List<FavHisEntity> list) {
-        this.mList = list;
-    }
-
-    @BindView(R.id.refreshLayout)
     SwipeRefreshLayout refreshLayout;
-
-    @BindView(R.id.tvPagerNum)
     TextView mTabNum;
-
-    @BindView(R.id.contentWrapper)
     ConstraintLayout mContentWrapper;
-
-    @BindView(R.id.searchProgress)
     ProgressBar searchProgress;
-
-    @BindView(R.id.siteTitle)
     TextView siteTitle;
-
-    @BindView(R.id.mainView)
     ConstraintLayout mainView;
-
-    @BindView(R.id.searchBox)
-    ConstraintLayout searchBox;
-
-    @BindView(R.id.BottomBar)
+    View searchBox;
     ConstraintLayout mBottomBar;
-
-    @BindView(R.id.showQuickAccessList)
     RecyclerView mQARecyclerView;
 
-    @OnClick({R.id.searchBox, R.id.siteTitle})
-    public void showSearchBar() {
-        Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-        if(!mIsInMain) {
-            intent.putExtra("siteInfo", mActiveTab.getUrl());
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.ivMenu:
+                BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
+                bottomDialogFragment.show(getSupportFragmentManager(), "fragment_bottom_dialog");
+                break;
+            case R.id.tvPagerNum:
+                showPopupWindow(view);
+                showTabs();
+                break;
+            case R.id.siteTitle:
+            case R.id.searchBox:
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                if(!mIsInMain) {
+                    intent.putExtra("siteInfo", mActiveTab.getUrl());
+                }
+                startActivityForResult(intent, REQUEST_CODE);
+                overridePendingTransition(0, 0);
+                break;
         }
-        startActivityForResult(intent, REQUEST_CODE);
-        overridePendingTransition(0, 0);
+    }
+    public boolean onLongClick(View view) {
+        addTab(true);
+        return true;
     }
 
-    @OnClick(R.id.ivMenu)
-    public void showMainSettings(View view) {
-        BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
-        bottomDialogFragment.show(getSupportFragmentManager(), "fragment_bottom_dialog");
-    }
     private boolean isReload = false;
     //for Fragment use
     public void refreshPage() {
@@ -198,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
         filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
         filter.addAction("android.net.wifi.STATE_CHANGE");
-        registerReceiver(mNetworkChangeListener,filter);
+        registerReceiver(mNetworkChangeListener, filter);
     }
 
     @Override
@@ -210,13 +193,21 @@ public class MainActivity extends AppCompatActivity implements UiController{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        setContentView(R.layout.activity_main);
+        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        ButterKnife.bind(this);
+        binding.setHandlers(this);
+        binding.bottomBar.setHandlers(this);
+        refreshLayout = binding.refreshLayout;
+        mTabNum = binding.bottomBar.tvPagerNum;
+        mContentWrapper = binding.contentWrapper;
+        searchProgress = binding.bottomBar.searchProgress;
+        siteTitle = binding.bottomBar.siteTitle;
+        mainView = binding.mainView;
+        searchBox = binding.searchBox;
+        mBottomBar = binding.bottomBar.includeBar;
+        mQARecyclerView = binding.showQuickAccessList;
 
-        mTabAdapter = new TabAdapter(R.layout.tab_list_item);
-//        mTabAdapter = new TabAdapter(this, this);
+        mTabAdapter = new TabAdapter();
         mTabController = new TabController(this, this);
         mFactory = new BrowserWebViewFactory(this);
 
@@ -241,7 +232,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
             }
         }
         nightCode = Base64.encodeToString(buffer, Base64.NO_WRAP);
-
 
         //配置refreshLayout
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -299,6 +289,10 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
                         Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
                         if (mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)) { //到达最前页
+                            if(!loadingFinished) {
+                                Log.e(TAG, "onFling: 未加载完成");
+                                mActiveTab.loadUrl(mActiveTab.getCurrentUrl(), null, false); //未加载完成
+                            }
                             if (!mIsInMain) {
                                 mActiveTab.pushForwardHistory(mActiveTab.getCurrentUrl());
                                 mActiveTab.popBrowsedHistory();
@@ -337,9 +331,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
         if(mIsInMain) refreshLayout.setEnabled(false);
 
-        openHelper = new SQLiteHelper(getContext());
-        openHelper.getReadableDatabase();
-        favHisDao = new FavHisDao(getContext(), TABLE_QA);
+        favHisDao = new FavHisDao(this, TABLE_QA);
 
         mList = favHisDao.queryAll();
         mHomeAdapter = new HomeAdapter(mList);
@@ -351,12 +343,13 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mHomeAdapter.enableDragItem(itemTouchHelper, R.id.ib_qa_icon, true);
         mHomeAdapter.setOnItemDragListener(onItemDragListener);
         // 开启滑动删除
-        mHomeAdapter.enableSwipeItem();
-        mHomeAdapter.setOnItemSwipeListener(onItemSwipeListener);
+//        mHomeAdapter.enableSwipeItem();
+//        mHomeAdapter.setOnItemSwipeListener(onItemSwipeListener);
 //        GridLayoutManager layoutManager = new GridLayoutManager(this, 5);
 
 //        layoutManager.setReverseLayout(true);
-        mQARecyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        mQARecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mQARecyclerView.setLayoutManager(new GridLayoutManager(this, 5));
         mQARecyclerView.setAdapter(mHomeAdapter);
         mHomeAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -401,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if(view.getId() == R.id.tabClose) {
-                    closeTab(mTabAdapter.getItem(position));
+                    removeTab(mTabAdapter.getItem(position));
                 }
             }
         });
@@ -483,41 +476,25 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
     }
 
-    private void removeTab(int index) {
-        mTabController.removeTab(index);
-    }
-
-    @OnLongClick(R.id.tvPagerNum)
-    boolean longClick(View view) {
-        addTab(true);
-        return true;
-    }
-    @OnClick(R.id.tvPagerNum)
-    void clickPagerNum(View view) {
-        showPopupWindow(view);
-        showTabs();
-    }
-
     private PopupWindow popupWindow;
+    private View contentView;
     private void showPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View contentView = inflater.inflate(R.layout.layout_site_list, null);
+        contentView = inflater.inflate(R.layout.pop_tab_list, null);
         contentView.setFocusable(true);
         contentView.setFocusableInTouchMode(true);
 
         //创建默认的线性LayoutManager
         mRecyclerView = contentView.findViewById(R.id.showTabList);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setHasFixedSize(true); //item高度固定
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        popupWindow = new PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT,
+        popupWindow = new PopupWindow(contentView, ConstraintLayout.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         popupWindow.setContentView(contentView);
         popupWindow.setAnimationStyle(R.style.anim_pop);
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 
         popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 75);
 
@@ -541,7 +518,23 @@ public class MainActivity extends AppCompatActivity implements UiController{
             }
         });
     }
+    private void showTabs() {
+        mTabAdapter.setNewData(mTabController.getTabs());
+        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
 
+        LinearLayoutManager layout = new LinearLayoutManager(contentView.getContext());
+        layout.setStackFromEnd(true); //倒序
+//        layout.setReverseLayout(true);
+        mRecyclerView.setLayoutManager(layout);
+        mRecyclerView.setAdapter(mTabAdapter);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                super.getItemOffsets(outRect, view, parent, state);
+                outRect.set(10, 20, 10,20);//设置item偏移
+            }
+        });
+    }
     private boolean isShouldExit(View v, MotionEvent event) {
         if (v != null && (v instanceof ImageButton)) {
             int[] l = {0, 0};
@@ -609,6 +602,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 if (mActiveTab.canGoBack()) {
                     Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
                     if (mActiveTab.getPreUrl().equals(Tab.DEFAULT_BLANK_URL)) { //到达最前页
+                        if(!loadingFinished) mActiveTab.loadUrl(mActiveTab.getCurrentUrl(), null, false);
                         if (!mIsInMain) {
                             switchToMain(); //返回至主页
                         }
@@ -618,7 +612,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
                     updateSearchBar();
                     return true;
                 } else {
-
                     if ((System.currentTimeMillis() - mExitTime) > 2000) {
                         Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
                         mExitTime = System.currentTimeMillis();// 更新mExitTime
@@ -633,25 +626,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
         return super.dispatchKeyEvent(event);
     }
 
-    private void showTabs() {
-        mTabAdapter.setNewData(mTabController.getTabs());
-
-//        mTabAdapter.updateData(mTabController.getTabs());
-        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
-
-        LinearLayoutManager layout = new LinearLayoutManager(this);
-        layout.setStackFromEnd(true); //倒序
-//        layout.setReverseLayout(true);
-        mRecyclerView.setLayoutManager(layout);
-        mRecyclerView.setAdapter(mTabAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL) {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 20, 10,20);//设置item偏移
-            }
-        });
-    }
     @Override
     public void selectTab(Tab tab) {
         if(mActiveTab == tab) {
@@ -682,8 +656,8 @@ public class MainActivity extends AppCompatActivity implements UiController{
         siteTitle.setText(mActiveTab.getTitle());
     }
     @Override
-    public void closeTab(Tab tab) {
-        Log.e(TAG, "closeTab: "+ mTabController.getCurrentPosition());
+    public void removeTab(Tab tab) {
+        Log.e(TAG, "removeTab: "+ mTabController.getCurrentPosition());
         if(mActiveTab == tab) { //移除当前Tab，选择上一个创建的Tab显示
             if(mTabController.getTabCount() > 1) {
                 selectTab(mTabController.getTab(
@@ -692,11 +666,9 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 addTab(true);
                 popupWindow.dismiss();
             }
-
         }
         mTabAdapter.remove(mTabController.getTabPosition(tab));
         mTabController.removeTab(tab); //执行Destroy前移除WebView，解决内存泄漏的问题
-//        mTabAdapter.removeData(tab, false);
     }
 
     public void load(String url) {
@@ -713,7 +685,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         }
         WebView view = mActiveTab.getWebView();
 
-        Log.e(TAG,"switchToTab ----------" + mainView.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
+//        Log.e(TAG,"switchToTab ----------" + mainView.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
         if(view.getParent() == null) {
             ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
             if(lp == null){
@@ -733,11 +705,10 @@ public class MainActivity extends AppCompatActivity implements UiController{
             mContentWrapper.addView(mainView);
         }
 //        mainView.bringToFront();
-
         mActiveTab.stopLoading();
         mIsInMain = true;
         siteTitle.setVisibility(View.INVISIBLE);
-        searchProgress.setProgress(View.GONE);
+        searchProgress.setVisibility(View.GONE);
     }
     //移除当前WebView
     private void removeWebView() {
@@ -755,6 +726,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
             searchProgress.setVisibility(View.GONE);
 //            siteTitle.setText(tab.getTitle());
         } else {
+            Log.e(TAG, "onPageStarted: ");
             searchProgress.setVisibility(View.VISIBLE);
             siteTitle.setText(tab.getUrl());
         }
@@ -791,7 +763,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
     @Override
     public void onPageFinished(Tab tab) {
-        searchProgress.setVisibility(View.INVISIBLE);
+        searchProgress.setVisibility(View.GONE);
         if (!redirect) {
             loadingFinished = true;
         }
@@ -804,6 +776,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         darkMode();
         CookieManager cookieManager = CookieManager.getInstance();
         String cookieStr = cookieManager.getCookie(tab.getUrl()); // 获取到cookie字符串值
+        mTabAdapter.notifyDataSetChanged();
     }
 
     public void darkMode() {
@@ -834,6 +807,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         tab.showHistory();
         isReload = false;
         tab.setGoBack(false);
+        mTabAdapter.notifyDataSetChanged();
     }
 
     private void saveAsHistory(Tab tab) {
@@ -890,6 +864,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
     @Override
     public void onFavicon(Tab tab, WebView view, Bitmap icon) {
+        mTabAdapter.notifyDataSetChanged();
     }
 
     public static void ClearCache() {

@@ -4,9 +4,7 @@
     android:id="@+id/menu_item"
     android:layout_width="match_parent"
     android:layout_height="30dp"
-    android:clickable="true"
-    android:layout_gravity="center_horizontal"
-    android:focusable="true">
+    android:layout_gravity="center_horizontal">
 
     <TextView
         android:id="@+id/tv_menu_title"

@@ -2,6 +2,7 @@ package cf.vozhuo.app.broswser.favorites;
 
 
 import android.app.Dialog;
+import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -12,25 +13,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.EditText;
 
 import java.io.Serializable;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.databinding.FragmentFavModifyBinding;
 
 public class ModifyFragment extends DialogFragment {
-    @BindView(R.id.et_title)
-    EditText et_title;
-    @BindView(R.id.et_url)
-    EditText et_url;
-    @BindView(R.id.bt_confirm)
-    Button bt_confirm;
-
     private FavHisEntity favorites;
+    private FragmentFavModifyBinding binding;
+
+    public void onClick(View view) {
+        favorites.setTitle(binding.etTitle.getText().toString());
+        favorites.setUrl(binding.etUrl.getText().toString());
+        Bundle bundle = getArguments();
+        ((FavoriteFragment)getParentFragment()).updateFavorite(favorites, bundle.getInt("position")); //调用FavoriteFragment的方法
+        dismiss();
+    }
 
     @Nullable
     @Override
@@ -40,7 +39,10 @@ public class ModifyFragment extends DialogFragment {
             Serializable serializable = bundle.getSerializable("favorites");
             favorites = (FavHisEntity) serializable;
         }
-        return inflater.inflate(R.layout.modify_favorite, null);
+        binding = DataBindingUtil.inflate(inflater,
+                R.layout.fragment_fav_modify, container, false);
+        binding.setHandlers(this);
+        return binding.getRoot();
     }
 
     @Override
@@ -63,21 +65,10 @@ public class ModifyFragment extends DialogFragment {
         }
     }
 
-    @OnClick(R.id.bt_confirm)
-    void updateFavorite() {
-        favorites.setTitle(et_title.getText().toString());
-        favorites.setUrl(et_url.getText().toString());
-        Bundle bundle = getArguments();
-        ((FavoriteFragment)getParentFragment()).updateFavorite(favorites, bundle.getInt("position")); //调用FavoriteFragment的方法
-        getFragmentManager().beginTransaction().remove(ModifyFragment.this).commit();
-    }
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
-
-        et_title.setText(favorites.getTitle());
-        et_url.setText(favorites.getUrl());
+        binding.etTitle.setText(favorites.getTitle());
+        binding.etUrl.setText(favorites.getUrl());
     }
 }

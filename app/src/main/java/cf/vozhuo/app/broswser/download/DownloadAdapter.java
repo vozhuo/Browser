@@ -53,7 +53,7 @@ import cf.vozhuo.app.broswser.R;
 //    @NonNull
 //    @Override
 //    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//        View view = mInflater.inflate(R.layout.download_list_item,
+//        View view = mInflater.inflate(R.layout.item_download,
 //                parent, false);
 ////        view.setOnClickListener(this);
 ////        view.setOnLongClickListener(this);

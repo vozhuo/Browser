@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+            name="handlers"
+            type="cf.vozhuo.app.broswser.BottomDialogFragment"/>
+    </data>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="8dp"
@@ -30,7 +35,8 @@
                 android:button="@null"
                 android:drawableTop="@drawable/setting"
                 android:paddingTop="18dp"
-                android:text="设置"
+                android:text="@string/settings"
+                android:onClick="@{handlers::onClick}"
                 android:layout_margin="5dp"
                 android:textAlignment="center"
                 android:textColor="@color/black"
@@ -46,7 +52,8 @@
                 android:drawableTop="@drawable/bg_image"
                 android:paddingTop="18dp"
                 android:layout_margin="5dp"
-                android:text="智能无图"
+                android:text="@string/noImage"
+                android:onClick="@{handlers::onClick}"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
@@ -61,7 +68,8 @@
                 android:drawableTop="@drawable/mark"
                 android:paddingTop="18dp"
                 android:layout_margin="5dp"
-                android:text="书签历史"
+                android:text="@string/mark"
+                android:onClick="@{handlers::onClick}"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
@@ -75,7 +83,8 @@
                 android:button="@null"
                 android:drawableTop="@drawable/bg_dark"
                 android:paddingTop="18dp"
-                android:text="夜间模式"
+                android:text="@string/night"
+                android:onClick="@{handlers::onClick}"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="12sp"
@@ -98,6 +107,7 @@
                 android:drawableTop="@drawable/bg_collect"
                 android:paddingTop="18dp"
                 android:paddingBottom="8dp"
+                android:onClick="@{handlers::onClick}"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="12sp" />
@@ -109,9 +119,10 @@
                 android:layout_weight="1"
                 android:button="@null"
                 android:textAlignment="center"
-                android:text="无痕"
+                android:text="@string/noTrack"
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                android:onClick="@{handlers::onClick}"
                 android:paddingTop="18dp"
                 android:paddingBottom="8dp"
                 android:drawableTop="@drawable/bg_seen" />
@@ -125,9 +136,10 @@
                 android:paddingBottom="8dp"
                 android:button="@null"
                 android:textAlignment="center"
-                android:text="刷新"
+                android:text="@string/refresh"
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                android:onClick="@{handlers::onClick}"
                 android:drawableTop="@drawable/refresh" />
 
             <CheckBox
@@ -139,10 +151,12 @@
                 android:paddingBottom="8dp"
                 android:button="@null"
                 android:textAlignment="center"
-                android:text="下载"
+                android:text="@string/download"
                 android:textColor="@color/black"
                 android:textSize="12sp"
+                android:onClick="@{handlers::onClick}"
                 android:drawableTop="@drawable/download" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>
+</layout>

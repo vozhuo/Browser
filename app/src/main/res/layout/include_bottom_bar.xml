@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
+    <data>
+        <variable name="handlers" type="cf.vozhuo.app.broswser.MainActivity"/>
+    </data>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/includeBar"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:layout_editor_absoluteY="25dp">
-
+    android:layout_height="wrap_content">
 
     <ProgressBar
         android:id="@+id/searchProgress"
@@ -38,6 +39,7 @@
             android:layout_marginRight="15dp"
             android:padding="12dp"
             android:src="@drawable/ic_menu"
+            android:onClick="@{handlers::onClick}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/siteTitle"
@@ -53,7 +55,9 @@
             android:drawableTop="@drawable/ic_window"
             android:gravity="center_horizontal"
             android:paddingTop="8dp"
-            android:text="1"
+            android:onClick="@{handlers::onClick}"
+            android:onLongClick="@{handlers::onLongClick}"
+            android:text="@string/one"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/siteTitle"
             app:layout_constraintStart_toStartOf="parent"
@@ -72,6 +76,7 @@
             android:gravity="center"
             android:singleLine="true"
             android:textStyle="bold"
+            android:onClick="@{handlers::onClick}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/ivMenu"
             app:layout_constraintStart_toEndOf="@+id/tvPagerNum"

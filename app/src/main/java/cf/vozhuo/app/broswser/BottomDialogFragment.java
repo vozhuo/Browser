@@ -4,12 +4,12 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.text.DateFormat;
@@ -26,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import cf.vozhuo.app.broswser.databinding.FragmentOptionBinding;
 import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
@@ -33,19 +33,23 @@ import cf.vozhuo.app.broswser.settings.SettingActivity;
 
 import static android.content.ContentValues.TAG;
 
-public class BottomDialogFragment extends DialogFragment implements View.OnClickListener {
+public class BottomDialogFragment extends DialogFragment {
     private static final String TABLE = "favorites";
-    private boolean flag;
-    private ImageView imageView;
+
     private CheckBox cb_image;
     private CheckBox collect;
     private CheckBox cb_track;
     private CheckBox cb_dark;
-    private CheckBox refresh;
+
+    private FavHisDao favHisDao;
+    private FragmentOptionBinding binding;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_option, null); //载入fragment_option
+        binding = DataBindingUtil.inflate(inflater,
+                R.layout.fragment_option, container, false);
+        binding.setHandlers(this);
+        return binding.getRoot();
     }
 
     @Override
@@ -70,31 +74,25 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        view.findViewById(R.id.setting).setOnClickListener(this);
-        view.findViewById(R.id.setImage).setOnClickListener(this);
-        view.findViewById(R.id.mark).setOnClickListener(this);
-        view.findViewById(R.id.collect).setOnClickListener(this);
-        view.findViewById(R.id.track).setOnClickListener(this);
-        view.findViewById(R.id.refresh).setOnClickListener(this);
-        view.findViewById(R.id.dark).setOnClickListener(this);
-        view.findViewById(R.id.download).setOnClickListener(this);
+        super.onViewCreated(view, savedInstanceState);
+        cb_image = binding.setImage;
+        collect = binding.collect;
+        cb_track = binding.track;
+        cb_dark = binding.dark;
 
-        refresh = view.findViewById(R.id.refresh);
         //检测智能无图模式是否开启
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean state = sp.getBoolean("image_state", false);
-        cb_image = view.findViewById(R.id.setImage);
         cb_image.setChecked(state);
 
         //检测无痕模式是否开启
         sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         state = sp.getBoolean("track_state", false);
-        cb_track = view.findViewById(R.id.track);
         cb_track.setChecked(state);
 
         //检测是否已收藏
         favHisDao = new FavHisDao(getContext(), TABLE);
-        collect = view.findViewById(R.id.collect);
+
         boolean isCollected = favHisDao.queryURL(((MainActivity)getActivity()).getPageUrl());
         if(isCollected) {
             collect.setText("已添加");
@@ -107,58 +105,43 @@ public class BottomDialogFragment extends DialogFragment implements View.OnClick
         //检测夜间模式是否开启
         sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         state = sp.getBoolean("dark_state", false);
-        cb_dark = view.findViewById(R.id.dark);
         cb_dark.setChecked(state);
         //刷新、收藏Checkbox是否可点击
         Log.e(TAG, "onViewCreated: " +((MainActivity)getActivity()).getPageUrl());
         if(((MainActivity)getActivity()).getPageUrl().isEmpty()) {
-            refresh.setEnabled(false);
+            binding.refresh.setEnabled(false);
             collect.setEnabled(false);
         }
     }
 
-    private FavHisDao favHisDao;
-
-    @Override
     public void onClick(View v) {
-        int id = v.getId();
-        switch (id) {
+        switch (v.getId()) {
             case R.id.refresh:
                 ((MainActivity)getActivity()).refreshPage();
-                dismiss();
                 break;
             case R.id.mark:
                 startActivity(new Intent(getActivity(), FavHisActivity.class));
-                dismiss();
                 break;
             case R.id.collect:
                 collectClick();
-                dismiss();
                 break;
             case R.id.setting:
                 startActivity(new Intent(getActivity(), SettingActivity.class));
-                dismiss();
                 break;
             case R.id.setImage:
                 setImageClick();
-                dismiss();
                 break;
             case R.id.track:
-                Log.e(TAG, "TrackClick");
                 trackClick();
-                dismiss();
                 break;
             case R.id.dark:
-                Log.e(TAG, "DarkClick");
                 darkClick();
-                dismiss();
                 break;
             case R.id.download:
-                Log.e(TAG, "DownloadClick");
                 startActivity(new Intent(getActivity(), DownloadActivity.class));
-                dismiss();
                 break;
         }
+        dismiss();
     }
 
     private void darkClick() {

@@ -1,41 +1,31 @@
 package cf.vozhuo.app.broswser.favorites;
 
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.databinding.ActivityFavHisBinding;
 
-public class FavHisActivity extends AppCompatActivity{
-
-    @BindView(R.id.tb_fav_his)
-    Toolbar toolbar;
-    @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
-    @BindView(R.id.viewPager)
-    ViewPager viewPager;
+public class FavHisActivity extends AppCompatActivity {
     private List<Fragment> fragments = new ArrayList<>();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_fav_his);
-        ButterKnife.bind(this);
+        ActivityFavHisBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_fav_his);
 
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.tbFavHis);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        binding.tbFavHis.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -46,7 +36,7 @@ public class FavHisActivity extends AppCompatActivity{
         fragments.add(new HistoryFragment());
 
         final String []content = new String[]{"书签", "历史"};
-        viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
+        binding.viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
                 return fragments.get(position);
@@ -63,7 +53,6 @@ public class FavHisActivity extends AppCompatActivity{
                 return content[position];
             }
         });
-
-        tabLayout.setupWithViewPager(viewPager);
+        binding.tabLayout.setupWithViewPager(binding.viewPager);
     }
 }

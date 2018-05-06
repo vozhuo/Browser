@@ -14,7 +14,7 @@ public class HomeAdapter extends BaseItemDraggableAdapter<FavHisEntity, BaseView
     private Boolean isShowClose = false;
 
     public HomeAdapter(@Nullable List<FavHisEntity> data) {
-        super(R.layout.quick_list_item, data);
+        super(R.layout.item_quick_access, data);
     }
 
     @Override

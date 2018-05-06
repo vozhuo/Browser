@@ -1,6 +1,7 @@
 package cf.vozhuo.app.broswser.download;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,23 +28,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import cf.vozhuo.app.broswser.ConfirmDialogFragment;
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.databinding.ActivityDownloadBinding;
 
 import static android.content.ContentValues.TAG;
 
-public class DownloadActivity extends AppCompatActivity{
-
-    @BindView(R.id.toolbar_download)
-    Toolbar toolbar;
-    @BindView(R.id.showDownloadList)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.ib_download_clear)
-    ImageButton ib_download_clear;
+public class DownloadActivity extends AppCompatActivity {
+    private RecyclerView mRecyclerView;
 
     public static DownloadActivity instance;
     private List<DownloadEntity> mList = new ArrayList<>();
@@ -51,70 +44,46 @@ public class DownloadActivity extends AppCompatActivity{
     private boolean isSelectMode = false;
     private SparseBooleanArray sba;
 
-    @OnClick(R.id.ib_download_clear) void onClick() {
+    public void onClick(View view) {
         int count = 0;
         sba = mAdapter.getSba();
         for (int i = 0; i < sba.size(); i++) {
             if (sba.get(i)) {
                 Log.e("TAG", "你选了第：" + i + "项");
-//                Log.e(TAG, "onClick: " + mList.get(i).getKey());
                 count++;
             }
         }
-
         ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
         Bundle bundle = new Bundle();
         bundle.putString("Confirm", "download_clear");
         bundle.putInt("count", count);
-
         confirmDialogFragment.setArguments(bundle);
         confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.e(TAG, "onResume: ");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e(TAG, "onResume: ");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.e(TAG, "onDestroy: ");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.e(TAG, "onStop: ");
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_download);
-
-        ButterKnife.bind(this);
         instance = this;
+        ActivityDownloadBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_download);
+
+        binding.setHandlers(this);
+        Toolbar toolbar = binding.toolbarDownload;
+        mRecyclerView = binding.showDownloadList;
+        ImageButton ib_download_clear = binding.ibDownloadClear;
+
         Aria.download(this).register();
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                finish();
-//            }
-//        });
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         mList = Aria.download(this).getTaskList();
 
@@ -122,7 +91,7 @@ public class DownloadActivity extends AppCompatActivity{
             ib_download_clear.setVisibility(View.VISIBLE);
         }
 
-        mAdapter = new DownloadAdapter(R.layout.download_list_item, mList);
+        mAdapter = new DownloadAdapter(R.layout.item_download, mList);
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
@@ -166,7 +135,6 @@ public class DownloadActivity extends AppCompatActivity{
     @Download.onTaskRunning protected void running(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
             DownloadEntity item = mAdapter.getItem(i);
-//            mAdapter.bindToRecyclerView(mRecyclerView);
             ProgressBar progress = (ProgressBar) mAdapter.getViewByPosition(mRecyclerView, i, R.id.progressBar);
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);

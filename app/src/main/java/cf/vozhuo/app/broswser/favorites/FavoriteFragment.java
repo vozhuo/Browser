@@ -2,13 +2,11 @@ package cf.vozhuo.app.broswser.favorites;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,7 +19,6 @@ import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cf.vozhuo.app.broswser.MainActivity;
@@ -32,7 +29,6 @@ public class FavoriteFragment extends Fragment {
     private static final String TAG = "FavoriteFragment";
     private static final String TABLE = "favorites";
     private FavHisDao favHisDao;
-    private List<FavHisEntity> list = new ArrayList<>();
     private static final String TABLE_QA = "quickAccess";
     private FavoritesAdapter mAdapter;
     private FragmentFavoriteBinding binding;
@@ -52,21 +48,12 @@ public class FavoriteFragment extends Fragment {
         RecyclerView mRecyclerView = binding.showFavList;
         favHisDao = new FavHisDao(getContext(), TABLE);
 
-        list = favHisDao.queryAll();
-        mAdapter = new FavoritesAdapter(R.layout.favorite_list_item, list);
-
-//        if(list == null || list.size() == 0) mAdapter.setEmptyView(getView());
+        List<FavHisEntity> list = favHisDao.queryAll();
+        mAdapter = new FavoritesAdapter(R.layout.item_favorite, list);
 
         LinearLayoutManager layout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL) {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 15, 10,10);//设置item偏移
-            }
-        });
 
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -83,17 +70,16 @@ public class FavoriteFragment extends Fragment {
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, final int position) {
                 final FavHisEntity favorites = (FavHisEntity) adapter.getItem(position);
                 LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View contentView = inflater.inflate(R.layout.pop_favorite_edit, null);
+                View contentView = inflater.inflate(R.layout.pop_favorite_option, null);
                 final PopupWindow popupWindow = new PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 popupWindow.setFocusable(true);
                 popupWindow.setBackgroundDrawable(new BitmapDrawable());
                 popupWindow.setOutsideTouchable(true);
 
-                View v = view.findViewById(R.id.fav_web_title);
-                v.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                int mShowMorePopupWindowWidth = -v.getMeasuredWidth();
-                int mShowMorePopupWindowHeight = -v.getMeasuredHeight();
-                popupWindow.showAsDropDown(v, mShowMorePopupWindowWidth, mShowMorePopupWindowHeight);
+                view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                int mShowMorePopupWindowWidth = -view.getMeasuredWidth();
+                int mShowMorePopupWindowHeight = -view.getMeasuredHeight();
+                popupWindow.showAsDropDown(view, mShowMorePopupWindowWidth, mShowMorePopupWindowHeight);
 
                 TextView tv_del = contentView.findViewById(R.id.fav_del);
                 TextView tv_mod = contentView.findViewById(R.id.fav_mod);

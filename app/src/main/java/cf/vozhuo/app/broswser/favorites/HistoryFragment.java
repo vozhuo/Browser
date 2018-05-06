@@ -1,5 +1,6 @@
 package cf.vozhuo.app.broswser.favorites;
 
+import android.databinding.DataBindingUtil;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,48 +20,46 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.databinding.FragmentHistoryBinding;
 
 public class HistoryFragment extends Fragment{
     private static final String TABLE = "histories";
     private static FavHisDao favHisDao;
-    private List<FavHisEntity> list = new ArrayList<>();
-    HistoriesAdapter mAdapter;
+    private HistoriesAdapter mAdapter;
 
-    @BindView(R.id.showHisList)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.iv_clear_history)
-    ImageView iv_clear_history;
+    private FragmentHistoryBinding binding;
 
-    @OnClick(R.id.iv_clear_history)
-    void onClick() {
+    public void onClick(View view) {
         favHisDao.deleteAll();
         mAdapter.setNewData(new ArrayList<FavHisEntity>());
-        Toast.makeText(getActivity(), "清理成功", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "清理成功", Toast.LENGTH_SHORT).show();
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_history, container, false);
+        binding = DataBindingUtil.inflate(inflater,
+                R.layout.fragment_history, container, false);
+        binding.setHandlers(this);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
+
+        RecyclerView mRecyclerView = binding.showHisList;
+        ImageView iv_clear_history = binding.ivClearHistory;
 
         favHisDao = new FavHisDao(getContext(), TABLE);
 
-        list = favHisDao.queryAll();
+        List<FavHisEntity> list = favHisDao.queryAll();
         if(list == null || list.size() == 0) {
             iv_clear_history.setVisibility(View.GONE);
         }
-        mAdapter = new HistoriesAdapter(R.layout.history_list_item, list);
+        mAdapter = new HistoriesAdapter(R.layout.item_browse_history, list);
 
         LinearLayoutManager layout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layout);

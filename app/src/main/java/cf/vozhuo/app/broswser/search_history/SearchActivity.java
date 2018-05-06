@@ -88,7 +88,7 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
             }
         });
 
-        mAdapter = new SearchHistoryAdapter(R.layout.search_list_item, histories);
+        mAdapter = new SearchHistoryAdapter(R.layout.item_search_history, histories);
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
