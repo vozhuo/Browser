@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,6 +25,7 @@ import java.util.List;
 
 import cf.vozhuo.app.broswser.NoticeDialogFragment;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.adapter.SettingAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivitySettingBinding;
 import cf.vozhuo.app.broswser.tab.SettingEntity;
 
@@ -144,7 +144,6 @@ public class SettingActivity extends AppCompatActivity {
     }
 
     public void showFragment(int position) {
-        FragmentManager fm = getSupportFragmentManager();
         NoticeDialogFragment noticeDialogFragment = new NoticeDialogFragment();
         Bundle bundle = new Bundle();
         if(position == 1) {
@@ -155,6 +154,15 @@ public class SettingActivity extends AppCompatActivity {
             bundle.putString("clear", "clear");
         }
         noticeDialogFragment.setArguments(bundle);
-        noticeDialogFragment.show(fm, "fragment_notice_dialog");
+        noticeDialogFragment.show(getSupportFragmentManager(), "fragment_notice_dialog");
+    }
+
+    public void notify(String key) {
+        Log.e(TAG, "notify: "+key);
+        if(key.equals("search_engine")) {
+            mAdapter.notifyItemChanged(1);
+        } else if(key.equals("ua")) {
+            mAdapter.notifyItemChanged(2);
+        }
     }
 }

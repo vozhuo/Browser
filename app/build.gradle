@@ -35,4 +35,8 @@ dependencies {
     annotationProcessor 'com.arialyy.aria:aria-compiler:3.3.16'
     //BRVAH
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.38'
+    //CircleImageView
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+    //BasePopup
+    implementation 'com.github.razerdp:BasePopup:1.9.4'
 }

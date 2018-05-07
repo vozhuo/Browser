@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser.download;
+package cf.vozhuo.app.broswser.util;
 
 import android.webkit.MimeTypeMap;
 

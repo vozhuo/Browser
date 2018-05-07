@@ -2,11 +2,11 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="80dp"
-    android:layout_height="wrap_content"
-    android:focusable="true">
+    android:id="@+id/qaItem"
+    android:layout_width="60dp"
+    android:layout_height="60dp">
 
-    <ImageButton
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/ib_qa_icon"
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -15,11 +15,8 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:background="@color/transparent"
-        android:scaleType="fitCenter"
         app:layout_constraintBottom_toTopOf="@+id/tv_qa_title"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.023"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/web" />
@@ -28,12 +25,8 @@
         android:id="@+id/tv_qa_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
         android:singleLine="true"
         android:text="TextView"
         android:textSize="12sp"
@@ -44,16 +37,16 @@
 
     <ImageButton
         android:id="@+id/ib_qa_close"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:background="@color/transparent"
         android:duplicateParentState="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:padding="3dp"
         android:scaleType="fitCenter"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ib_qa_icon"
         app:layout_constraintTop_toTopOf="parent"

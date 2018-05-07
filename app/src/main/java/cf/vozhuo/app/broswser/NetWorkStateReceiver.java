@@ -3,12 +3,13 @@ package cf.vozhuo.app.broswser;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.Toast;
+
+import cf.vozhuo.app.broswser.util.NetworkUtil;
 
 import static android.content.ContentValues.TAG;
 

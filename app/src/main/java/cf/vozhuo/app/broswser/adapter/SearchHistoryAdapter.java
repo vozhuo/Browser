@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser.search_history;
+package cf.vozhuo.app.broswser.adapter;
 
 import android.support.annotation.Nullable;
 

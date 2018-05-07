@@ -4,11 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import cf.vozhuo.app.broswser.util.SQLiteHelper;
 
 import static android.content.ContentValues.TAG;
 

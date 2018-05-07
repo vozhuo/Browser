@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser.favorites;
+package cf.vozhuo.app.broswser.adapter;
 
 import android.support.annotation.Nullable;
 
@@ -7,7 +7,8 @@ import com.chad.library.adapter.base.BaseViewHolder;
 
 import java.util.List;
 
-import cf.vozhuo.app.broswser.BitmapUtil;
+import cf.vozhuo.app.broswser.favorites.FavHisEntity;
+import cf.vozhuo.app.broswser.util.BitmapUtil;
 import cf.vozhuo.app.broswser.R;
 
 public class FavoritesAdapter extends BaseQuickAdapter<FavHisEntity, BaseViewHolder>{

@@ -30,6 +30,7 @@ import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.settings.SettingActivity;
+import cf.vozhuo.app.broswser.util.NetworkUtil;
 
 import static android.content.ContentValues.TAG;
 

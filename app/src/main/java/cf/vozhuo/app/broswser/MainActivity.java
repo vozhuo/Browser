@@ -10,9 +10,6 @@ import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,7 +17,6 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,7 +24,6 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -40,8 +35,6 @@ import android.webkit.URLUtil;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,10 +55,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import cf.vozhuo.app.broswser.adapter.QuickAccessAdapter;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivityMainBinding;
+import cf.vozhuo.app.broswser.databinding.PopTabListBinding;
 import cf.vozhuo.app.broswser.download.DownloadActivity;
-import cf.vozhuo.app.broswser.download.DownloadUtil;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
 import cf.vozhuo.app.broswser.favorites.FavHisEntity;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
@@ -75,6 +69,8 @@ import cf.vozhuo.app.broswser.tab.Tab;
 import cf.vozhuo.app.broswser.tab.TabController;
 import cf.vozhuo.app.broswser.tab.UiController;
 import cf.vozhuo.app.broswser.tab.WebViewFactory;
+import cf.vozhuo.app.broswser.util.DownloadUtil;
+import cf.vozhuo.app.broswser.util.NetworkUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -87,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private static final String TABLE_HIS = "histories";
     private static final String TABLE_QA = "quickAccess";
     private boolean isEditMode = false;
-    HomeAdapter mHomeAdapter;
+    static QuickAccessAdapter mQuickAccessAdapter;
     TabAdapter mTabAdapter;
 
     static TabController mTabController;
@@ -126,6 +122,9 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 startActivityForResult(intent, REQUEST_CODE);
                 overridePendingTransition(0, 0);
                 break;
+            case R.id.addTab:
+                addTab(true);
+                popupWindow.dismiss();
         }
     }
     public boolean onLongClick(View view) {
@@ -206,8 +205,8 @@ public class MainActivity extends AppCompatActivity implements UiController{
         searchBox = binding.searchBox;
         mBottomBar = binding.bottomBar.includeBar;
         mQARecyclerView = binding.showQuickAccessList;
+        instance = this;
 
-        mTabAdapter = new TabAdapter();
         mTabController = new TabController(this, this);
         mFactory = new BrowserWebViewFactory(this);
 
@@ -215,8 +214,8 @@ public class MainActivity extends AppCompatActivity implements UiController{
         if (mTabController.getTabCount() <= 0) {
            addTab(false);
         }
-        instance = this;
 
+        mTabAdapter = new TabAdapter(mTabController.getTabs());
         InputStream is = getContext().getResources().openRawResource(R.raw.night);
         byte[] buffer = new byte[0];
         try {
@@ -334,46 +333,48 @@ public class MainActivity extends AppCompatActivity implements UiController{
         favHisDao = new FavHisDao(this, TABLE_QA);
 
         mList = favHisDao.queryAll();
-        mHomeAdapter = new HomeAdapter(mList);
+        mQuickAccessAdapter = new QuickAccessAdapter(mList);
 
-        ItemDragAndSwipeCallback itemDragAndSwipeCallback = new ItemDragAndSwipeCallback(mHomeAdapter);
+        ItemDragAndSwipeCallback itemDragAndSwipeCallback = new ItemDragAndSwipeCallback(mQuickAccessAdapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemDragAndSwipeCallback);
         itemTouchHelper.attachToRecyclerView(mQARecyclerView);
         // 开启拖拽
-        mHomeAdapter.enableDragItem(itemTouchHelper, R.id.ib_qa_icon, true);
-        mHomeAdapter.setOnItemDragListener(onItemDragListener);
-        // 开启滑动删除
-//        mHomeAdapter.enableSwipeItem();
-//        mHomeAdapter.setOnItemSwipeListener(onItemSwipeListener);
+        mQuickAccessAdapter.enableDragItem(itemTouchHelper, R.id.qaItem, true);
+        mQuickAccessAdapter.setOnItemDragListener(onItemDragListener);
+        // 开启Tab滑动删除
+        mTabAdapter.enableSwipeItem();
+        mTabAdapter.setOnItemSwipeListener(onItemSwipeListener);
+//        mQuickAccessAdapter.enableSwipeItem();
+//        mQuickAccessAdapter.setOnItemSwipeListener(onItemSwipeListener);
 //        GridLayoutManager layoutManager = new GridLayoutManager(this, 5);
 
 //        layoutManager.setReverseLayout(true);
 //        mQARecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mQARecyclerView.setLayoutManager(new GridLayoutManager(this, 5));
-        mQARecyclerView.setAdapter(mHomeAdapter);
-        mHomeAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+        mQARecyclerView.setAdapter(mQuickAccessAdapter);
+        mQuickAccessAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 FavHisEntity item = (FavHisEntity)adapter.getItem(position);
                 if(item != null) load(item.getUrl());
             }
         });
-        mHomeAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
+        mQuickAccessAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
                 isEditMode = true;
-                mHomeAdapter.setShowClose();
+                mQuickAccessAdapter.setShowClose();
                 return true;
             }
         });
-        mHomeAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+        mQuickAccessAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if(view.getId() == R.id.ib_qa_close) {
                     FavHisEntity item = (FavHisEntity)adapter.getItem(position);
                     Log.e(TAG, "onItemChildClick: "+ item.getUrl());
                     favHisDao.delete(item.getUrl());
-                    mHomeAdapter.remove(position);
+                    mQuickAccessAdapter.remove(position);
                 }
             }
         });
@@ -418,29 +419,34 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private OnItemSwipeListener onItemSwipeListener = new OnItemSwipeListener() {
         @Override
         public void onItemSwipeStart(RecyclerView.ViewHolder viewHolder, int pos) {
-
+            Log.e(TAG, "onItemSwipeStart: ");
         }
 
         @Override
         public void clearView(RecyclerView.ViewHolder viewHolder, int pos) {
-
+            Log.e(TAG, "clearView: ");
         }
 
         @Override
         public void onItemSwiped(RecyclerView.ViewHolder viewHolder, int pos) {
+            Log.e(TAG, "onItemSwiped: ");
 
         }
 
         @Override
         public void onItemSwipeMoving(Canvas canvas, RecyclerView.ViewHolder viewHolder, float dX, float dY, boolean isCurrentlyActive) {
-
+            Log.e(TAG, "onItemSwipeMoving: ");
         }
     };
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mList = favHisDao.queryAll();
-        mHomeAdapter.setNewData(mList);
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        mList = favHisDao.queryAll();
+//        mQuickAccessAdapter.setNewData(mList);
+//
+//    }
+    public static void addToMain(FavHisEntity data) {
+        mQuickAccessAdapter.addData(data);
     }
 
     private String size;
@@ -473,67 +479,34 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mActiveTab = tab;
         mTabController.setActiveTab(mActiveTab);
         Log.e(TAG, "addTab: " + mTabController.getCurrentPosition());
-        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
+
     }
 
-    private PopupWindow popupWindow;
+    private TabPopupWindow popupWindow;
     private View contentView;
+    private PopTabListBinding binding;
     private void showPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        contentView = inflater.inflate(R.layout.pop_tab_list, null);
+        binding = DataBindingUtil.inflate(inflater, R.layout.pop_tab_list, null, false);
+        binding.setHandlers(this);
+        contentView = binding.getRoot();
         contentView.setFocusable(true);
         contentView.setFocusableInTouchMode(true);
 
-        //创建默认的线性LayoutManager
-        mRecyclerView = contentView.findViewById(R.id.showTabList);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        popupWindow = new PopupWindow(contentView, ConstraintLayout.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        popupWindow.setContentView(contentView);
-        popupWindow.setAnimationStyle(R.style.anim_pop);
-        popupWindow.setFocusable(true);
-        popupWindow.setOutsideTouchable(true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-
-        popupWindow.showAtLocation(view, Gravity.BOTTOM, 0, 75);
-
-        ImageView iv_addTab = contentView.findViewById(R.id.addTab);
-        iv_addTab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addTab(true);
-                popupWindow.dismiss();
-            }
-        });
-
-        contentView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    popupWindow.dismiss();
-                    return true;
-                }
-                return false;
-            }
-        });
+        popupWindow = new TabPopupWindow(contentView);
+        popupWindow.show(view);
     }
     private void showTabs() {
         mTabAdapter.setNewData(mTabController.getTabs());
-        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
+        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
 
+        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
         LinearLayoutManager layout = new LinearLayoutManager(contentView.getContext());
         layout.setStackFromEnd(true); //倒序
 //        layout.setReverseLayout(true);
+        mRecyclerView = binding.showTabList;
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mTabAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 20, 10,20);//设置item偏移
-            }
-        });
     }
     private boolean isShouldExit(View v, MotionEvent event) {
         if (v != null && (v instanceof ImageButton)) {
@@ -561,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
             Log.e(TAG, "dispatchTouchEvent: "+getCurrentFocus());
                 isEditMode = false;
                 if(isShouldExit(getCurrentFocus(), ev)) {
-                    mHomeAdapter.setShowClose();
+                    mQuickAccessAdapter.setShowClose();
                     return true;
                 }
         }
@@ -592,12 +565,13 @@ public class MainActivity extends AppCompatActivity implements UiController{
     public boolean dispatchKeyEvent(KeyEvent event) {
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
             if(isEditMode) { //退出QuickAccess编辑模式
-                mHomeAdapter.setShowClose();
-//                mHomeAdapter.notifyDataSetChanged();
                 isEditMode = false;
                 return true;
             }
-
+            if(popupWindow.isFocusable()) {
+                popupWindow.dismiss();
+                return true;
+            }
             if (mActiveTab != null) {
                 if (mActiveTab.canGoBack()) {
                     Log.e(TAG, mActiveTab.getCurrentUrl() + "---" + mActiveTab.getPreUrl());
@@ -658,6 +632,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     @Override
     public void removeTab(Tab tab) {
         Log.e(TAG, "removeTab: "+ mTabController.getCurrentPosition());
+        Log.e(TAG, "removeTab: "+ mTabAdapter.getLastSelectedPos());
         if(mActiveTab == tab) { //移除当前Tab，选择上一个创建的Tab显示
             if(mTabController.getTabCount() > 1) {
                 selectTab(mTabController.getTab(
@@ -669,6 +644,9 @@ public class MainActivity extends AppCompatActivity implements UiController{
         }
         mTabAdapter.remove(mTabController.getTabPosition(tab));
         mTabController.removeTab(tab); //执行Destroy前移除WebView，解决内存泄漏的问题
+//        Log.e(TAG, "removeTab: "+ mTabAdapter.getLastSelectedPos());
+//        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
+//        mTabAdapter.notifyDataSetChanged();
     }
 
     public void load(String url) {
@@ -742,7 +720,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         loadingFinished = false;
         Log.e(TAG, "shouldOverrideUrlLoading: "+ url);
 
-        if (!(url.startsWith("http") || url.startsWith("https") || url.startsWith("ftp"))) {
+        if (!(URLUtil.isHttpUrl(url) || URLUtil.isHttpsUrl(url) )) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             if(getContext().getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).size() > 0) { //应用已安装
                 ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();

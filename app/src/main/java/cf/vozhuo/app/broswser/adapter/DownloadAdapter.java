@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser.download;
+package cf.vozhuo.app.broswser.adapter;
 
 import android.support.annotation.Nullable;
 import android.util.SparseBooleanArray;
@@ -15,6 +15,8 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import java.util.List;
 
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.download.DownloadActivity;
+import cf.vozhuo.app.broswser.util.DownloadUtil;
 
 //public class DownloadAdapter extends RecyclerAdapter<DownloadEntity> {
 //
@@ -211,8 +213,8 @@ import cf.vozhuo.app.broswser.R;
 public class DownloadAdapter extends BaseQuickAdapter<DownloadEntity, BaseViewHolder> {
     private boolean isShowBox = false;
     private SparseBooleanArray sba = new SparseBooleanArray();
-    public DownloadAdapter(int layoutResId, @Nullable List<DownloadEntity> data) {
-        super(layoutResId, data);
+    public DownloadAdapter(@Nullable List<DownloadEntity> data) {
+        super(R.layout.item_download, data);
 
         //初始化map集合,默认为不选中
         if(data != null) {

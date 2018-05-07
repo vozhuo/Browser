@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.adapter.SearchHistoryAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivitySearchBinding;
 import cf.vozhuo.app.broswser.search_history.presenter.SearchPresenter;
 import cf.vozhuo.app.broswser.search_history.presenter.SearchPresenterImpl;

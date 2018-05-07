@@ -1,6 +1,5 @@
-package cf.vozhuo.app.broswser;
+package cf.vozhuo.app.broswser.util;
 
-import android.databinding.Bindable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 

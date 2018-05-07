@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +22,7 @@ import java.util.List;
 
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.adapter.FavoritesAdapter;
 import cf.vozhuo.app.broswser.databinding.FragmentFavoriteBinding;
 
 public class FavoriteFragment extends Fragment {
@@ -58,7 +58,6 @@ public class FavoriteFragment extends Fragment {
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                Log.e(TAG, "setOnItemClickListener: ");
                 FavHisEntity item = mAdapter.getItem(position);
                 MainActivity.instance.load(item.getUrl()); //调用MainActivity的方法
                 getActivity().finish(); //结束FavHisActivity
@@ -104,6 +103,7 @@ public class FavoriteFragment extends Fragment {
                     public void onClick(View v) {
                         add(favorites);
                         Toast.makeText(getContext(), "添加成功", Toast.LENGTH_SHORT).show();
+
                         popupWindow.dismiss();
                     }
                 });
@@ -120,6 +120,7 @@ public class FavoriteFragment extends Fragment {
     public void add(FavHisEntity favorites) {
         favHisDao = new FavHisDao(getContext(), TABLE_QA);
         favHisDao.insert(null, favorites.getTitle(), favorites.getUrl(), null, favorites.getFavicon());
+        MainActivity.addToMain(favorites);
     }
 
     public void modify(FavHisEntity favorites, int position) {

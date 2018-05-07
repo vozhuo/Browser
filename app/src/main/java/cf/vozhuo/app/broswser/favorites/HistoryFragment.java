@@ -1,12 +1,10 @@
 package cf.vozhuo.app.broswser.favorites;
 
 import android.databinding.DataBindingUtil;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,6 +20,7 @@ import java.util.List;
 
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.adapter.HistoriesAdapter;
 import cf.vozhuo.app.broswser.databinding.FragmentHistoryBinding;
 
 public class HistoryFragment extends Fragment{
@@ -64,13 +63,6 @@ public class HistoryFragment extends Fragment{
         LinearLayoutManager layout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL) {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(10, 10, 10,10);//设置item偏移
-            }
-        });
 
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override

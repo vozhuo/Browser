@@ -10,7 +10,7 @@ import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import cf.vozhuo.app.broswser.NetworkUtil;
+import cf.vozhuo.app.broswser.util.NetworkUtil;
 
 import static android.content.ContentValues.TAG;
 

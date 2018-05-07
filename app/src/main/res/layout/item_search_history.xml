@@ -2,7 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:padding="8dp"
+    android:padding="5dp"
     android:layout_height="40dp">
 
     <TextView
@@ -13,7 +13,6 @@
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/home_search_history"
         android:gravity="fill_vertical"
-        android:padding="8dp"
         android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

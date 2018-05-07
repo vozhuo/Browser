@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser;
+package cf.vozhuo.app.broswser.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;

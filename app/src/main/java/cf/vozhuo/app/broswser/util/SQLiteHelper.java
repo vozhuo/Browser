@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser.favorites;
+package cf.vozhuo.app.broswser.util;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

@@ -31,7 +31,9 @@ import java.util.List;
 import cf.vozhuo.app.broswser.ConfirmDialogFragment;
 import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.adapter.DownloadAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivityDownloadBinding;
+import cf.vozhuo.app.broswser.util.DownloadUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -91,7 +93,7 @@ public class DownloadActivity extends AppCompatActivity {
             ib_download_clear.setVisibility(View.VISIBLE);
         }
 
-        mAdapter = new DownloadAdapter(R.layout.item_download, mList);
+        mAdapter = new DownloadAdapter(mList);
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);

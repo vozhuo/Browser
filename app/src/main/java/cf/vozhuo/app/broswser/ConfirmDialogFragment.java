@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -65,11 +64,9 @@ public class ConfirmDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-//        ButterKnife.bind(this, view);
-        Button bt_confirm = binding.btConfirm;
+
         LinearLayout ll_content = binding.llContent;
         TextView tv_confirm_title = binding.tvConfirmTitle;
-
         binding.setHandlers(this);
 
         bundle = getArguments();
@@ -92,18 +89,6 @@ public class ConfirmDialogFragment extends DialogFragment {
 
                     ll_content.addView(fileName);
                     ll_content.addView(fileSize);
-
-//                    final String url = bundle.getString("url");
-//
-//                    bt_confirm.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            String destPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//                                    .getAbsolutePath() + File.separator + fileName;
-//                                MainActivity.instance.doDownload(fileName.getText().toString(), url);
-//                                dismiss();
-//                        }
-//                    });
                     break;
                 case CLEAR:
                     tv_confirm_title.setText("删除");
@@ -121,14 +106,6 @@ public class ConfirmDialogFragment extends DialogFragment {
 
                     ll_content.addView(tv_del);
                     ll_content.addView(cb);
-
-//                    bt_confirm.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            ((DownloadActivity)getActivity()).deleteDownload(cb.isChecked());
-//                            dismiss();
-//                        }
-//                    });
                     break;
                 case OPEN:
                     tv_confirm_title.setText("打开");
@@ -136,14 +113,6 @@ public class ConfirmDialogFragment extends DialogFragment {
                     tv_open.setText("是否允许打开外部应用？");
                     tv_open.setTextColor(Color.BLACK);
                     ll_content.addView(tv_open);
-
-//                    final String event = ;
-//                    bt_confirm.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//
-//                        }
-//                    });
                     break;
                     default: break;
             }
@@ -151,22 +120,21 @@ public class ConfirmDialogFragment extends DialogFragment {
     }
 
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.bt_back:
-                dismiss();
-                break;
-            case R.id.bt_confirm:
-                String content = getArguments().getString("Confirm");
-                if(content.equals(DOWNLOAD)) {
+        if(view.getId() == R.id.bt_confirm) {
+            String content = getArguments().getString("Confirm");
+            switch (content) {
+                case DOWNLOAD:
                     ((MainActivity)getContext()).doDownload(fileName.getText().toString(), bundle.getString("url"));
-                } else if(content.equals(CLEAR)) {
+                    break;
+                case CLEAR:
                     ((DownloadActivity)getContext()).deleteDownload(cb.isChecked());
-                } else if(content.equals(OPEN)) {
+                    break;
+                case OPEN:
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(bundle.getString("eventUrl"))));
-                }
-                dismiss();
-                break;
-                default: break;
+                    break;
+                    default:break;
+            }
         }
+        dismiss();
     }
 }

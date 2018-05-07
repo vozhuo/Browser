@@ -97,14 +97,20 @@ package cf.vozhuo.app.broswser.adapter;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.BaseItemDraggableAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
+
+import java.util.List;
 
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.Tab;
 
-public class TabAdapter extends BaseQuickAdapter<Tab, BaseViewHolder> {
+public class TabAdapter extends BaseItemDraggableAdapter<Tab, BaseViewHolder> {
     private int lastSelectedPos = RecyclerView.NO_POSITION;
+
+    public TabAdapter(List<Tab> data) {
+        super(R.layout.item_tab, data);
+    }
 
     public int getLastSelectedPos() {
         return lastSelectedPos;
@@ -114,16 +120,12 @@ public class TabAdapter extends BaseQuickAdapter<Tab, BaseViewHolder> {
         this.lastSelectedPos = lastSelectedPos;
     }
 
-    public TabAdapter() {
-        super(R.layout.item_tab);
-    }
-
     @Override
     protected void convert(BaseViewHolder helper, Tab item) {
         helper.setText(R.id.tv_tab_title, item.getTitle())
                 .setImageBitmap(R.id.iv_tab_icon, item.getFavicon())
                 .addOnClickListener(R.id.tabClose)
                 .itemView.setSelected(getLastSelectedPos() == helper.getLayoutPosition());
-        Log.e(TAG, "convert: "+lastSelectedPos);
+        Log.e(TAG, "convert: "+ getLastSelectedPos());
     }
 }

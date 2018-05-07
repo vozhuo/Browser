@@ -1,4 +1,4 @@
-package cf.vozhuo.app.broswser.settings;
+package cf.vozhuo.app.broswser.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -10,6 +10,7 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import java.util.List;
 
 import cf.vozhuo.app.broswser.R;
+import cf.vozhuo.app.broswser.settings.SettingActivity;
 import cf.vozhuo.app.broswser.tab.SettingEntity;
 
 public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, BaseViewHolder> {
@@ -35,32 +36,11 @@ public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, Bas
                 switch (item.getContent()) {
                     case "搜索引擎":
                         helper.setText(R.id.tv_menu_content, sp.getString("search_engine", "百度"));
-                        sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-                            @Override
-                            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                                switch (key) {
-                                    case "search_engine":
-                                        helper.setText(R.id.tv_menu_content, sharedPreferences.getString(key, "百度"));
-                                        break;
-                                    default: break;
-                                }
-                            }
-                        });
                         break;
                     case "设置UA":
                         helper.setText(R.id.tv_menu_content, sp.getString("ua", "Android"));
-                        sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-                            @Override
-                            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                                switch (key) {
-                                    case "ua":
-                                        helper.setText(R.id.tv_menu_content, sharedPreferences.getString(key, "Android"));
-                                        break;
-                                    default: break;
-                                }
-                            }
-                        });
                         break;
+                        default:break;
                 }
                 break;
             case SettingEntity.CHECKBOX:
@@ -69,6 +49,7 @@ public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, Bas
                         .setChecked(R.id.switch_default, ((SettingActivity)mContext).isDefaultBrowser())
                         .addOnClickListener(R.id.switch_default);
                 break;
+                default:break;
         }
     }
 }
