@@ -1,131 +1,90 @@
 package cf.vozhuo.app.broswser.adapter;
 
-//public class TabAdapter extends RecyclerAdapter<Tab> {
-//    private UiController mController;
-////    TabController mTabController;
-//    private int mCurrent;
-//    private List<Tab> mTabs;
-//
-//    public TabAdapter(Context context, UiController controller) {
-//        super(context);
-//        mController = controller;
-//        mTabs = new ArrayList<>();
-//        mCurrent = -1;
-//    }
-//    @Override
-//    public Tab getItem(int position) {
-//        return super.getItem(position);
-//    }
-//
-//    @Override
-//    public int getItemCount() {
-//        return super.getItemCount();
-//    }
-//
-//    @NonNull
-//    @Override
-//    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//        return new TabViewHolder(mInflater.inflate(R.layout.item_tab, parent, false));
-//    }
-//
-//    public long getItemId(int position){
-//        return position;
-//    }
-//    public void setCurrent(int index){
-//        mCurrent = index;
-//    }
-//    @Override
-//    public void bindView(Tab tab, int position, RecyclerView.ViewHolder holder) {
-//        TabViewHolder pagerViewHolder = (TabViewHolder) holder;
-//        pagerViewHolder.itemView.setSelected(lastSelectedPos == position);
-//        pagerViewHolder.bind(tab,position);
-//    }
-//
-//    public void setlastSelectedPos() {
-//        lastSelectedPos = getItemCount();
-//    }
-//    private int lastSelectedPos = 0;
-//
-//    class TabViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-//        @BindView(R.id.tv_tab_title)
-//        TextView tv_title;
-//        @BindView(R.id.tabClose)
-//        ImageView iv_close;
-//        @BindView(R.id.iv_tab_icon)
-//        ImageView iv_tab_icon;
-//        int position;
-//        Tab tab;
-//
-//        public TabViewHolder(View itemView) {
-//            super(itemView);
-//            ButterKnife.bind(this, itemView);
-//        }
-//
-//        @Override
-//        public void onClick(View v) {
-//            if(v == iv_close){
-//                if(mController != null) {
-//                    mController.closeTab(tab);
-//                    notifyItemRemoved(position);
-//                    notifyItemRangeChanged(position, getItemCount());
-//                    v.setVisibility(View.GONE);
-//                }
-//            } else if(v == tv_title) {
-//                if(mController != null) {
-//                    mController.selectTab(tab);
-//                    if(position == lastSelectedPos) return;
-//                    notifyItemChanged(lastSelectedPos);
-//                    Log.e(TAG, "notifyItemChanged: " + lastSelectedPos + " " + position);
-//                    lastSelectedPos = position;
-//                    notifyItemChanged(lastSelectedPos);
-//                }
-//            }
-//        }
-//        public void bind(Tab tab, int position) {
-//            String title = tab.getTitle();
-//            tv_title.setText(title);
-//            iv_tab_icon.setImageBitmap(tab.getFavicon());
-//            iv_tab_icon.setOnClickListener(this);
-//            tv_title.setOnClickListener(this);
-//            iv_close.setOnClickListener(this);
-//            this.tab = tab;
-//            this.position = position;
-//        }
-//    }
-//}
-
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.view.ViewGroup;
+import android.webkit.WebView;
 
 import com.chad.library.adapter.base.BaseItemDraggableAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import java.util.List;
+import java.util.Stack;
 
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.Tab;
+import cf.vozhuo.app.broswser.tab.UiController;
 
 public class TabAdapter extends BaseItemDraggableAdapter<Tab, BaseViewHolder> {
-    private int lastSelectedPos = RecyclerView.NO_POSITION;
+    private Stack<Tab> mLastTab = new Stack<>();
+    private int currentPos = RecyclerView.NO_POSITION;
+    private UiController mController;
 
-    public TabAdapter(List<Tab> data) {
+    public TabAdapter(List<Tab> data, UiController mController) {
         super(R.layout.item_tab, data);
+        this.mController = mController;
     }
-
-    public int getLastSelectedPos() {
-        return lastSelectedPos;
-    }
-
-    public void setLastSelectedPos(int lastSelectedPos) {
-        this.lastSelectedPos = lastSelectedPos;
-    }
-
     @Override
     protected void convert(BaseViewHolder helper, Tab item) {
         helper.setText(R.id.tv_tab_title, item.getTitle())
                 .setImageBitmap(R.id.iv_tab_icon, item.getFavicon())
                 .addOnClickListener(R.id.tabClose)
-                .itemView.setSelected(getLastSelectedPos() == helper.getLayoutPosition());
-        Log.e(TAG, "convert: "+ getLastSelectedPos());
+                .itemView.setSelected(getCurrentPos() == helper.getLayoutPosition());
+    }
+
+    public Tab createNewTab() {
+        final WebView w = mController.getWebViewFactory().createWebView();
+        Tab t = new Tab(mController, w, null);
+        addData(t);
+        if (mController != null) {
+            mController.onTabCountChanged();
+        }
+        return t;
+    }
+    public void setActiveTab(Tab tab) {
+        Tab t = getItem(currentPos);
+        WebView webView;
+        if (t == null) {
+            webView = null;
+        } else {
+            webView = t.getWebView();
+        }
+        if(webView != null && webView.getParent() != null){
+            ((ViewGroup) webView.getParent()).removeView(webView);
+        }
+
+        if(mLastTab.contains(tab)) {
+            mLastTab.remove(tab);
+        }
+        mLastTab.push(tab);
+        currentPos = getData().indexOf(tab);
+    }
+
+    public void removeTab(int pos) {
+        Tab t = getItem(pos);
+        if (t == null) {
+            return;
+        }
+        Tab current = getItem(currentPos);
+        remove(pos);
+        mLastTab.remove(t);
+        if (current == t && getItemCount() > 0) {
+            mController.selectTab(mLastTab.peek());
+            currentPos = getData().indexOf(mLastTab.peek());
+        } else {
+            currentPos -= 1;
+        }
+        t.destroy();
+
+        if (mController != null) {
+            mController.onTabCountChanged();
+        }
+    }
+
+    public int getCurrentPos() {
+        return currentPos;
+    }
+
+    public void setCurrentPos(int currentPos) {
+        this.currentPos = currentPos;
     }
 }

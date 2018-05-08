@@ -1,7 +1,6 @@
 package cf.vozhuo.app.broswser;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -29,7 +28,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.URLUtil;
 import android.webkit.WebSettings;
@@ -66,7 +64,7 @@ import cf.vozhuo.app.broswser.search_history.SearchActivity;
 import cf.vozhuo.app.broswser.settings.SettingActivity;
 import cf.vozhuo.app.broswser.tab.BrowserWebViewFactory;
 import cf.vozhuo.app.broswser.tab.Tab;
-import cf.vozhuo.app.broswser.tab.TabController;
+import cf.vozhuo.app.broswser.tab.TabRecyclerView;
 import cf.vozhuo.app.broswser.tab.UiController;
 import cf.vozhuo.app.broswser.tab.WebViewFactory;
 import cf.vozhuo.app.broswser.util.DownloadUtil;
@@ -84,13 +82,13 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private static final String TABLE_QA = "quickAccess";
     private boolean isEditMode = false;
     static QuickAccessAdapter mQuickAccessAdapter;
-    TabAdapter mTabAdapter;
+    static TabAdapter mTabAdapter;
 
-    static TabController mTabController;
+//    static TabController mTabController;
     private Tab mActiveTab;
     private WebViewFactory mFactory;
     private boolean mIsInMain = true;
-    private RecyclerView mRecyclerView;
+    private TabRecyclerView mRecyclerView;
     private List<FavHisEntity> mList = new ArrayList<>();
 
     SwipeRefreshLayout refreshLayout;
@@ -102,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     View searchBox;
     ConstraintLayout mBottomBar;
     RecyclerView mQARecyclerView;
-
+    private ItemTouchHelper itemTouchHelper;
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ivMenu:
@@ -150,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         return mActiveTab.getFaviconBytes();
     }
     public void setNoImage(boolean noImage) { //智能无图设置
-        for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
+        for (Tab tab : mTabAdapter.getData()) { //遍历所有Tab，进行WebView设置
             WebSettings settings = tab.getWebView().getSettings();
             if(noImage) {
                 settings.setLoadsImagesAutomatically(false);
@@ -163,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
     private boolean isTrack = true;
     public void setNoTrack() { //无痕浏览设置
-        for (Tab tab : mTabController.getTabs()) {
+        for (Tab tab : mTabAdapter.getData()) {
             WebSettings settings = tab.getWebView().getSettings();
             settings.setDatabaseEnabled(false);
             settings.setAppCacheEnabled(false);
@@ -207,16 +205,16 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mQARecyclerView = binding.showQuickAccessList;
         instance = this;
 
-        mTabController = new TabController(this, this);
+        mTabAdapter = new TabAdapter(null, this);
+//        mTabController = new TabController(this, this, mTabAdapter);
         mFactory = new BrowserWebViewFactory(this);
 
         // 先建立一个tab标记主页
-        if (mTabController.getTabCount() <= 0) {
+        if (mTabAdapter.getItemCount() <= 0) {
            addTab(false);
         }
 
-        mTabAdapter = new TabAdapter(mTabController.getTabs());
-        InputStream is = getContext().getResources().openRawResource(R.raw.night);
+        InputStream is = this.getResources().openRawResource(R.raw.night);
         byte[] buffer = new byte[0];
         try {
             buffer = new byte[is.available()];
@@ -335,21 +333,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mList = favHisDao.queryAll();
         mQuickAccessAdapter = new QuickAccessAdapter(mList);
 
-        ItemDragAndSwipeCallback itemDragAndSwipeCallback = new ItemDragAndSwipeCallback(mQuickAccessAdapter);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemDragAndSwipeCallback);
+        //开启拖拽
+        itemTouchHelper = new ItemTouchHelper(new ItemDragAndSwipeCallback(mQuickAccessAdapter));
         itemTouchHelper.attachToRecyclerView(mQARecyclerView);
-        // 开启拖拽
-        mQuickAccessAdapter.enableDragItem(itemTouchHelper, R.id.qaItem, true);
-        mQuickAccessAdapter.setOnItemDragListener(onItemDragListener);
-        // 开启Tab滑动删除
-        mTabAdapter.enableSwipeItem();
-        mTabAdapter.setOnItemSwipeListener(onItemSwipeListener);
-//        mQuickAccessAdapter.enableSwipeItem();
-//        mQuickAccessAdapter.setOnItemSwipeListener(onItemSwipeListener);
-//        GridLayoutManager layoutManager = new GridLayoutManager(this, 5);
+        mQuickAccessAdapter.enableDragItem(itemTouchHelper, R.id.ib_qa_icon, true);
+        mQuickAccessAdapter.setOnItemDragListener(onQADragListener);
 
-//        layoutManager.setReverseLayout(true);
-//        mQARecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mQARecyclerView.setLayoutManager(new GridLayoutManager(this, 5));
         mQARecyclerView.setAdapter(mQuickAccessAdapter);
         mQuickAccessAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
@@ -384,10 +373,10 @@ public class MainActivity extends AppCompatActivity implements UiController{
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 Log.e(TAG, "onItemClick: "+ position);
                     selectTab(mTabAdapter.getItem(position));
-                if(mTabAdapter.getLastSelectedPos() != position) {
-                    mTabAdapter.notifyItemChanged(mTabAdapter.getLastSelectedPos());
-                    mTabAdapter.setLastSelectedPos(position);
-                    mTabAdapter.notifyItemChanged(mTabAdapter.getLastSelectedPos());
+                if(mTabAdapter.getCurrentPos() != position) {
+                    mTabAdapter.notifyItemChanged(mTabAdapter.getCurrentPos());
+                    mTabAdapter.setCurrentPos(position);
+                    mTabAdapter.notifyItemChanged(mTabAdapter.getCurrentPos());
                 }
             }
         });
@@ -395,12 +384,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if(view.getId() == R.id.tabClose) {
-                    removeTab(mTabAdapter.getItem(position));
+                    removeTab(position);
                 }
             }
         });
     }
-    private OnItemDragListener onItemDragListener = new OnItemDragListener() {
+    private OnItemDragListener onQADragListener = new OnItemDragListener() {
         @Override
         public void onItemDragStart(RecyclerView.ViewHolder viewHolder, int pos) {
 
@@ -416,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
         }
     };
-    private OnItemSwipeListener onItemSwipeListener = new OnItemSwipeListener() {
+    private OnItemSwipeListener onTAbSwipeListener = new OnItemSwipeListener() {
         @Override
         public void onItemSwipeStart(RecyclerView.ViewHolder viewHolder, int pos) {
             Log.e(TAG, "onItemSwipeStart: ");
@@ -425,12 +414,13 @@ public class MainActivity extends AppCompatActivity implements UiController{
         @Override
         public void clearView(RecyclerView.ViewHolder viewHolder, int pos) {
             Log.e(TAG, "clearView: ");
+
         }
 
         @Override
         public void onItemSwiped(RecyclerView.ViewHolder viewHolder, int pos) {
             Log.e(TAG, "onItemSwiped: ");
-
+            removeTab(pos);
         }
 
         @Override
@@ -438,13 +428,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
             Log.e(TAG, "onItemSwipeMoving: ");
         }
     };
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        mList = favHisDao.queryAll();
-//        mQuickAccessAdapter.setNewData(mList);
-//
-//    }
     public static void addToMain(FavHisEntity data) {
         mQuickAccessAdapter.addData(data);
     }
@@ -472,14 +455,15 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
 
     private String nightCode;
+
     private void addTab(boolean second) {
         if(second) switchToMain();
 
-        Tab tab = mTabController.createNewTab();
-        mActiveTab = tab;
-        mTabController.setActiveTab(mActiveTab);
-        Log.e(TAG, "addTab: " + mTabController.getCurrentPosition());
+        mActiveTab = mTabAdapter.createNewTab();
 
+        mTabAdapter.setActiveTab(mActiveTab);
+        Log.e(TAG, "addTab: " + mTabAdapter.getCurrentPos() + " " +mActiveTab.getId());
+//        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
     }
 
     private TabPopupWindow popupWindow;
@@ -490,23 +474,27 @@ public class MainActivity extends AppCompatActivity implements UiController{
         binding = DataBindingUtil.inflate(inflater, R.layout.pop_tab_list, null, false);
         binding.setHandlers(this);
         contentView = binding.getRoot();
-        contentView.setFocusable(true);
-        contentView.setFocusableInTouchMode(true);
 
         popupWindow = new TabPopupWindow(contentView);
         popupWindow.show(view);
     }
     private void showTabs() {
-        mTabAdapter.setNewData(mTabController.getTabs());
-        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
-
-        Log.e(TAG, "showTabs: " + mTabController.getTabCount() + " Current tab: " + mTabController.getCurrentPosition());
+        Log.e(TAG, "showTabs: "+ mTabAdapter.getCurrentPos());
         LinearLayoutManager layout = new LinearLayoutManager(contentView.getContext());
         layout.setStackFromEnd(true); //倒序
+
 //        layout.setReverseLayout(true);
+        Log.e(TAG, "showTabs: "+mContentWrapper.getMeasuredHeight());
+
         mRecyclerView = binding.showTabList;
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mTabAdapter);
+
+        // 开启Tab滑动删除
+        itemTouchHelper = new ItemTouchHelper(new ItemDragAndSwipeCallback(mTabAdapter));
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
+        mTabAdapter.enableSwipeItem();
+        mTabAdapter.setOnItemSwipeListener(onTAbSwipeListener);
     }
     private boolean isShouldExit(View v, MotionEvent event) {
         if (v != null && (v instanceof ImageButton)) {
@@ -531,7 +519,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
             if(ev.getAction() == MotionEvent.ACTION_DOWN && isEditMode) { //退出QuickAccess编辑模式
-            Log.e(TAG, "dispatchTouchEvent: "+getCurrentFocus());
                 isEditMode = false;
                 if(isShouldExit(getCurrentFocus(), ev)) {
                     mQuickAccessAdapter.setShowClose();
@@ -568,7 +555,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 isEditMode = false;
                 return true;
             }
-            if(popupWindow.isFocusable()) {
+            if(popupWindow != null && popupWindow.isFocusable()) {
                 popupWindow.dismiss();
                 return true;
             }
@@ -591,7 +578,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
                         mExitTime = System.currentTimeMillis();// 更新mExitTime
                         return true;
                     } else {
-                        Log.e(TAG, "dispatchKeyEvent: ");
                         System.exit(0);
                     }
                 }
@@ -599,17 +585,15 @@ public class MainActivity extends AppCompatActivity implements UiController{
         }
         return super.dispatchKeyEvent(event);
     }
-
     @Override
     public void selectTab(Tab tab) {
         if(mActiveTab == tab) {
             popupWindow.dismiss();
             return;
         }
-        removeWebView();
+//        removeWebView();
         mActiveTab = tab;
-
-        mTabController.setActiveTab(mActiveTab);
+        mTabAdapter.setActiveTab(mActiveTab);
         if(!mActiveTab.isBlank()) {
             updateSearchBar();
             switchToTab();
@@ -629,24 +613,14 @@ public class MainActivity extends AppCompatActivity implements UiController{
         Log.e(TAG, "updateSearchBar: "+ mActiveTab.getTitle());
         siteTitle.setText(mActiveTab.getTitle());
     }
-    @Override
-    public void removeTab(Tab tab) {
-        Log.e(TAG, "removeTab: "+ mTabController.getCurrentPosition());
-        Log.e(TAG, "removeTab: "+ mTabAdapter.getLastSelectedPos());
-        if(mActiveTab == tab) { //移除当前Tab，选择上一个创建的Tab显示
-            if(mTabController.getTabCount() > 1) {
-                selectTab(mTabController.getTab(
-                        mTabController.getCurrentPosition()-1));
-            } else {
-                addTab(true);
-                popupWindow.dismiss();
-            }
+
+    public void removeTab(int position) {
+        Log.e(TAG, "removeTab: " + mTabAdapter.getItemCount());
+        if(mTabAdapter.getItemCount() == 1) {
+            addTab(true);
+            popupWindow.dismiss();
         }
-        mTabAdapter.remove(mTabController.getTabPosition(tab));
-        mTabController.removeTab(tab); //执行Destroy前移除WebView，解决内存泄漏的问题
-//        Log.e(TAG, "removeTab: "+ mTabAdapter.getLastSelectedPos());
-//        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
-//        mTabAdapter.notifyDataSetChanged();
+        mTabAdapter.removeTab(position);
     }
 
     public void load(String url) {
@@ -722,7 +696,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
         if (!(URLUtil.isHttpUrl(url) || URLUtil.isHttpsUrl(url) )) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            if(getContext().getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).size() > 0) { //应用已安装
+            if(this.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).size() > 0) { //应用已安装
                 ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("Confirm", "open_app");
@@ -731,7 +705,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
                 Log.e(TAG, "fragment_confirm_dialog");
             } else {
-                Toast.makeText(getContext(), "应用未安装", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "应用未安装", Toast.LENGTH_SHORT)
                         .show();
             }
         }
@@ -752,13 +726,13 @@ public class MainActivity extends AppCompatActivity implements UiController{
         }
         refreshLayout.setRefreshing(false);
         darkMode();
-        CookieManager cookieManager = CookieManager.getInstance();
-        String cookieStr = cookieManager.getCookie(tab.getUrl()); // 获取到cookie字符串值
+//        CookieManager cookieManager = CookieManager.getInstance();
+//        String cookieStr = cookieManager.getCookie(tab.getUrl()); // 获取到cookie字符串值
         mTabAdapter.notifyDataSetChanged();
     }
 
     public void darkMode() {
-        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean darkMode = sp.getBoolean("dark_state", false);
         if(darkMode) {
             mActiveTab.loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
@@ -789,7 +763,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
 
     private void saveAsHistory(Tab tab) {
-        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         Boolean noTrack = sp.getBoolean("track_state", false);
         if (!noTrack && NetworkUtil.isNetworkConnected(this) && !mIsInMain) {
             FavHisDao favHisDao = new FavHisDao(this, TABLE_HIS);
@@ -808,27 +782,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
     @Override
     public void onTabCountChanged() {
-        mTabNum.setText("" + mTabController.getTabCount()); // 更新页面数量
-    }
-
-    @Override
-    public void onTabDataChanged(Tab tab) {
-        mTabAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public Context getContext() {
-        return this;
-    }
-
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public TabController getTabController() {
-        return mTabController;
+        mTabNum.setText(String.valueOf(mTabAdapter.getItemCount())); // 更新页面数量
     }
 
     @Override
@@ -846,7 +800,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
 
     public static void ClearCache() {
-        for (Tab tab : mTabController.getTabs()) { //遍历所有Tab，进行WebView设置
+        for (Tab tab : mTabAdapter.getData()) { //遍历所有Tab，进行WebView设置
             tab.getWebView().clearCache(true);
         }
     }

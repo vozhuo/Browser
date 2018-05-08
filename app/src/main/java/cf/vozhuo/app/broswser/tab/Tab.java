@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import cf.vozhuo.app.broswser.MainActivity;
 import cf.vozhuo.app.broswser.R;
 
 public class Tab {
@@ -178,13 +178,13 @@ public class Tab {
     public Tab(WebViewController webViewController,WebView view,Bundle state){
         mSavePageJob = new HashMap<Integer, Long>();
         mWebViewController = webViewController;
-        mContext = mWebViewController.getContext();
+        mContext = MainActivity.instance;
         mCurrentState = new PageState(mContext);
         mInPageLoad = false;
 
         restoreState(state);
         if (getId() == -1) {
-            mId = TabController.getNextId();
+            mId++;
         }
         setWebView(view);
         mBrowsedHistory.push(DEFAULT_BLANK_URL);
@@ -208,7 +208,7 @@ public class Tab {
      * to overlapping IDs between the preloaded and restored tabs.
      */
     public void refreshIdAfterPreload() {
-        mId = TabController.getNextId();
+        mId++;
     }
 
     public void setController(WebViewController ctl) {
@@ -245,7 +245,7 @@ public class Tab {
         if (mMainView != null) {
             mMainView.setWebViewClient(mWebViewClient);
             mMainView.setWebChromeClient(mWebChromeClient);
-            TabController tc = mWebViewController.getTabController();
+//            TabController tc = mWebViewController.getTabController();
             /*
             if (tc != null && tc.getOnThumbnailUpdatedListener() != null) {
                 mMainView.setPictureListener(this);
@@ -267,7 +267,7 @@ public class Tab {
     /**
      * Destroy the tab's main WebView and subWindow if any
      */
-    void destroy() {
+    public void destroy() {
         if (mMainView != null) {
             dismissSubWindow();
             // save the WebView to call destroy() after detach it from the tab

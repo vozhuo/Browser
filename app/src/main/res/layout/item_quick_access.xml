@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/qaItem"
-    android:layout_width="60dp"
-    android:layout_height="60dp">
+    android:layout_width="70dp"
+    android:layout_height="70dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/ib_qa_icon"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
@@ -37,16 +37,14 @@
 
     <ImageButton
         android:id="@+id/ib_qa_close"
-
-        android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:background="@color/transparent"
         android:duplicateParentState="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:padding="3dp"
+        android:padding="5dp"
         android:scaleType="fitCenter"
-        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ib_qa_icon"
         app:layout_constraintTop_toTopOf="parent"
