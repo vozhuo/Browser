@@ -8,14 +8,12 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
+import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Patterns;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.webkit.URLUtil;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -35,30 +33,27 @@ import cf.vozhuo.app.broswser.search_history.view.MySearchView;
 public class SearchActivity extends AppCompatActivity implements MySearchView {
 
     private static final int RESULT_CODE = 1;
+    private static final String TAG = "SearchActivity";
     private static SearchPresenter mSearchPresenter;
     private SearchHistoryAdapter mAdapter;
     private ArrayList<SearchBean> histories = new ArrayList<>();
 
-    private EditText_Clear searchView;
+    private SearchView searchView;
     private RecyclerView mRecyclerView;
     private TextView clear_history;
     private ConstraintLayout search_history;
-    private TextView search_check;
 
     public static SearchActivity instance;
 
-//    @OnClick({R.id.btn_search_check, R.id.clear_history})
-
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_search_check:
-                String value = searchView.getText().toString().trim();
-                search(value);
-                break;
             case R.id.clear_history:
                 mSearchPresenter.clear();
                 break;
         }
+    }
+    private String getContent() {
+        return getIntent().getStringExtra("siteInfo");
     }
 
     @Override
@@ -71,24 +66,18 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         mRecyclerView = binding.showSearchList;
         clear_history = binding.clearHistory;
         search_history = binding.searchHistory;
-        search_check = binding.btnSearchCheck;
 
         instance = this;
+        searchView.setIconified(false);
+        searchView.setSubmitButtonEnabled(true);
+        EditText search_text = searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        search_text.setTextSize(14);
+        if(getContent() != null) {
+            searchView.setQuery(getContent(), false);
+            search_text.selectAll();
+        }
 
-        searchView.setText(getIntent().getStringExtra("siteInfo"));
-        searchView.selectAll();
         mSearchPresenter = new SearchPresenterImpl(this, this);
-        searchView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    search(searchView.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
-
         mAdapter = new SearchHistoryAdapter(R.layout.item_search_history, histories);
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -104,7 +93,7 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
 
-        searchView.addTextChangedListener(textWatcher);
+        searchView.setOnQueryTextListener(textWatcher);
         mSearchPresenter.sortHistory();
     }
 
@@ -160,28 +149,28 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         }
     }
 
-    private TextWatcher textWatcher = new TextWatcher() {
+    private SearchView.OnQueryTextListener textWatcher = new SearchView.OnQueryTextListener() {
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        public boolean onQueryTextSubmit(String query) {
+            search(searchView.getQuery().toString().trim());
+            return true;
+        }
 
         @Override
-        public void onTextChanged(CharSequence c, int start, int before, int count) {
-            if (c.toString().length()==0) {
-                search_history.setVisibility(View.VISIBLE);
-            }
-        }
-        @Override
-        public void afterTextChanged(Editable s) {
-            if(TextUtils.isEmpty(s)) {
+        public boolean onQueryTextChange(String newText) {
+            if(newText.isEmpty()) {
                 search_history.setVisibility(View.VISIBLE);
                 mSearchPresenter.sortHistory();
             } else {
-                mSearchPresenter.fuzzySearch(s.toString().trim());
+                mSearchPresenter.fuzzySearch(newText.trim());
             }
+            return true;
         }
     };
 
     public static void ClearSearch() {
-        if(mSearchPresenter != null) mSearchPresenter.clear();
+        if(mSearchPresenter != null) {
+            mSearchPresenter.clear();
+        }
     }
 }

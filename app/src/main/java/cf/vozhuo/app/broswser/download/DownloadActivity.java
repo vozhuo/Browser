@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -77,9 +78,10 @@ public class DownloadActivity extends AppCompatActivity {
         Aria.download(this).register();
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -89,15 +91,16 @@ public class DownloadActivity extends AppCompatActivity {
 
         mList = Aria.download(this).getTaskList();
 
-        if(!(mList == null || mList.isEmpty())) {
-            ib_download_clear.setVisibility(View.VISIBLE);
-        }
-
         mAdapter = new DownloadAdapter(mList);
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
 
+        if(!(mList == null || mList.isEmpty())) {
+            ib_download_clear.setVisibility(View.VISIBLE);
+        } else {
+            mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
+        }
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
@@ -232,5 +235,9 @@ public class DownloadActivity extends AppCompatActivity {
             mAdapter.setNewData(new ArrayList<DownloadEntity>());
         }
        if(isSelectMode) mAdapter.setShowBox(); //收回多选框
+    }
+
+    public void removeRecord() {
+        Aria.download(this).removeAllTask(false);
     }
 }

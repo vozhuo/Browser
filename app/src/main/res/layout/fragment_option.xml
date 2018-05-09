@@ -3,7 +3,7 @@
     <data>
         <variable
             name="handlers"
-            type="cf.vozhuo.app.broswser.BottomDialogFragment"/>
+            type="cf.vozhuo.app.broswser.MenuDialogFragment"/>
     </data>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

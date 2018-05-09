@@ -23,8 +23,10 @@ public class FavHisActivity extends AppCompatActivity {
         ActivityFavHisBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_fav_his);
 
         setSupportActionBar(binding.tbFavHis);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
         binding.tbFavHis.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

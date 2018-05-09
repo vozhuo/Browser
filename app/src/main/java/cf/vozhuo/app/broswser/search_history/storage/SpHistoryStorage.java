@@ -74,7 +74,6 @@ public class SpHistoryStorage extends BaseHistoryStorage {
 
     @Override
     public ArrayList<SearchBean> sortHistory() {
-//        Map<String, ?> allHistory = getAll();
         ArrayList<SearchBean> mResults = new ArrayList<>();
         Map<String, String> hisAll = (Map<String, String>) getAll();
 
@@ -100,18 +99,8 @@ public class SpHistoryStorage extends BaseHistoryStorage {
         for (Map.Entry<String, String> entry : contains.entrySet()) {
             if (entry.getValue().contains(s)) {
                 mResults.add(new SearchBean(entry.getKey(), entry.getValue()));
-                //remove(entry.getKey());
             }
         }
-
-//        Object[] keys = contains.keySet().toArray();
-//        Arrays.sort(keys);
-//        int key_len = keys.length;
-//
-//        int his_len = key_len > MAX_HISTORY ? MAX_HISTORY : key_len;
-//        for (int i = 1; i <= his_len; i++) {
-//            mResults.add(new SearchBean((String) keys[key_len - i], contains.get(keys[key_len - i])));
-//        }
         return mResults;
     }
 

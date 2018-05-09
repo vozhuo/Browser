@@ -33,8 +33,6 @@ public class SettingActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 0;
     private static final String TAG = "SettingActivity";
-
-    private List<SettingEntity> list = new ArrayList<>();
     private SettingAdapter mAdapter;
 
     @Override
@@ -69,6 +67,14 @@ public class SettingActivity extends AppCompatActivity {
 //            Toast.makeText(this, "已清除默认设置", Toast.LENGTH_SHORT).show();
         }
     }
+    private List<SettingEntity> menuList() {
+       return new ArrayList<SettingEntity>() {{
+           add(new SettingEntity("设置默认浏览器", 1));
+           add(new SettingEntity("搜索引擎", 2));
+           add(new SettingEntity("设置UA", 2));
+           add(new SettingEntity("清理记录", 2));
+       }};
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,8 +85,10 @@ public class SettingActivity extends AppCompatActivity {
         RecyclerView mRecyclerView = binding.showMenuList;
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,12 +97,7 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
-        list.add(new SettingEntity("设置默认浏览器", 1));
-        list.add(new SettingEntity("搜索引擎", 2));
-        list.add(new SettingEntity("设置UA", 2));
-        list.add(new SettingEntity("清理缓存", 2));
-
-        mAdapter = new SettingAdapter(list);
+        mAdapter = new SettingAdapter(menuList());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {

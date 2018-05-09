@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements UiController{
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ivMenu:
-                BottomDialogFragment bottomDialogFragment = new BottomDialogFragment();
-                bottomDialogFragment.show(getSupportFragmentManager(), "fragment_bottom_dialog");
+                MenuDialogFragment menuDialogFragment = new MenuDialogFragment();
+                menuDialogFragment.show(getSupportFragmentManager(), "fragment_bottom_dialog");
                 break;
             case R.id.tvPagerNum:
                 showPopupWindow(view);
@@ -130,12 +130,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
         return true;
     }
 
-    private boolean isReload = false;
+//    private boolean isReload = false;
     //for Fragment use
     public void refreshPage() {
         if(mActiveTab != null) {
             mActiveTab.reloadPage();
-            isReload = true;
+//            isReload = true;
         }
     }
     public String getPageUrl() {
@@ -678,9 +678,9 @@ public class MainActivity extends AppCompatActivity implements UiController{
             searchProgress.setVisibility(View.GONE);
 //            siteTitle.setText(tab.getTitle());
         } else {
-            Log.e(TAG, "onPageStarted: ");
+
             searchProgress.setVisibility(View.VISIBLE);
-            siteTitle.setText(tab.getUrl());
+            if(!hasTitle) siteTitle.setText(tab.getUrl());
         }
         darkMode();
         loadingFinished = false;
@@ -746,18 +746,19 @@ public class MainActivity extends AppCompatActivity implements UiController{
         searchProgress.setProgress(tab.getPageLoadProgress());
         darkMode();
     }
-
+    private boolean hasTitle = false;
     @Override
     public void onReceivedTitle(Tab tab, String title) {
+        hasTitle = true;
         siteTitle.setText(title);
-        Log.e(TAG, "onReceivedTitle: " + tab.getUrl() + " " + tab.getTitle() + redirect + isReload);
-        if(!redirect && !isReload &&!tab.isGoBack()) {
+        Log.e(TAG, "onReceivedTitle: " + tab.getUrl() + " " + tab.getTitle() + redirect);
+        if(!redirect &&!tab.isGoBack()) {
             Log.e(TAG, "ADD");
             tab.add(tab.getUrl());
             saveAsHistory(tab);
         }
         tab.showHistory();
-        isReload = false;
+//        isReload = false;
         tab.setGoBack(false);
         mTabAdapter.notifyDataSetChanged();
     }

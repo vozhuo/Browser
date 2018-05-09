@@ -34,7 +34,7 @@ import cf.vozhuo.app.broswser.util.NetworkUtil;
 
 import static android.content.ContentValues.TAG;
 
-public class BottomDialogFragment extends DialogFragment {
+public class MenuDialogFragment extends DialogFragment {
     private static final String TABLE = "favorites";
 
     private CheckBox cb_image;

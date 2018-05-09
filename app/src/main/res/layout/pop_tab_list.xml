@@ -17,6 +17,7 @@
             android:id="@+id/addTab"
             android:layout_width="35dp"
             android:layout_height="35dp"
+            android:background="?android:attr/selectableItemBackground"
             android:onClick="@{handlers::onClick}"
             android:padding="5dp"
             android:scaleType="fitCenter"

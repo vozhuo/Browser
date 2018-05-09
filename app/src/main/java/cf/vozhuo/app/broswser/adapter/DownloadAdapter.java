@@ -215,13 +215,13 @@ public class DownloadAdapter extends BaseQuickAdapter<DownloadEntity, BaseViewHo
     private SparseBooleanArray sba = new SparseBooleanArray();
     public DownloadAdapter(@Nullable List<DownloadEntity> data) {
         super(R.layout.item_download, data);
-
-        //初始化map集合,默认为不选中
-        if(data != null) {
-            for (int i = 0; i < data.size(); i++) {
-                sba.put(i, false);
-            }
-        }
+//        Log.e(TAG, "DownloadAdapter: "+ sba.get(1));
+//        //初始化map集合,默认为不选中
+//        if(data != null) {
+//            for (int i = 0; i < data.size(); i++) {
+//                sba.put(i, false);
+//            }
+//        }
     }
 
     @Override

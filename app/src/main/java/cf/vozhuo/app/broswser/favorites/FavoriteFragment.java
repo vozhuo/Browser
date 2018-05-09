@@ -55,6 +55,10 @@ public class FavoriteFragment extends Fragment {
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mAdapter);
 
+        if(list == null || list.size() == 0) {
+            mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
+        }
+
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {

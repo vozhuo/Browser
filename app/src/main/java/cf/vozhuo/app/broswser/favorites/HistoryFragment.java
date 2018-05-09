@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cf.vozhuo.app.broswser.MainActivity;
@@ -27,13 +26,15 @@ public class HistoryFragment extends Fragment{
     private static final String TABLE = "histories";
     private static FavHisDao favHisDao;
     private HistoriesAdapter mAdapter;
-
+    private ImageView iv_clear_history;
     private FragmentHistoryBinding binding;
 
     public void onClick(View view) {
         favHisDao.deleteAll();
-        mAdapter.setNewData(new ArrayList<FavHisEntity>());
+        mAdapter.setNewData(null);
         Toast.makeText(getContext(), "清理成功", Toast.LENGTH_SHORT).show();
+        mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
+        iv_clear_history.setVisibility(View.GONE);
     }
 
     @Nullable
@@ -50,19 +51,21 @@ public class HistoryFragment extends Fragment{
         super.onViewCreated(view, savedInstanceState);
 
         RecyclerView mRecyclerView = binding.showHisList;
-        ImageView iv_clear_history = binding.ivClearHistory;
+        iv_clear_history = binding.ivClearHistory;
 
         favHisDao = new FavHisDao(getContext(), TABLE);
 
         List<FavHisEntity> list = favHisDao.queryAll();
-        if(list == null || list.size() == 0) {
-            iv_clear_history.setVisibility(View.GONE);
-        }
         mAdapter = new HistoriesAdapter(R.layout.item_browse_history, list);
 
         LinearLayoutManager layout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mAdapter);
+
+        if(list == null || list.size() == 0) {
+            iv_clear_history.setVisibility(View.GONE);
+            mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
+        }
 
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override

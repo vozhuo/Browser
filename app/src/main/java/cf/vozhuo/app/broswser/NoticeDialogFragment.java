@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import cf.vozhuo.app.broswser.databinding.FragmentNoticeBinding;
+import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.HistoryFragment;
 import cf.vozhuo.app.broswser.search_history.SearchActivity;
 import cf.vozhuo.app.broswser.settings.SettingActivity;
@@ -36,10 +37,10 @@ import cf.vozhuo.app.broswser.settings.SettingActivity;
 public class NoticeDialogFragment extends DialogFragment {
 
     private FragmentNoticeBinding binding;
-    private SparseBooleanArray sba = new SparseBooleanArray(4);
+    private SparseBooleanArray sba = new SparseBooleanArray(5);
     private final static String []engine = new String[]{"百度", "谷歌", "必应", "搜狗"};
     private final static String []ua = new String[]{"Android", "PC", "iPhone"};
-    private final static String []clear = new String[]{"搜索记录", "Cookies", "历史记录", "缓存文件"};
+    private final static String []clear = new String[]{"搜索记录", "Cookies", "历史记录", "缓存文件", "下载记录"};
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -153,9 +154,9 @@ public class NoticeDialogFragment extends DialogFragment {
                 });
             } else if (bundle.getString("clear") != null) {
                 notice_content.setOrientation(LinearLayout.VERTICAL);
-                tv_notice.setText("清除缓存");
+                tv_notice.setText("清理记录");
 
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 5; i++) {
                     CheckBox checkBox = new CheckBox(getContext());
                     checkBox.setId(i);
                     checkBox.setText(clear[i]);
@@ -185,6 +186,8 @@ public class NoticeDialogFragment extends DialogFragment {
                             HistoryFragment.deleteHistory();
                         } else if(sba.get(3)) {
                             MainActivity.ClearCache();
+                        } else if(sba.get(4)) { //清除下载记录
+                            DownloadActivity.instance.removeRecord();
                         }
                         dismiss();
                         Toast.makeText(getContext(), "清理成功",  Toast.LENGTH_SHORT).show();
