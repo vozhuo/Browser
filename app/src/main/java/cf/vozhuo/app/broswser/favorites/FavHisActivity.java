@@ -13,6 +13,7 @@ import java.util.List;
 
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.databinding.ActivityFavHisBinding;
+import cf.vozhuo.app.broswser.util.SPUtil;
 
 public class FavHisActivity extends AppCompatActivity {
     private List<Fragment> fragments = new ArrayList<>();
@@ -20,6 +21,7 @@ public class FavHisActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SPUtil.setNightMode(this);
         ActivityFavHisBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_fav_his);
 
         setSupportActionBar(binding.tbFavHis);

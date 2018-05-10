@@ -30,4 +30,9 @@
     <string name="night">夜间模式</string>
     <string name="noTrack">无痕</string>
     <string name="refresh">刷新</string>
+    <string name="http">http://</string>
+    <string name="https">https://</string>
+    <string name="com">.com</string>
+    <string name="cn">.cn</string>
+    <string name="noData">没有数据</string>
 </resources>

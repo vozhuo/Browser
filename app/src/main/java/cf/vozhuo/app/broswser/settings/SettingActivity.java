@@ -4,12 +4,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.databinding.DataBindingUtil;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
@@ -28,6 +26,7 @@ import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.adapter.SettingAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivitySettingBinding;
 import cf.vozhuo.app.broswser.tab.SettingEntity;
+import cf.vozhuo.app.broswser.util.SPUtil;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -79,6 +78,7 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SPUtil.setNightMode(this);
         ActivitySettingBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_setting);
 
         Toolbar toolbar = binding.toolbarSetting;
@@ -100,13 +100,13 @@ public class SettingActivity extends AppCompatActivity {
         mAdapter = new SettingAdapter(menuList());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(20, 20, 10, 20);
-            }
-        });
+//        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {
+//            @Override
+//            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+//                super.getItemOffsets(outRect, view, parent, state);
+//                outRect.set(20, 20, 10, 20);
+//            }
+//        });
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {

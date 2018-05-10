@@ -13,6 +13,8 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -111,11 +113,9 @@ public class Tab {
             mLoadStartTime = SystemClock.uptimeMillis();
             mWebViewController.onPageStarted(Tab.this,view,favicon);
         }
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            mWebViewController.shouldOverrideUrlLoading(Tab.this, view, url);
-            return super.shouldOverrideUrlLoading(view, url);
+            return mWebViewController.shouldOverrideUrlLoading(Tab.this, view, url);
         }
 
         @Override
@@ -148,6 +148,21 @@ public class Tab {
             if (mUpdateThumbnail && newProgress == 100) {
                 mUpdateThumbnail = false;
             }
+        }
+
+        @Override
+        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+            return mWebViewController.onJsAlert(message, result);
+        }
+
+        @Override
+        public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
+            return mWebViewController.onJsConfirm(message, result);
+        }
+
+        @Override
+        public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+            return mWebViewController.onJsPrompt(message, defaultValue, result);
         }
 
         @Override

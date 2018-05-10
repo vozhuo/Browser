@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -29,6 +30,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.DownloadListener;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.webkit.URLUtil;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -69,6 +72,7 @@ import cf.vozhuo.app.broswser.tab.UiController;
 import cf.vozhuo.app.broswser.tab.WebViewFactory;
 import cf.vozhuo.app.broswser.util.DownloadUtil;
 import cf.vozhuo.app.broswser.util.NetworkUtil;
+import cf.vozhuo.app.broswser.util.SPUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -178,18 +182,19 @@ public class MainActivity extends AppCompatActivity implements UiController{
         filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
         filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
         filter.addAction("android.net.wifi.STATE_CHANGE");
-        registerReceiver(mNetworkChangeListener, filter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mNetworkChangeListener, filter);
     }
-
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(mNetworkChangeListener);
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mNetworkChangeListener);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SPUtil.setNightMode(this);
+
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         binding.setHandlers(this);
@@ -703,7 +708,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 bundle.putString("eventUrl", url);
                 confirmDialogFragment.setArguments(bundle);
                 confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
-                Log.e(TAG, "fragment_confirm_dialog");
             } else {
                 Toast.makeText(this, "应用未安装", Toast.LENGTH_SHORT)
                         .show();
@@ -800,6 +804,58 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mTabAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public boolean onJsAlert(String message, final JsResult result) {
+        ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("Confirm", "alert");
+        bundle.putString("message", message);
+        confirmDialogFragment.setArguments(bundle);
+        confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
+
+        setJsResult(result);
+        return true;
+    }
+
+    @Override
+    public boolean onJsConfirm(String message, JsResult result) {
+        ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("Confirm", "confirm");
+        bundle.putString("message", message);
+        confirmDialogFragment.setArguments(bundle);
+        confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
+        setJsResult(result);
+        return true;
+    }
+
+    @Override
+    public boolean onJsPrompt(String message, String defaultValue, JsPromptResult result) {
+        ConfirmDialogFragment confirmDialogFragment = new ConfirmDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("Confirm", "prompt");
+        bundle.putString("message", message);
+        bundle.putString("defaultValue", defaultValue);
+        confirmDialogFragment.setArguments(bundle);
+        confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
+        setJsResult(result);
+        return true;
+    }
+
+    private JsResult result;
+    private JsPromptResult promptResult;
+    public void setJsResult(JsResult result) {
+       this.result = result;
+    }
+    public void setJsResult(JsPromptResult promptResult) {
+        this.promptResult = promptResult;
+    }
+    public JsResult getJsResult() {
+        return result;
+    }
+    public JsPromptResult getJsPromptResult() {
+        return promptResult;
+    }
     public static void ClearCache() {
         for (Tab tab : mTabAdapter.getData()) { //遍历所有Tab，进行WebView设置
             tab.getWebView().clearCache(true);

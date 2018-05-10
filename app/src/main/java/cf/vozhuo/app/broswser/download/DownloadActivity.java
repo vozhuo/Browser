@@ -35,6 +35,7 @@ import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.adapter.DownloadAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivityDownloadBinding;
 import cf.vozhuo.app.broswser.util.DownloadUtil;
+import cf.vozhuo.app.broswser.util.SPUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -68,6 +69,7 @@ public class DownloadActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance = this;
+        SPUtil.setNightMode(this);
         ActivityDownloadBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_download);
 
         binding.setHandlers(this);

@@ -1,6 +1,7 @@
 package cf.vozhuo.app.broswser;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
@@ -10,11 +11,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -25,14 +29,18 @@ import cf.vozhuo.app.broswser.download.DownloadActivity;
 
 public class ConfirmDialogFragment extends DialogFragment {
 
+    private static final String TAG = "ConfirmDialogFragment";
     private EditText fileName;
     private TextView fileSize;
     private Bundle bundle;
     private CheckBox cb;
-    private FragmentConfirmBinding binding;
+    public static FragmentConfirmBinding binding;
     private static final String DOWNLOAD = "download";
     private static final String CLEAR = "download_clear";
     private static final String OPEN = "open_app";
+    private static final String ALERT = "alert";
+    private static final String CONFIRM = "confirm";
+    private static final String PROMPT = "prompt";
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -114,27 +122,78 @@ public class ConfirmDialogFragment extends DialogFragment {
                     tv_open.setTextColor(Color.BLACK);
                     ll_content.addView(tv_open);
                     break;
+                case ALERT:
+                    tv_confirm_title.setText("来自网页的提示信息");
+                    TextView tv_message = new TextView(getContext());
+                    tv_message.setText(bundle.getString("message"));
+                    ll_content.addView(tv_message);
+                    break;
+                case CONFIRM:
+                    tv_confirm_title.setText("来自网页的确认信息");
+                    TextView tv_confirm = new TextView(getContext());
+                    tv_confirm.setText(bundle.getString("message"));
+                    ll_content.addView(tv_confirm);
+                    break;
+                case PROMPT:
+                    tv_confirm_title.setText("来自网页的输入信息");
+                    TextView tv_prompt = new TextView(getContext());
+                    editText = new EditText(getContext());
+
+                    tv_prompt.setText(bundle.getString("message"));
+                    editText.setText(bundle.getString("defaultValue"));
+
+                    ll_content.addView(tv_prompt);
+                    ll_content.addView(editText);
+                    break;
                     default: break;
             }
         }
     }
+    private EditText editText;
+    private JsResult result;
+    private JsPromptResult promptResult;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        result = ((MainActivity)context).getJsResult();
+        promptResult = ((MainActivity)context).getJsPromptResult();
+        if(result != null) {
+            Log.e(TAG, "onAttach: NULL");
+        }
+    }
 
     public void onClick(View view) {
+        String content = getArguments().getString("Confirm");
         if(view.getId() == R.id.bt_confirm) {
-            String content = getArguments().getString("Confirm");
             switch (content) {
                 case DOWNLOAD:
-                    ((MainActivity)getContext()).doDownload(fileName.getText().toString(), bundle.getString("url"));
+                    ((MainActivity) getContext()).doDownload(fileName.getText().toString(), bundle.getString("url"));
                     break;
                 case CLEAR:
-                    ((DownloadActivity)getContext()).deleteDownload(cb.isChecked());
+                    ((DownloadActivity) getContext()).deleteDownload(cb.isChecked());
                     break;
                 case OPEN:
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(bundle.getString("eventUrl"))));
                     break;
-                    default:break;
+                case ALERT:
+                case CONFIRM:
+                    result.confirm();
+                    break;
+                case PROMPT:
+                    promptResult.confirm(editText.getText().toString());
+                    break;
             }
+            dismiss();
+        } else if(view.getId() == R.id.bt_back) {
+            switch (content) {
+                case CONFIRM:
+                    result.cancel();
+                    break;
+                case PROMPT:
+                    promptResult.cancel();
+                    break;
+            }
+            dismiss();
         }
-        dismiss();
     }
 }

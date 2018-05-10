@@ -137,6 +137,7 @@ public class MenuDialogFragment extends DialogFragment {
                 break;
             case R.id.dark:
                 darkClick();
+                if(getActivity() != null) (getActivity()).recreate();
                 break;
             case R.id.download:
                 startActivity(new Intent(getActivity(), DownloadActivity.class));
@@ -148,6 +149,7 @@ public class MenuDialogFragment extends DialogFragment {
     private void darkClick() {
         SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
+
         if(cb_dark.isChecked()) { //进入夜间模式
 //            ((MainActivity)getActivity()).setNoTrack();
             editor.putBoolean("dark_state", true);

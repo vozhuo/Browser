@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.webkit.CookieManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -91,7 +90,7 @@ public class BrowserWebViewFactory implements WebViewFactory {
                 pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH)
                         || pm.hasSystemFeature(PackageManager.FEATURE_FAKETOUCH_MULTITOUCH_DISTINCT);
         w.getSettings().setDisplayZoomControls(!supportsMultiTouch);
-        CookieManager cookieManager = CookieManager.getInstance();
+//        CookieManager cookieManager = CookieManager.getInstance();
 //        cookieManager.setAcceptThirdPartyCookies(w, cookieManager.acceptCookie());
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {

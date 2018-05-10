@@ -108,7 +108,7 @@ public class NoticeDialogFragment extends DialogFragment {
                 for (int i = 0; i < 4; i++) {
                     RadioButton btn = new RadioButton(getContext());
                     btn.setId(i);
-                    btn.setTextColor(Color.BLACK);
+//                    btn.setTextColor(android.R.attr.textColorPrimary);
                     btn.setText(engine[i]);
                     if(search_engine.equals(engine[i])) btn.setChecked(true);
                     radioGroup.addView(btn);
@@ -125,7 +125,6 @@ public class NoticeDialogFragment extends DialogFragment {
 
             } else if (bundle.getString("ua") != null) {
                 tv_notice.setText("选择UA");
-                tv_notice.setTextColor(Color.BLACK);
 
                 String user_engine = sp.getString("ua", "Android");
 
@@ -138,7 +137,7 @@ public class NoticeDialogFragment extends DialogFragment {
                 for (int i = 0; i < 3; i++) {
                     RadioButton btn = new RadioButton(getContext());
                     btn.setId(i);
-                    btn.setTextColor(Color.BLACK);
+//                    btn.setTextColor(android.R.attr.textColorPrimary);
                     btn.setText(ua[i]);
                     if(user_engine.equals(ua[i])) btn.setChecked(true);
                     radioGroup.addView(btn);
