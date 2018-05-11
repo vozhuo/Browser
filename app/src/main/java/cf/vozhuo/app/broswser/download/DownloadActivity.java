@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
@@ -71,20 +70,17 @@ public class DownloadActivity extends AppCompatActivity {
         instance = this;
         SPUtil.setNightMode(this);
         ActivityDownloadBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_download);
-
         binding.setHandlers(this);
-        Toolbar toolbar = binding.toolbarDownload;
         mRecyclerView = binding.showDownloadList;
-        ImageButton ib_download_clear = binding.ibDownloadClear;
 
         Aria.download(this).register();
 
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.toolbarDownload);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        binding.toolbarDownload.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -99,7 +95,7 @@ public class DownloadActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
 
         if(!(mList == null || mList.isEmpty())) {
-            ib_download_clear.setVisibility(View.VISIBLE);
+            binding.ibDownloadClear.setVisibility(View.VISIBLE);
         } else {
             mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
         }

@@ -1,9 +1,9 @@
 package cf.vozhuo.app.broswser.adapter;
 
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.util.SparseBooleanArray;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -230,7 +230,7 @@ public class DownloadAdapter extends BaseQuickAdapter<DownloadEntity, BaseViewHo
                 .setText(R.id.tv_download_size, DownloadUtil.getFileSize(item.getFileSize()));
 
         ImageButton control = helper.getView(R.id.iv_download_control);
-        CheckBox cb_download = helper.getView(R.id.cb_download);
+        AppCompatCheckBox cb_download = helper.getView(R.id.cb_download);
         TextView speed = helper.getView(R.id.tv_download_speed);
 
         final int position = helper.getLayoutPosition();

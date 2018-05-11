@@ -106,7 +106,7 @@ public class ConfirmDialogFragment extends DialogFragment {
                     if(count == 0) tv_del.setText("删除所有项目？");
                     else tv_del.setText(String.format("删除%o个项目？", count));
 
-                    tv_del.setTextColor(Color.BLACK);
+                    tv_del.setTextColor(getResources().getColor(R.color.textColor));
 
                     cb = new CheckBox(getContext());
                     cb.setText("包括源文件");
@@ -119,7 +119,7 @@ public class ConfirmDialogFragment extends DialogFragment {
                     tv_confirm_title.setText("打开");
                     TextView tv_open = new TextView(getContext());
                     tv_open.setText("是否允许打开外部应用？");
-                    tv_open.setTextColor(Color.BLACK);
+                    tv_open.setTextColor(getResources().getColor(R.color.textColor));
                     ll_content.addView(tv_open);
                     break;
                 case ALERT:

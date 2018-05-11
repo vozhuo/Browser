@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.widget.AppCompatCheckBox;
+import android.support.v7.widget.AppCompatRadioButton;
 import android.util.SparseBooleanArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -20,10 +22,8 @@ import android.view.Window;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -106,8 +106,9 @@ public class NoticeDialogFragment extends DialogFragment {
                 radioGroup.setOrientation(RadioGroup.HORIZONTAL);
                 radioGroup.setGravity(Gravity.CENTER);
                 for (int i = 0; i < 4; i++) {
-                    RadioButton btn = new RadioButton(getContext());
+                    AppCompatRadioButton btn = new AppCompatRadioButton(getContext());
                     btn.setId(i);
+
 //                    btn.setTextColor(android.R.attr.textColorPrimary);
                     btn.setText(engine[i]);
                     if(search_engine.equals(engine[i])) btn.setChecked(true);
@@ -116,7 +117,7 @@ public class NoticeDialogFragment extends DialogFragment {
                 radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(RadioGroup group, int checkedId) {
-                        RadioButton btn = group.findViewById(checkedId);
+                        AppCompatRadioButton btn = group.findViewById(checkedId);
                         editor.putString("search_engine", btn.getText().toString());
                         editor.apply();
                         dismiss();
@@ -135,9 +136,8 @@ public class NoticeDialogFragment extends DialogFragment {
                 radioGroup.setOrientation(RadioGroup.HORIZONTAL);
                 radioGroup.setGravity(Gravity.CENTER);
                 for (int i = 0; i < 3; i++) {
-                    RadioButton btn = new RadioButton(getContext());
+                    AppCompatRadioButton btn = new AppCompatRadioButton(getContext());
                     btn.setId(i);
-//                    btn.setTextColor(android.R.attr.textColorPrimary);
                     btn.setText(ua[i]);
                     if(user_engine.equals(ua[i])) btn.setChecked(true);
                     radioGroup.addView(btn);
@@ -145,7 +145,7 @@ public class NoticeDialogFragment extends DialogFragment {
                 radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(RadioGroup group, int checkedId) {
-                        RadioButton btn = group.findViewById(checkedId);
+                        AppCompatRadioButton btn = group.findViewById(checkedId);
                         editor.putString("ua", btn.getText().toString());
                         editor.apply();
                         dismiss();
@@ -156,7 +156,7 @@ public class NoticeDialogFragment extends DialogFragment {
                 tv_notice.setText("清理记录");
 
                 for (int i = 0; i < 5; i++) {
-                    CheckBox checkBox = new CheckBox(getContext());
+                    AppCompatCheckBox checkBox = new AppCompatCheckBox(getContext());
                     checkBox.setId(i);
                     checkBox.setText(clear[i]);
                     checkBox.setOnCheckedChangeListener(listener);

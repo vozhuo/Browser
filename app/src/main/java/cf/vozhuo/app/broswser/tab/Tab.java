@@ -115,7 +115,8 @@ public class Tab {
         }
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return mWebViewController.shouldOverrideUrlLoading(Tab.this, view, url);
+            mWebViewController.shouldOverrideUrlLoading(Tab.this, view, url);
+            return false;
         }
 
         @Override

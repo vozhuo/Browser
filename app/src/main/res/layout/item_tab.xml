@@ -42,5 +42,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/tv_tab_title"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_close" />
+        app:srcCompat="@drawable/close" />
 </android.support.constraint.ConstraintLayout>

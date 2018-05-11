@@ -481,15 +481,15 @@ public class MainActivity extends AppCompatActivity implements UiController{
         contentView = binding.getRoot();
 
         popupWindow = new TabPopupWindow(contentView);
-        popupWindow.show(view);
+        popupWindow.show((View) view.getParent());
     }
     private void showTabs() {
-        Log.e(TAG, "showTabs: "+ mTabAdapter.getCurrentPos());
+        Log.e(TAG, "showTabs: " + mTabAdapter.getCurrentPos());
         LinearLayoutManager layout = new LinearLayoutManager(contentView.getContext());
         layout.setStackFromEnd(true); //倒序
 
 //        layout.setReverseLayout(true);
-        Log.e(TAG, "showTabs: "+mContentWrapper.getMeasuredHeight());
+        Log.e(TAG, "showTabs: " + mContentWrapper.getMeasuredHeight());
 
         mRecyclerView = binding.showTabList;
         mRecyclerView.setLayoutManager(layout);
@@ -558,6 +558,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
             if(isEditMode) { //退出QuickAccess编辑模式
                 isEditMode = false;
+                mQuickAccessAdapter.setShowClose();
                 return true;
             }
             if(popupWindow != null && popupWindow.isFocusable()) {
@@ -736,14 +737,14 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
 
     public void darkMode() {
-        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        Boolean darkMode = sp.getBoolean("dark_state", false);
-        if(darkMode) {
-            mActiveTab.loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
-                    + "var style = document.createElement('style');"
-                    + "style.type = 'text/css';" + "style.innerHTML = window.atob('" + nightCode + "');"
-                    + "parent.appendChild(style)" + "})();", null, false);
-        }
+//        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+//        Boolean darkMode = sp.getBoolean("dark_state", false);
+//        if(darkMode) {
+//            mActiveTab.loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
+//                    + "var style = document.createElement('style');"
+//                    + "style.type = 'text/css';" + "style.innerHTML = window.atob('" + nightCode + "');"
+//                    + "parent.appendChild(style)" + "})();", null, false);
+//        }
     }
     @Override
     public void onProgressChanged(Tab tab) {

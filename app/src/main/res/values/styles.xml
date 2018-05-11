@@ -19,6 +19,7 @@
     <style name="TransDialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:layout_margin">8dp</item>
     </style>
 
     <style name="animate_dialog">
