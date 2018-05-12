@@ -9,7 +9,7 @@ import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.Toast;
 
-import cf.vozhuo.app.broswser.util.NetworkUtil;
+import cf.vozhuo.app.broswser.util.SPUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -39,7 +39,7 @@ public class NetWorkStateReceiver extends BroadcastReceiver {
 //                    }
 //                }
 //            });
-            if(!wifiNetworkInfo.isConnected() && NetworkUtil.isNoImageOn(context)) {
+            if(!wifiNetworkInfo.isConnected() && SPUtil.isNoImageMode(context)) {
                 Log.e(TAG, "onReceive: 无图");
                 MainActivity.instance.setNoImage(true);
             } else {

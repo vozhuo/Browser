@@ -10,11 +10,21 @@ public class SPUtil {
         sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         if(sp.getBoolean("dark_state", false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-
-//                context.setTheme(R.style.NightTheme);
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-//                context.setTheme(R.style.AppTheme);
         }
+    }
+    public static boolean isNoTrackMode(Context context) {
+        sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        return sp.getBoolean("track_state", false);
+    }
+    public static boolean isNoImageMode(Context context) {
+        sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        return sp.getBoolean("image_state", false);
+    }
+
+    public static String getUA(Context context) {
+        sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
+        return sp.getString("ua", "Android");
     }
 }

@@ -1,26 +1,10 @@
 package cf.vozhuo.app.broswser.util;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 public class NetworkUtil {
-    private static boolean state;
-    public static boolean isNoImageOn(Context context) {
-        SharedPreferences sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        state = sp.getBoolean("image_state", false);
-//        sp.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-//            @Override
-//            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//                if(key.equals("image_state")) {
-//                    state = sharedPreferences.getBoolean(key, false);
-//                }
-//            }
-//        });
-        return state;
-    }
-
     public static boolean isNetworkConnected(Context context) {
         if (context != null) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context

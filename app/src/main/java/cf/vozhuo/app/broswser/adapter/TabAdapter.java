@@ -10,6 +10,7 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import java.util.List;
 import java.util.Stack;
 
+import cf.vozhuo.app.broswser.MyWebView;
 import cf.vozhuo.app.broswser.R;
 import cf.vozhuo.app.broswser.tab.Tab;
 import cf.vozhuo.app.broswser.tab.UiController;
@@ -32,7 +33,7 @@ public class TabAdapter extends BaseItemDraggableAdapter<Tab, BaseViewHolder> {
     }
 
     public Tab createNewTab() {
-        final WebView w = mController.getWebViewFactory().createWebView();
+        final MyWebView w = mController.getWebViewFactory().createWebView();
         Tab t = new Tab(mController, w, null);
         addData(t);
         if (mController != null) {

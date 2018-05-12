@@ -1,6 +1,8 @@
 package cf.vozhuo.app.broswser;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -9,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,6 +28,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -36,6 +41,7 @@ import android.webkit.URLUtil;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageButton;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +65,7 @@ import java.util.Locale;
 import cf.vozhuo.app.broswser.adapter.QuickAccessAdapter;
 import cf.vozhuo.app.broswser.adapter.TabAdapter;
 import cf.vozhuo.app.broswser.databinding.ActivityMainBinding;
+import cf.vozhuo.app.broswser.databinding.PopHitTestBinding;
 import cf.vozhuo.app.broswser.databinding.PopTabListBinding;
 import cf.vozhuo.app.broswser.download.DownloadActivity;
 import cf.vozhuo.app.broswser.favorites.FavHisDao;
@@ -127,6 +134,29 @@ public class MainActivity extends AppCompatActivity implements UiController{
             case R.id.addTab:
                 addTab(true);
                 popupWindow.dismiss();
+            case R.id.tv_backWindow:
+                Tab tab = mTabAdapter.createNewTab();
+                tab.loadUrl(hitUrl, null, false);
+                hitPopup.dismiss();
+                break;
+            case R.id.tv_newWindow:
+                addTab(true);
+                mActiveTab.loadUrl(hitUrl, null, false);
+                hitPopup.dismiss();
+                break;
+            case R.id.tv_copy:
+                ClipboardManager cmb = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+                if (cmb != null) {
+                    cmb.setPrimaryClip(ClipData.newPlainText("hitUrl", hitUrl));
+                }
+                Toast.makeText(this, "复制成功",
+                        Toast.LENGTH_SHORT).show();
+
+//                KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
+//                        KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
+//                shiftPressEvent.dispatch(mActiveTab.getWebView());
+                hitPopup.dismiss();
+                break;
         }
     }
     public boolean onLongClick(View view) {
@@ -393,7 +423,51 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 }
             }
         });
+
+        mActiveTab.getWebView().setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                WebView.HitTestResult result = ((WebView)v).getHitTestResult();
+                if (result == null)
+                    return false;
+                switch(result.getType()) {
+                    case WebView.HitTestResult.EDIT_TEXT_TYPE: // 文字
+                        break;
+                    case WebView.HitTestResult.PHONE_TYPE: // 拨号
+                        break;
+                    case WebView.HitTestResult.EMAIL_TYPE: // Email
+                         break;
+                    case WebView.HitTestResult.GEO_TYPE: // 地图
+                         break;
+                    case WebView.HitTestResult.SRC_ANCHOR_TYPE: // 超链接
+                         hitUrl = result.getExtra();
+                         showHitPopupWindow(v);
+                         break;
+                    case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: // 带有链接的图片
+                    case WebView.HitTestResult.IMAGE_TYPE: // 处理长按图片的菜单项 }
+                          return true;
+                    case WebView.HitTestResult.UNKNOWN_TYPE: //未知
+                         break;
+                }
+                return false;
+            }
+        });
     }
+    private PopupWindow hitPopup;
+    private String hitUrl;
+    private void showHitPopupWindow(View view) {
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        PopHitTestBinding binding = DataBindingUtil.inflate(inflater, R.layout.pop_hit_test, null, false);
+        binding.setHandlers(this);
+        contentView = binding.getRoot();
+
+        hitPopup = new PopupWindow(contentView, ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        hitPopup.setOutsideTouchable(true);
+        hitPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        hitPopup.showAtLocation(view, Gravity.NO_GRAVITY, touchX, touchY);
+    }
+
     private OnItemDragListener onQADragListener = new OnItemDragListener() {
         @Override
         public void onItemDragStart(RecyclerView.ViewHolder viewHolder, int pos) {
@@ -412,26 +486,18 @@ public class MainActivity extends AppCompatActivity implements UiController{
     };
     private OnItemSwipeListener onTAbSwipeListener = new OnItemSwipeListener() {
         @Override
-        public void onItemSwipeStart(RecyclerView.ViewHolder viewHolder, int pos) {
-            Log.e(TAG, "onItemSwipeStart: ");
-        }
+        public void onItemSwipeStart(RecyclerView.ViewHolder viewHolder, int pos) {}
 
         @Override
-        public void clearView(RecyclerView.ViewHolder viewHolder, int pos) {
-            Log.e(TAG, "clearView: ");
-
-        }
+        public void clearView(RecyclerView.ViewHolder viewHolder, int pos) {}
 
         @Override
         public void onItemSwiped(RecyclerView.ViewHolder viewHolder, int pos) {
-            Log.e(TAG, "onItemSwiped: ");
             removeTab(pos);
         }
 
         @Override
-        public void onItemSwipeMoving(Canvas canvas, RecyclerView.ViewHolder viewHolder, float dX, float dY, boolean isCurrentlyActive) {
-            Log.e(TAG, "onItemSwipeMoving: ");
-        }
+        public void onItemSwipeMoving(Canvas canvas, RecyclerView.ViewHolder viewHolder, float dX, float dY, boolean isCurrentlyActive) { }
     };
     public static void addToMain(FavHisEntity data) {
         mQuickAccessAdapter.addData(data);
@@ -520,20 +586,25 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
 
     private GestureDetector mGesture;
+    private int touchX;
+    private int touchY;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-            if(ev.getAction() == MotionEvent.ACTION_DOWN && isEditMode) { //退出QuickAccess编辑模式
-                isEditMode = false;
-                if(isShouldExit(getCurrentFocus(), ev)) {
-                    mQuickAccessAdapter.setShowClose();
-                    return true;
-                }
+        if(ev.getAction() == MotionEvent.ACTION_DOWN && isEditMode) { //退出QuickAccess编辑模式
+            isEditMode = false;
+            if(isShouldExit(getCurrentFocus(), ev)) {
+                mQuickAccessAdapter.setShowClose();
+                return true;
+            }
         }
         final WebView webView = mActiveTab.getWebView();
         webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                touchX = (int) event.getRawX();
+                touchY = (int) event.getRawY();
+                Log.e(TAG, "onTouch: "+ event.getRawX() + " " + event.getRawY());
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         if(webView.getScrollY() <= 0) { //WebView滑动到顶部时开启下拉刷新
@@ -552,6 +623,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mGesture.onTouchEvent(ev);
         return super.dispatchTouchEvent(ev);
     }
+
     private long mExitTime = 0;
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {

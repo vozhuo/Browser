@@ -1,7 +1,6 @@
 package cf.vozhuo.app.broswser.tab;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -9,7 +8,9 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import cf.vozhuo.app.broswser.MyWebView;
 import cf.vozhuo.app.broswser.util.NetworkUtil;
+import cf.vozhuo.app.broswser.util.SPUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -18,17 +19,17 @@ public class BrowserWebViewFactory implements WebViewFactory {
     public BrowserWebViewFactory(Context context) {
         mContext = context;
     }
-    private WebView instantiateWebView(AttributeSet attrs, int defStyle) {
-        return new WebView(mContext, attrs, defStyle);
+    private MyWebView instantiateWebView(AttributeSet attrs, int defStyle) {
+        return new MyWebView(mContext, attrs, defStyle);
     }
     @Override
-    public WebView createWebView() {
-        WebView w = instantiateWebView(null, android.R.attr.webViewStyle);
+    public MyWebView createWebView() {
+        MyWebView w = instantiateWebView(null, android.R.attr.webViewStyle);
         initWebViewSettings(w);
         return w;
     }
     private static final String APP_CACHE_DIRNAME = "cache";
-    protected void initWebViewSettings(WebView w) {
+    protected void initWebViewSettings(MyWebView w) {
         w.setScrollbarFadingEnabled(true);
         w.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
         // Enable the built-in zoom
@@ -52,20 +53,12 @@ public class BrowserWebViewFactory implements WebViewFactory {
         webSettings.setAppCachePath(cacheDirPath);
         //设置缓存模式
 //        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-
-        SharedPreferences sp;
-        Boolean state;
-        //加载图片
-        if(NetworkUtil.isNoImageOn(mContext) && !NetworkUtil.isWifiConnected(mContext)) {
+        //智能无图
+        if(SPUtil.isNoImageMode(mContext) && !NetworkUtil.isWifiConnected(mContext)) {
             webSettings.setLoadsImagesAutomatically(false);
-            Log.e(TAG, "NO Image ");
-        } else {
-            Log.e(TAG, "YES");
         }
         //无痕浏览
-        sp = mContext.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        state = sp.getBoolean("track_state", false);
-        if(!state) {
+        if(!SPUtil.isNoTrackMode(mContext)) {
             Log.e(TAG, "initWebViewSettings: 无痕关闭");
             //开启 database storage API 功能
             webSettings.setDatabaseEnabled(true);
@@ -77,9 +70,7 @@ public class BrowserWebViewFactory implements WebViewFactory {
             Log.e(TAG, "initWebViewSettings: 无痕开启");
         }
         //设置UA
-        sp = mContext.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        String ua = sp.getString("ua", "Android");
-        webSettings.setUserAgentString(ua);
+        webSettings.setUserAgentString(SPUtil.getUA(mContext));
         //设置可以访问文件
         webSettings.setAllowFileAccess(true);
         /// M: Add to disable overscroll mode

@@ -51,11 +51,9 @@
             android:background="@drawable/window"
             android:layout_width="20dp"
             android:layout_height="20dp"
-
             android:layout_marginLeft="20dp"
             android:layout_marginStart="20dp"
             android:gravity="center_horizontal"
-
             android:onClick="@{handlers::onClick}"
             android:onLongClick="@{handlers::onLongClick}"
             android:text="@string/one"
@@ -72,6 +70,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
+            android:background="?android:attr/selectableItemBackground"
             android:textColor="@color/textColor"
             android:ellipsize="end"
             android:gravity="center"
