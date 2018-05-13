@@ -2,7 +2,6 @@ package cf.vozhuo.app.broswser.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 
 import com.chad.library.adapter.base.BaseItemDraggableAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -43,7 +42,7 @@ public class TabAdapter extends BaseItemDraggableAdapter<Tab, BaseViewHolder> {
     }
     public void setActiveTab(Tab tab) {
         Tab t = getItem(currentPos);
-        WebView webView;
+        MyWebView webView;
         if (t == null) {
             webView = null;
         } else {

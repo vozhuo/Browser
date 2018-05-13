@@ -140,8 +140,8 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 hitPopup.dismiss();
                 break;
             case R.id.tv_newWindow:
-                addTab(true);
-                mActiveTab.loadUrl(hitUrl, null, false);
+                addTab(false);
+                load(hitUrl);
                 hitPopup.dismiss();
                 break;
             case R.id.tv_copy:
@@ -149,22 +149,18 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 if (cmb != null) {
                     cmb.setPrimaryClip(ClipData.newPlainText("hitUrl", hitUrl));
                 }
-                Toast.makeText(this, "复制成功",
-                        Toast.LENGTH_SHORT).show();
-
-//                KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
-//                        KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
-//                shiftPressEvent.dispatch(mActiveTab.getWebView());
+                Toast.makeText(this, "复制成功", Toast.LENGTH_SHORT).show();
                 hitPopup.dismiss();
                 break;
         }
     }
+
     public boolean onLongClick(View view) {
         addTab(true);
         return true;
     }
 
-//    private boolean isReload = false;
+    //    private boolean isReload = false;
     //for Fragment use
     public void refreshPage() {
         if(mActiveTab != null) {
@@ -186,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
             WebSettings settings = tab.getWebView().getSettings();
             if(noImage) {
                 settings.setLoadsImagesAutomatically(false);
+
 //                Log.e(TAG, "setNoImage: 无图");
             } else {
                 settings.setLoadsImagesAutomatically(true);
@@ -224,13 +221,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SPUtil.setNightMode(this);
-
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         binding.setHandlers(this);
         binding.bottomBar.setHandlers(this);
         refreshLayout = binding.refreshLayout;
-        mTabNum = binding.bottomBar.tvPagerNum;
+        mTabNum = binding.bottomBar.pagesNum;
         mContentWrapper = binding.contentWrapper;
         searchProgress = binding.bottomBar.searchProgress;
         siteTitle = binding.bottomBar.siteTitle;
@@ -396,7 +392,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 if(view.getId() == R.id.ib_qa_close) {
                     FavHisEntity item = (FavHisEntity)adapter.getItem(position);
-                    Log.e(TAG, "onItemChildClick: "+ item.getUrl());
                     favHisDao.delete(item.getUrl());
                     mQuickAccessAdapter.remove(position);
                 }
@@ -406,8 +401,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mTabAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                Log.e(TAG, "onItemClick: "+ position);
-                    selectTab(mTabAdapter.getItem(position));
+                selectTab(mTabAdapter.getItem(position));
                 if(mTabAdapter.getCurrentPos() != position) {
                     mTabAdapter.notifyItemChanged(mTabAdapter.getCurrentPos());
                     mTabAdapter.setCurrentPos(position);
@@ -424,35 +418,39 @@ public class MainActivity extends AppCompatActivity implements UiController{
             }
         });
 
-        mActiveTab.getWebView().setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                WebView.HitTestResult result = ((WebView)v).getHitTestResult();
-                if (result == null)
-                    return false;
-                switch(result.getType()) {
-                    case WebView.HitTestResult.EDIT_TEXT_TYPE: // 文字
-                        break;
-                    case WebView.HitTestResult.PHONE_TYPE: // 拨号
-                        break;
-                    case WebView.HitTestResult.EMAIL_TYPE: // Email
-                         break;
-                    case WebView.HitTestResult.GEO_TYPE: // 地图
-                         break;
-                    case WebView.HitTestResult.SRC_ANCHOR_TYPE: // 超链接
-                         hitUrl = result.getExtra();
-                         showHitPopupWindow(v);
-                         break;
-                    case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: // 带有链接的图片
-                    case WebView.HitTestResult.IMAGE_TYPE: // 处理长按图片的菜单项 }
-                          return true;
-                    case WebView.HitTestResult.UNKNOWN_TYPE: //未知
-                         break;
-                }
-                return false;
-            }
-        });
+        mActiveTab.getWebView().setOnLongClickListener(onLongClickListener);
     }
+
+    private View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            WebView.HitTestResult result = ((WebView)v).getHitTestResult();
+            if (result == null)
+                return false;
+            switch(result.getType()) {
+                case WebView.HitTestResult.EDIT_TEXT_TYPE: // 文字
+                    break;
+                case WebView.HitTestResult.PHONE_TYPE: // 拨号
+                    break;
+                case WebView.HitTestResult.EMAIL_TYPE: // Email
+                    break;
+                case WebView.HitTestResult.GEO_TYPE: // 地图
+                    break;
+                case WebView.HitTestResult.SRC_ANCHOR_TYPE: // 超链接
+                    hitUrl = result.getExtra();
+                    showHitPopupWindow(v);
+                    break;
+                case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: // 带有链接的图片
+                case WebView.HitTestResult.IMAGE_TYPE: // 处理长按图片的菜单项 }
+                    return true;
+                case WebView.HitTestResult.UNKNOWN_TYPE: //未知
+                    Log.e(TAG, "onLongClick: UNKNOWN_TYPE");
+                    break;
+            }
+            return false;
+        }
+    };
+
     private PopupWindow hitPopup;
     private String hitUrl;
     private void showHitPopupWindow(View view) {
@@ -531,9 +529,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
         if(second) switchToMain();
 
         mActiveTab = mTabAdapter.createNewTab();
-
         mTabAdapter.setActiveTab(mActiveTab);
-        Log.e(TAG, "addTab: " + mTabAdapter.getCurrentPos() + " " +mActiveTab.getId());
 //        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
     }
 
@@ -553,14 +549,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
         Log.e(TAG, "showTabs: " + mTabAdapter.getCurrentPos());
         LinearLayoutManager layout = new LinearLayoutManager(contentView.getContext());
         layout.setStackFromEnd(true); //倒序
-
-//        layout.setReverseLayout(true);
+        //layout.setReverseLayout(true);
         Log.e(TAG, "showTabs: " + mContentWrapper.getMeasuredHeight());
 
         mRecyclerView = binding.showTabList;
         mRecyclerView.setLayoutManager(layout);
         mRecyclerView.setAdapter(mTabAdapter);
-
         // 开启Tab滑动删除
         itemTouchHelper = new ItemTouchHelper(new ItemDragAndSwipeCallback(mTabAdapter));
         itemTouchHelper.attachToRecyclerView(mRecyclerView);
@@ -604,7 +598,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
             public boolean onTouch(View v, MotionEvent event) {
                 touchX = (int) event.getRawX();
                 touchY = (int) event.getRawY();
-                Log.e(TAG, "onTouch: "+ event.getRawX() + " " + event.getRawY());
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         if(webView.getScrollY() <= 0) { //WebView滑动到顶部时开启下拉刷新
@@ -703,10 +696,14 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
     public void load(String url) {
         if (mActiveTab != null) {
-            mActiveTab.clearWebHistory();
-            mActiveTab.loadUrl(url, null,false);
+//            mActiveTab.clearWebHistory();
+            mActiveTab.loadUrl(url, null,true);
             switchToTab();
         }
+    }
+    public void loadFromSelect(String url) {
+        addTab(false);
+        load(url);
     }
 
     private void switchToTab() {
@@ -756,9 +753,10 @@ public class MainActivity extends AppCompatActivity implements UiController{
             searchProgress.setVisibility(View.GONE);
 //            siteTitle.setText(tab.getTitle());
         } else {
-
-            searchProgress.setVisibility(View.VISIBLE);
-            if(!hasTitle) siteTitle.setText(tab.getUrl());
+            if(mActiveTab == tab) {
+                searchProgress.setVisibility(View.VISIBLE);
+                if(!hasTitle) siteTitle.setText(tab.getUrl());
+            }
         }
         darkMode();
         loadingFinished = false;
@@ -826,8 +824,10 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private boolean hasTitle = false;
     @Override
     public void onReceivedTitle(Tab tab, String title) {
-        hasTitle = true;
-        siteTitle.setText(title);
+        if(mActiveTab == tab) {
+            hasTitle = true;
+            siteTitle.setText(title);
+        }
         Log.e(TAG, "onReceivedTitle: " + tab.getUrl() + " " + tab.getTitle() + redirect);
         if(!redirect &&!tab.isGoBack()) {
             Log.e(TAG, "ADD");

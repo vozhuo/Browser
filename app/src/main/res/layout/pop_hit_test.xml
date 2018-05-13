@@ -38,5 +38,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="复制链接地址" />
+
+    <!--<TextView-->
+        <!--android:id="@+id/tv_free_copy"-->
+        <!--android:onClick="@{handlers::onClick}"-->
+        <!--android:background="?android:attr/selectableItemBackground"-->
+        <!--android:textColor="?android:attr/textColorPrimary"-->
+        <!--android:padding="15dp"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="自由复制" />-->
 </LinearLayout>
 </layout>

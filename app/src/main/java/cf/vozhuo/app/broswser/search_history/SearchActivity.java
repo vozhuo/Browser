@@ -1,7 +1,5 @@
 package cf.vozhuo.app.broswser.search_history;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,9 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -126,42 +122,11 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
     @Override
     public void searchSuccess(String value) {
-        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        String search_engine = sp.getString("search_engine", "百度");
-        String search_string;
-        switch (search_engine) {
-            case "百度":
-                search_string = "https://www.baidu.com/s?ie=UTF-8&wd=";
-                break;
-            case "谷歌":
-                search_string = "https://www.google.com/search?q=";
-                break;
-            case "必应":
-                search_string = "https://bing.com/search?q=";
-                break;
-            case "搜狗":
-                search_string = "https://www.sogou.com/web?query=";
-                break;
-            default:
-                search_string = "https://www.baidu.com/s?ie=UTF-8&wd=";
-                break;
-        }
-        //https://blog.csdn.net/myth13141314/article/details/68940911
-        if(URLUtil.isValidUrl(value) || Patterns.WEB_URL.matcher(value).matches()) {
-            if(!(URLUtil.isHttpsUrl(value) || URLUtil.isHttpsUrl(value))) {
-                value = "http://" + value;
-            }
-        } else {
-            if(value.equals("test")) {
-                value = "file:///android_asset/test.html";
-            } else
-                value = search_string + value;
-        }
-        MainActivity.instance.load(value);
+        MainActivity.instance.load(SPUtil.getSearchUrl(this, value));
         finish();
     }
 
-    public void search(String value) {
+    private void search(String value) {
         if (!TextUtils.isEmpty(value)) {
             mSearchPresenter.search(value);
         }

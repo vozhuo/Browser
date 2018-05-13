@@ -38,29 +38,44 @@
             android:layout_height="40dp"
             android:layout_marginEnd="15dp"
             android:layout_marginRight="15dp"
+            android:onClick="@{handlers::onClick}"
             android:padding="5dp"
             android:src="@drawable/menu"
-            android:onClick="@{handlers::onClick}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/siteTitle"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <RelativeLayout
             android:id="@+id/tvPagerNum"
-            android:background="@drawable/window"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginStart="20dp"
-            android:gravity="center_horizontal"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:onClick="@{handlers::onClick}"
             android:onLongClick="@{handlers::onLongClick}"
-            android:text="@string/one"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/siteTitle"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+            <ImageView
+                android:id="@+id/window"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/window" />
+
+            <TextView
+                android:id="@+id/pagesNum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:text="@string/one"
+                android:textColor="?android:attr/textColorPrimary" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/siteTitle"
@@ -71,12 +86,12 @@
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
             android:background="?android:attr/selectableItemBackground"
-            android:textColor="@color/textColor"
             android:ellipsize="end"
             android:gravity="center"
-            android:singleLine="true"
-            android:textStyle="bold"
             android:onClick="@{handlers::onClick}"
+            android:singleLine="true"
+            android:textColor="@color/textColor"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/ivMenu"
             app:layout_constraintStart_toEndOf="@+id/tvPagerNum"

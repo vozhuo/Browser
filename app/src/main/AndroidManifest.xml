@@ -56,17 +56,17 @@
                 <data android:mimeType="application/xhtml+xml"/>
                 <data android:mimeType="application/vnd.wap.xhtml+xml"/>
             </intent-filter>
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.WEB_SEARCH"/>-->
-                <!--<category android:name="android.intent.category.DEFAULT"/>-->
-                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
-            <!--</intent-filter>-->
+            <intent-filter>
+                <action android:name="android.intent.action.WEB_SEARCH"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+            </intent-filter>
         </activity>
 
         <activity android:name=".search_history.SearchActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.WEB_SEARCH" />
-            </intent-filter>
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.WEB_SEARCH" />-->
+            <!--</intent-filter>-->
         </activity>
 
         <activity android:name=".settings.SettingActivity"/>

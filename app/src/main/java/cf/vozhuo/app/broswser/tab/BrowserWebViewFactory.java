@@ -28,10 +28,12 @@ public class BrowserWebViewFactory implements WebViewFactory {
         initWebViewSettings(w);
         return w;
     }
+
     private static final String APP_CACHE_DIRNAME = "cache";
     protected void initWebViewSettings(MyWebView w) {
         w.setScrollbarFadingEnabled(true);
         w.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+        w.addJavascriptInterface(new MyWebView.WebAppInterface(mContext), "JSInterface");
         // Enable the built-in zoom
         WebSettings webSettings = w.getSettings();
         //设置支持缩放
@@ -46,6 +48,7 @@ public class BrowserWebViewFactory implements WebViewFactory {
         webSettings.setUseWideViewPort(true);
         webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
         webSettings.setLoadWithOverviewMode(true);
+
 
         webSettings.setDefaultTextEncodingName("utf-8");
         String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + APP_CACHE_DIRNAME;
