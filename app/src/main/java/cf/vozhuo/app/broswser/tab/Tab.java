@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import cf.vozhuo.app.broswser.MainActivity;
-import cf.vozhuo.app.broswser.MyWebView;
 import cf.vozhuo.app.broswser.R;
 
 public class Tab {
@@ -48,7 +47,7 @@ public class Tab {
     // Main WebView wrapper
     private View mContainer;
     // Main WebView
-    private MyWebView mMainView;
+    private WebView mMainView;
     // Subwindow container
     private View mSubViewContainer;
     // Subwindow WebView
@@ -185,14 +184,14 @@ public class Tab {
     public void loadBlank(){
         loadUrl(DEFAULT_BLANK_URL,null,false);
     }
-    public Tab(WebViewController webViewController,MyWebView view){
+    public Tab(WebViewController webViewController,WebView view){
         this(webViewController,view,null);
     }
     public Tab(WebViewController webViewController,Bundle state){
         this(webViewController,null,state);
     }
 
-    public Tab(WebViewController webViewController,MyWebView view,Bundle state){
+    public Tab(WebViewController webViewController,WebView view,Bundle state){
         mSavePageJob = new HashMap<Integer, Long>();
         mWebViewController = webViewController;
         mContext = MainActivity.instance;
@@ -234,7 +233,7 @@ public class Tab {
     public long getId() {
         return mId;
     }
-    void setWebView(MyWebView w) {
+    void setWebView(WebView w) {
         setWebView(w, true);
     }
 
@@ -242,7 +241,7 @@ public class Tab {
      * Sets the WebView for this tab, correctly removing the old WebView from
      * the container view.
      */
-    void setWebView(MyWebView w, boolean restore) {
+    void setWebView(WebView w, boolean restore) {
         if (mMainView == w) {
             return;
         }
@@ -361,7 +360,7 @@ public class Tab {
      * non-null for the current tab.
      * @return The main WebView of this tab.
      */
-    public MyWebView getWebView() {
+    public WebView getWebView() {
         return mMainView;
     }
 

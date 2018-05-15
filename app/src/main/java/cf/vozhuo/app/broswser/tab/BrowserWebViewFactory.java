@@ -8,7 +8,7 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import cf.vozhuo.app.broswser.MyWebView;
+import cf.vozhuo.app.broswser.WebAppInterface;
 import cf.vozhuo.app.broswser.util.NetworkUtil;
 import cf.vozhuo.app.broswser.util.SPUtil;
 
@@ -19,21 +19,21 @@ public class BrowserWebViewFactory implements WebViewFactory {
     public BrowserWebViewFactory(Context context) {
         mContext = context;
     }
-    private MyWebView instantiateWebView(AttributeSet attrs, int defStyle) {
-        return new MyWebView(mContext, attrs, defStyle);
+    private WebView instantiateWebView(AttributeSet attrs, int defStyle) {
+        return new WebView(mContext, attrs, defStyle);
     }
     @Override
-    public MyWebView createWebView() {
-        MyWebView w = instantiateWebView(null, android.R.attr.webViewStyle);
+    public WebView createWebView() {
+        WebView w = instantiateWebView(null, android.R.attr.webViewStyle);
         initWebViewSettings(w);
         return w;
     }
 
     private static final String APP_CACHE_DIRNAME = "cache";
-    protected void initWebViewSettings(MyWebView w) {
+    protected void initWebViewSettings(WebView w) {
         w.setScrollbarFadingEnabled(true);
         w.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
-        w.addJavascriptInterface(new MyWebView.WebAppInterface(mContext), "JSInterface");
+        w.addJavascriptInterface(new WebAppInterface(mContext), "JSInterface");
         // Enable the built-in zoom
         WebSettings webSettings = w.getSettings();
         //设置支持缩放
@@ -48,7 +48,6 @@ public class BrowserWebViewFactory implements WebViewFactory {
         webSettings.setUseWideViewPort(true);
         webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
         webSettings.setLoadWithOverviewMode(true);
-
 
         webSettings.setDefaultTextEncodingName("utf-8");
         String cacheDirPath = mContext.getFilesDir().getAbsolutePath() + APP_CACHE_DIRNAME;

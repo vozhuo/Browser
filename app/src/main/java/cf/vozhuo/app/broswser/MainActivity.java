@@ -16,6 +16,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
@@ -27,10 +28,14 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,6 +83,7 @@ import cf.vozhuo.app.broswser.tab.TabRecyclerView;
 import cf.vozhuo.app.broswser.tab.UiController;
 import cf.vozhuo.app.broswser.tab.WebViewFactory;
 import cf.vozhuo.app.broswser.util.DownloadUtil;
+import cf.vozhuo.app.broswser.util.JSUtil;
 import cf.vozhuo.app.broswser.util.NetworkUtil;
 import cf.vozhuo.app.broswser.util.SPUtil;
 
@@ -616,6 +622,63 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mGesture.onTouchEvent(ev);
         return super.dispatchTouchEvent(ev);
     }
+    private ActionMode mActionMode = null;
+    @Override
+    public void onActionModeStarted(ActionMode mode) {
+        if (mActionMode == null) {
+            mActionMode = mode;
+            Menu menu = mode.getMenu();
+            menu.clear();
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.select, menu);
+
+            menu.findItem(R.id.search).setOnMenuItemClickListener(mListener);
+            menu.findItem(R.id.copy).setOnMenuItemClickListener(mListener);
+//            for (int i = 0; i < 2; i++) {
+//                MenuItem item = menu.getItem(i);
+//                item.setOnMenuItemClickListener(mListener);
+//            }
+        }
+        super.onActionModeStarted(mode);
+    }
+    private MenuItem.OnMenuItemClickListener mListener = new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                JSUtil.getSelectedData(mActiveTab.getWebView());
+                Log.e(TAG, "onMenuItemClick: "+menuItem.getItemId());
+                switch (menuItem.getItemId()) {
+                    case R.id.copy:
+                        Toast.makeText(instance, "复制成功", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.search:
+                        new Handler().postDelayed(new Runnable() {
+                            public void run() {
+                                if(WebAppInterface.getValue() != null)
+                                    mActiveTab.loadUrl(SPUtil.getSearchUrl(instance, WebAppInterface.getValue()),
+                                            null,true);
+//                                    loadFromSelect();
+                                }
+                            }, 100);
+                        break;
+                    default: return false;
+                }
+                releaseActionMode();
+                return true;
+            }
+    };
+
+    private void releaseActionMode() {
+        if (mActionMode != null) {
+            mActionMode.finish();
+            mActionMode = null;
+        }
+    }
+    @Override
+    public void onActionModeFinished(ActionMode mode) {
+        releaseActionMode();
+//        mActiveTab.getWebView().clearFocus();
+        super.onActionModeFinished(mode);
+    }
 
     private long mExitTime = 0;
     @Override
@@ -700,10 +763,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
             mActiveTab.loadUrl(url, null,true);
             switchToTab();
         }
-    }
-    public void loadFromSelect(String url) {
-        addTab(false);
-        load(url);
     }
 
     private void switchToTab() {
