@@ -3,7 +3,7 @@
     <data>
         <variable
             name="handlers"
-            type="cf.vozhuo.app.broswser.MainActivity"/>
+            type="tk.vozhuo.browser.ui.activity.MainActivity"/>
     </data>
     <android.support.constraint.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -27,7 +27,7 @@
             app:layout_constraintTop_toBottomOf="@+id/showTabList"
             app:srcCompat="@drawable/add" />
 
-        <cf.vozhuo.app.broswser.tab.TabRecyclerView
+        <tk.vozhuo.browser.widget.TabRecyclerView
             android:id="@+id/showTabList"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

@@ -3,15 +3,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity">
+    tools:context=".ui.activity.MainActivity">
     <item
         android:id="@+id/copy"
         app:showAsAction="ifRoom"
-        android:title="复制">
+        android:title="@string/copy">
     </item>
     <item
         android:id="@+id/search"
         app:showAsAction="ifRoom"
-        android:title="搜索">
+        android:title="@string/search">
     </item>
 </menu>

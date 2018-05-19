@@ -3,7 +3,7 @@
     <data>
         <variable
             name="handlers"
-            type="cf.vozhuo.app.broswser.MainActivity"/>
+            type="tk.vozhuo.browser.ui.activity.MainActivity"/>
     </data>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"

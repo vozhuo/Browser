@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "cf.vozhuo.app.broswser"
+        applicationId "tk.vozhuo.browser"
         minSdkVersion 15
         targetSdkVersion 27
         versionCode 1
