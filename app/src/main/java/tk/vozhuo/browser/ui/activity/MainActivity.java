@@ -108,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private boolean mIsInMain = true;
     private TabRecyclerView mRecyclerView;
     private List<FavHisEntity> mList = new ArrayList<>();
+    private TabPopupWindow popupWindow;
+    private View contentView;
+    private PopTabListBinding binding;
 
     SwipeRefreshLayout refreshLayout;
     TextView mTabNum;
@@ -141,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
             case R.id.addTab:
                 addTab(true);
                 popupWindow.dismiss();
+                break;
             case R.id.tv_backWindow:
                 Tab tab = mTabAdapter.createNewTab();
                 tab.loadUrl(hitUrl, null, false);
@@ -251,22 +255,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
         if (mTabAdapter.getItemCount() <= 0) {
            addTab(false);
         }
-
-        InputStream is = this.getResources().openRawResource(R.raw.night);
-        byte[] buffer = new byte[0];
-        try {
-            buffer = new byte[is.available()];
-            is.read(buffer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        nightCode = Base64.encodeToString(buffer, Base64.NO_WRAP);
 
         //配置refreshLayout
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -540,9 +528,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
 //        mTabAdapter.setLastSelectedPos(mTabController.getCurrentPosition());
     }
 
-    private TabPopupWindow popupWindow;
-    private View contentView;
-    private PopTabListBinding binding;
     private void showPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         binding = DataBindingUtil.inflate(inflater, R.layout.pop_tab_list, null, false);

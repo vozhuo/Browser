@@ -19,7 +19,7 @@
         android:padding="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="新窗口打开" />
+        android:text="@string/newWindow" />
     <TextView
         android:id="@+id/tv_backWindow"
         android:onClick="@{handlers::onClick}"
@@ -28,7 +28,7 @@
         android:padding="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="后台打开" />
+        android:text="@string/backWindow" />
     <TextView
         android:id="@+id/tv_copy"
         android:onClick="@{handlers::onClick}"
@@ -37,7 +37,7 @@
         android:padding="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="复制链接地址" />
+        android:text="@string/copyLink" />
 
     <!--<TextView-->
         <!--android:id="@+id/tv_free_copy"-->

@@ -28,10 +28,10 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.R;
 import tk.vozhuo.browser.databinding.FragmentNoticeBinding;
 import tk.vozhuo.browser.ui.activity.DownloadActivity;
+import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.ui.activity.SearchActivity;
 import tk.vozhuo.browser.ui.activity.SettingActivity;
 

@@ -25,13 +25,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import tk.vozhuo.browser.db.SQLiteHelper;
-import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.R;
 import tk.vozhuo.browser.databinding.FragmentOptionBinding;
+import tk.vozhuo.browser.db.FavHisDao;
+import tk.vozhuo.browser.db.SQLiteHelper;
 import tk.vozhuo.browser.ui.activity.DownloadActivity;
 import tk.vozhuo.browser.ui.activity.FavHisActivity;
-import tk.vozhuo.browser.db.FavHisDao;
+import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.ui.activity.SettingActivity;
 import tk.vozhuo.browser.utils.NetworkUtil;
 

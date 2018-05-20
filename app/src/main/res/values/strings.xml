@@ -32,4 +32,7 @@
     <string name="cn">.cn</string>
     <string name="noData">没有数据</string>
     <string name="copy">复制</string>
+    <string name="newWindow">新窗口打开</string>
+    <string name="backWindow">后台打开</string>
+    <string name="copyLink">复制链接地址</string>
 </resources>

@@ -93,7 +93,7 @@ public class DownloadActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
 
-        if(!(mList == null || mList.isEmpty())) {
+        if (!(mList == null || mList.isEmpty())) {
             binding.ibDownloadClear.setVisibility(View.VISIBLE);
         } else {
             mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
@@ -104,10 +104,10 @@ public class DownloadActivity extends AppCompatActivity {
                 DownloadEntity item = mAdapter.getItem(position);
                 String url = item.getKey();
                 TextView tv = view.findViewById(R.id.tv_download_speed);
-                if(isSelectMode) { //选择删除模式
+                if (isSelectMode) { //选择删除模式
                     mAdapter.setSelectItem(position);
                 } else {
-                    if(!item.isComplete()) { //任务未完成，执行开始、暂停
+                    if (!item.isComplete()) { //任务未完成，执行开始、暂停
                         switchState(url);
                     } else { //已完成，执行文件打开
                         Intent intent = new Intent();
@@ -134,14 +134,15 @@ public class DownloadActivity extends AppCompatActivity {
         });
     }
 
-    @Download.onTaskRunning protected void running(DownloadTask task) {
+    @Download.onTaskRunning
+    protected void running(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
             DownloadEntity item = mAdapter.getItem(i);
             ProgressBar progress = (ProgressBar) mAdapter.getViewByPosition(mRecyclerView, i, R.id.progressBar);
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
 
-            if(task.getKey().equals(item.getKey())) {
+            if (task.getKey().equals(item.getKey())) {
                 progress.setProgress(task.getPercent());
                 control.setVisibility(View.VISIBLE);
                 control.setSelected(false);
@@ -149,7 +150,9 @@ public class DownloadActivity extends AppCompatActivity {
             }
         }
     }
-    @Download.onTaskStop void taskStop(DownloadTask task) {
+
+    @Download.onTaskStop
+    void taskStop(DownloadTask task) {
         Log.e(TAG, "taskStop: ");
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
             DownloadEntity item = mAdapter.getItem(i);
@@ -157,7 +160,7 @@ public class DownloadActivity extends AppCompatActivity {
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
 
-            if(task.getKey().equals(item.getKey())) {
+            if (task.getKey().equals(item.getKey())) {
                 progress.setProgress(task.getPercent());
                 control.setVisibility(View.VISIBLE);
                 control.setSelected(true);
@@ -165,14 +168,16 @@ public class DownloadActivity extends AppCompatActivity {
             }
         }
     }
-    @Download.onTaskResume void taskResume(DownloadTask task) {
+
+    @Download.onTaskResume
+    void taskResume(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
             DownloadEntity item = mAdapter.getItem(i);
             ProgressBar progress = (ProgressBar) mAdapter.getViewByPosition(mRecyclerView, i, R.id.progressBar);
             ImageButton control = (ImageButton) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
 
-            if(task.getKey().equals(item.getKey())) {
+            if (task.getKey().equals(item.getKey())) {
                 progress.setProgress(task.getPercent());
                 control.setVisibility(View.VISIBLE);
                 control.setSelected(false);
@@ -180,14 +185,16 @@ public class DownloadActivity extends AppCompatActivity {
             }
         }
     }
-    @Download.onTaskComplete void taskComplete(DownloadTask task) {
+
+    @Download.onTaskComplete
+    void taskComplete(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
             DownloadEntity item = mAdapter.getItem(i);
             ProgressBar progress = (ProgressBar) mAdapter.getViewByPosition(mRecyclerView, i, R.id.progressBar);
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
 
-            if(task.getKey().equals(item.getKey())) {
+            if (task.getKey().equals(item.getKey())) {
                 progress.setProgress(0);
                 control.setVisibility(View.INVISIBLE);
                 speed.setText("");
@@ -196,42 +203,47 @@ public class DownloadActivity extends AppCompatActivity {
         }
         Toast.makeText(MainActivity.instance, "下载完成", Toast.LENGTH_SHORT).show();
     }
-    @Download.onTaskFail void taskFail(DownloadTask task) {
+
+    @Download.onTaskFail
+    void taskFail(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
             DownloadEntity item = mAdapter.getItem(i);
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
 
-            if(task.getKey().equals(item.getKey())) {
+            if (task.getKey().equals(item.getKey())) {
                 speed.setText("下载失败");
                 control.setSelected(true);
             }
         }
     }
+
     public void switchState(String url) {
-        if(Aria.download(this).load(url).isRunning()) { //正在下载，点击暂停
+        if (Aria.download(this).load(url).isRunning()) { //正在下载，点击暂停
             Aria.download(this).load(url).stop();
         } else { //暂停状态，点击下载
             Aria.download(this).load(url).resume();
         }
     }
+
     public boolean isTaskRunning(String url) {
         return Aria.download(this).load(url).isRunning();
     }
+
     public void deleteDownload(boolean isDeleteFile) {
         for (int i = 0; i < sba.size(); i++) {
             if (sba.get(i)) {
                 String url = mList.get(i).getKey();
-                Log.e(TAG, "deleteDownload: "+url);
+                Log.e(TAG, "deleteDownload: " + url);
                 Aria.download(this).load(url).cancel(isDeleteFile);
                 mAdapter.remove(i);
             }
         }
-        if(sba.size() == 0) { //未选择，视为全选
+        if (sba.size() == 0) { //未选择，视为全选
             Aria.download(this).removeAllTask(true);
             mAdapter.setNewData(new ArrayList<DownloadEntity>());
         }
-       if(isSelectMode) mAdapter.setShowBox(); //收回多选框
+        if (isSelectMode) mAdapter.setShowBox(); //收回多选框
     }
 
     public void removeRecord() {

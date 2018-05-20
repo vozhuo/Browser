@@ -17,13 +17,13 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.util.List;
 
-import tk.vozhuo.browser.db.SQLiteHelper;
-import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.R;
 import tk.vozhuo.browser.adapter.HistoriesAdapter;
 import tk.vozhuo.browser.databinding.FragmentHistoryBinding;
-import tk.vozhuo.browser.entity.FavHisEntity;
 import tk.vozhuo.browser.db.FavHisDao;
+import tk.vozhuo.browser.db.SQLiteHelper;
+import tk.vozhuo.browser.entity.FavHisEntity;
+import tk.vozhuo.browser.ui.activity.MainActivity;
 
 public class HistoryFragment extends Fragment{
     private static FavHisDao favHisDao;
