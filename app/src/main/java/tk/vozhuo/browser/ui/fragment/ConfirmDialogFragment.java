@@ -152,17 +152,8 @@ public class ConfirmDialogFragment extends DialogFragment {
         }
     }
     private EditText editText;
-    private JsResult result;
-    private JsPromptResult promptResult;
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        result = ((MainActivity)context).getJsResult();
-        promptResult = ((MainActivity)context).getJsPromptResult();
-        if(result != null) {
-            Log.e(TAG, "onAttach: NULL");
-        }
-    }
+    private JsResult result = MainActivity.instance.getJsResult();
+    private JsPromptResult promptResult = MainActivity.instance.getJsPromptResult();
 
     public void onClick(View view) {
         String content = getArguments().getString("Confirm");

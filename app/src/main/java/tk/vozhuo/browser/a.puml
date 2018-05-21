@@ -1,10 +1,13 @@
 @startuml
-(*)  --> "check input"
-If "input is verbose" then
---> [Yes] "turn on verbosity"
---> "run command"
-else
---> "run command"
-Endif
--->(*)
+start
+:点击链接;
+:弹出下载框;
+:修改文件名;
+if (是否下载) then (是)
+    :弹出下载提示;
+    :进入下载Activity;
+    :其他操作;
+else (否)
+endif
+stop
 @enduml

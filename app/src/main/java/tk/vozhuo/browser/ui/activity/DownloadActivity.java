@@ -134,6 +134,15 @@ public class DownloadActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        if(isSelectMode) {
+            mAdapter.setShowBox();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     @Download.onTaskRunning
     protected void running(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
@@ -141,8 +150,11 @@ public class DownloadActivity extends AppCompatActivity {
             ProgressBar progress = (ProgressBar) mAdapter.getViewByPosition(mRecyclerView, i, R.id.progressBar);
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
+            if(progress == null) {
+                Log.e(TAG, "running: NULL");
+            }
 
-            if (task.getKey().equals(item.getKey())) {
+            if (item != null && task.getKey().equals(item.getKey())) {
                 progress.setProgress(task.getPercent());
                 control.setVisibility(View.VISIBLE);
                 control.setSelected(false);

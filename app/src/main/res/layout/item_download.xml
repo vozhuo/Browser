@@ -15,8 +15,6 @@
         android:paddingLeft="0dp"
         android:paddingRight="0dp"
         android:progressDrawable="@drawable/seekbar_bg"
-        android:clickable="false"
-        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"

@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     ConstraintLayout mBottomBar;
     RecyclerView mQARecyclerView;
     private ItemTouchHelper itemTouchHelper;
+
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ivMenu:

@@ -15,12 +15,6 @@ import tk.vozhuo.browser.entity.SettingEntity;
 
 public class SettingAdapter extends BaseMultiItemQuickAdapter<SettingEntity, BaseViewHolder> {
 
-    /**
-     * Same as QuickAdapter#QuickAdapter(Context,int) but with
-     * some initialization data.
-     *
-     * @param data A new list is created out of this one to avoid mutable list
-     */
     public SettingAdapter(List<SettingEntity> data) {
         super(data);
         addItemType(SettingEntity.CHECKBOX, R.layout.item_setting_switch);
