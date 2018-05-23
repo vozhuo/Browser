@@ -1,13 +1,16 @@
 @startuml
 start
-:点击链接;
-:弹出下载框;
-:修改文件名;
-if (是否下载) then (是)
-    :弹出下载提示;
-    :进入下载Activity;
-    :其他操作;
+:点击标签页;
+if (是否为当前标签页) then (是)
+    :退出列表;
 else (否)
+    :移除当前标签页布局;
+    if (选择的标签页是否为主页) then (是)
+        :添加主页布局;
+    else (否)
+        :添加WebView布局;
+    endif
+    :退出列表;
 endif
 stop
 @enduml

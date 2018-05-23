@@ -23,7 +23,7 @@ public class FavHisActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SPUtil.setNightMode(this);
+        SPUtil.setDayNightMode(this);
         ActivityFavHisBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_fav_his);
 
         setSupportActionBar(binding.tbFavHis);

@@ -1,4 +1,4 @@
-package tk.vozhuo.browser.interfaces;
+package tk.vozhuo.browser.interfaces.web;
 
 import android.webkit.WebView;
 

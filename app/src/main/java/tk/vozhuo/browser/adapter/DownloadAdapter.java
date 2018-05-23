@@ -61,7 +61,7 @@ public class DownloadAdapter extends BaseQuickAdapter<DownloadEntity, BaseViewHo
         cb_download.setChecked(sba.get(position));
     }
 
-        //设置是否显示CheckBox
+    //设置是否显示CheckBox
     public void setShowBox() {
         //取反
         isShowBox = !isShowBox;

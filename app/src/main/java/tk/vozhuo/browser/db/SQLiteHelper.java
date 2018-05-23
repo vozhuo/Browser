@@ -25,7 +25,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         db.execSQL(fav);
         db.execSQL(his);
         db.execSQL(qa);
-        Log.e(TAG, "CREATE DATABASE");
     }
 
     @Override

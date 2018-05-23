@@ -25,7 +25,7 @@ import tk.vozhuo.browser.db.SQLiteHelper;
 import tk.vozhuo.browser.entity.FavHisEntity;
 import tk.vozhuo.browser.ui.activity.MainActivity;
 
-public class HistoryFragment extends Fragment{
+public class HistoryFragment extends Fragment {
     private static FavHisDao favHisDao;
     private HistoriesAdapter mAdapter;
     private ImageView iv_clear_history;

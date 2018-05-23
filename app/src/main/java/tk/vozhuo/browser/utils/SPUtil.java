@@ -8,12 +8,14 @@ import android.webkit.URLUtil;
 
 public class SPUtil {
     private static SharedPreferences sp;
-    public static void setNightMode(Context context) {
+    public static boolean setDayNightMode(Context context) {
         sp = context.getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
         if(sp.getBoolean("dark_state", false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            return true;
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            return false;
         }
     }
     public static boolean isNoTrackMode(Context context) {

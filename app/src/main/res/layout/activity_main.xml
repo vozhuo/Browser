@@ -62,7 +62,7 @@
                     android:layout_marginRight="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
-                    android:src="@drawable/browser_icon"
+                    app:srcCompat="@drawable/chrome"
                     app:layout_constraintBottom_toTopOf="@+id/searchBox"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.502"

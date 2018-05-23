@@ -107,7 +107,6 @@ public class FavoriteFragment extends Fragment {
                     public void onClick(View v) {
                         add(favorites);
                         Toast.makeText(getContext(), "添加成功", Toast.LENGTH_SHORT).show();
-
                         popupWindow.dismiss();
                     }
                 });

@@ -6,7 +6,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
@@ -26,7 +25,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Base64;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.GestureDetector;
@@ -45,7 +43,6 @@ import android.webkit.JsResult;
 import android.webkit.URLUtil;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -58,8 +55,6 @@ import com.chad.library.adapter.base.listener.OnItemDragListener;
 import com.chad.library.adapter.base.listener.OnItemSwipeListener;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -69,9 +64,10 @@ import java.util.Locale;
 
 import tk.vozhuo.browser.R;
 import tk.vozhuo.browser.db.SQLiteHelper;
-import tk.vozhuo.browser.interfaces.WebAppInterface;
+import tk.vozhuo.browser.interfaces.web.WebAppInterface;
 import tk.vozhuo.browser.adapter.QuickAccessAdapter;
 import tk.vozhuo.browser.adapter.TabAdapter;
+import tk.vozhuo.browser.utils.TouchEventUtil;
 import tk.vozhuo.browser.widget.TabPopupWindow;
 import tk.vozhuo.browser.broadcast.NetWorkStateReceiver;
 import tk.vozhuo.browser.databinding.ActivityMainBinding;
@@ -79,11 +75,11 @@ import tk.vozhuo.browser.databinding.PopHitTestBinding;
 import tk.vozhuo.browser.databinding.PopTabListBinding;
 import tk.vozhuo.browser.db.FavHisDao;
 import tk.vozhuo.browser.entity.FavHisEntity;
-import tk.vozhuo.browser.interfaces.BrowserWebViewFactory;
+import tk.vozhuo.browser.interfaces.web.BrowserWebViewFactory;
 import tk.vozhuo.browser.entity.Tab;
 import tk.vozhuo.browser.widget.TabRecyclerView;
-import tk.vozhuo.browser.interfaces.UiController;
-import tk.vozhuo.browser.interfaces.WebViewFactory;
+import tk.vozhuo.browser.interfaces.web.UiController;
+import tk.vozhuo.browser.interfaces.web.WebViewFactory;
 import tk.vozhuo.browser.ui.fragment.ConfirmDialogFragment;
 import tk.vozhuo.browser.ui.fragment.MenuDialogFragment;
 import tk.vozhuo.browser.utils.DownloadUtil;
@@ -93,7 +89,7 @@ import tk.vozhuo.browser.utils.SPUtil;
 
 import static android.content.ContentValues.TAG;
 
-public class MainActivity extends AppCompatActivity implements UiController{
+public class MainActivity extends AppCompatActivity implements UiController {
 
     public static MainActivity instance;
     private static final int REQUEST_CODE = 0;
@@ -112,6 +108,13 @@ public class MainActivity extends AppCompatActivity implements UiController{
     private View contentView;
     private PopTabListBinding binding;
 
+    private GestureDetector mGesture;
+    private int touchX;
+    private int touchY;
+
+    private PopupWindow hitPopup;
+    private String hitUrl;
+
     SwipeRefreshLayout refreshLayout;
     TextView mTabNum;
     ConstraintLayout mContentWrapper;
@@ -122,8 +125,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     ConstraintLayout mBottomBar;
     RecyclerView mQARecyclerView;
     private ItemTouchHelper itemTouchHelper;
-
-    public void onClick(View view) {
+   public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ivMenu:
                 MenuDialogFragment menuDialogFragment = new MenuDialogFragment();
@@ -194,15 +196,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
             WebSettings settings = tab.getWebView().getSettings();
             if(noImage) {
                 settings.setLoadsImagesAutomatically(false);
-
-//                Log.e(TAG, "setNoImage: 无图");
             } else {
                 settings.setLoadsImagesAutomatically(true);
-//                Log.e(TAG, "setNoImage: 有图");
             }
         }
     }
-    private boolean isTrack = true;
+
     public void setNoTrack() { //无痕浏览设置
         for (Tab tab : mTabAdapter.getData()) {
             WebSettings settings = tab.getWebView().getSettings();
@@ -210,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
             settings.setAppCacheEnabled(false);
             settings.setDomStorageEnabled(false);
         }
-        isTrack = false;
+
     }
     private NetWorkStateReceiver mNetworkChangeListener;
     @Override
@@ -232,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SPUtil.setNightMode(this);
+        SPUtil.setDayNightMode(this);
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         binding.setHandlers(this);
@@ -415,6 +414,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
         });
 
         mActiveTab.getWebView().setOnLongClickListener(onLongClickListener);
+
+        if(savedInstanceState != null) {
+            Log.e(TAG, "onCreate: savedInstanceState not NULL");
+        } else {
+            Log.e(TAG, "onCreate: savedInstanceState NULL");
+        }
     }
 
     private View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
@@ -440,15 +445,12 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 case WebView.HitTestResult.IMAGE_TYPE: // 处理长按图片的菜单项 }
                     return true;
                 case WebView.HitTestResult.UNKNOWN_TYPE: //未知
-                    Log.e(TAG, "onLongClick: UNKNOWN_TYPE");
                     break;
             }
             return false;
         }
     };
 
-    private PopupWindow hitPopup;
-    private String hitUrl;
     private void showHitPopupWindow(View view) {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         PopHitTestBinding binding = DataBindingUtil.inflate(inflater, R.layout.pop_hit_test, null, false);
@@ -519,8 +521,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
         }).show();
     }
 
-    private String nightCode;
-
     private void addTab(boolean second) {
         if(second) switchToMain();
 
@@ -543,7 +543,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
         LinearLayoutManager layout = new LinearLayoutManager(contentView.getContext());
         layout.setStackFromEnd(true); //倒序
         //layout.setReverseLayout(true);
-        Log.e(TAG, "showTabs: " + mContentWrapper.getMeasuredHeight());
 
         mRecyclerView = binding.showTabList;
         mRecyclerView.setLayoutManager(layout);
@@ -554,33 +553,14 @@ public class MainActivity extends AppCompatActivity implements UiController{
         mTabAdapter.enableSwipeItem();
         mTabAdapter.setOnItemSwipeListener(onTAbSwipeListener);
     }
-    private boolean isShouldExit(View v, MotionEvent event) {
-        if (v != null && (v instanceof ImageButton)) {
-            int[] l = {0, 0};
-            v.getLocationInWindow(l);
-            int left = l[0],
-                    top = l[1],
-                    bottom = top + v.getHeight(),
-                    right = left + v.getWidth();
-            if (event.getX() > left && event.getX() < right
-                    && event.getY() > top && event.getY() < bottom) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    private GestureDetector mGesture;
-    private int touchX;
-    private int touchY;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if(ev.getAction() == MotionEvent.ACTION_DOWN && isEditMode) { //退出QuickAccess编辑模式
             isEditMode = false;
-            if(isShouldExit(getCurrentFocus(), ev)) {
+            if(TouchEventUtil.isShouldExit(getCurrentFocus(), ev)) {
                 mQuickAccessAdapter.setShowClose();
                 return true;
             }
@@ -621,10 +601,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
 
             menu.findItem(R.id.search).setOnMenuItemClickListener(mListener);
             menu.findItem(R.id.copy).setOnMenuItemClickListener(mListener);
-//            for (int i = 0; i < 2; i++) {
-//                MenuItem item = menu.getItem(i);
-//                item.setOnMenuItemClickListener(mListener);
-//            }
         }
         super.onActionModeStarted(mode);
     }
@@ -643,7 +619,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
                                 if(WebAppInterface.getValue() != null)
                                     mActiveTab.loadUrl(SPUtil.getSearchUrl(instance, WebAppInterface.getValue()),
                                             null,true);
-//                                    loadFromSelect();
                                 }
                             }, 100);
                         break;
@@ -757,8 +732,6 @@ public class MainActivity extends AppCompatActivity implements UiController{
             mContentWrapper.removeView(mainView);
         }
         WebView view = mActiveTab.getWebView();
-
-//        Log.e(TAG,"switchToTab ----------" + mainView.getParent() +",view.getParent()= ;" + view.getParent() +",view =:" + view.getTitle());
         if(view.getParent() == null) {
             ConstraintLayout.LayoutParams lp = (ConstraintLayout.LayoutParams) view.getLayoutParams();
             if(lp == null){
@@ -804,7 +777,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 if(!hasTitle) siteTitle.setText(tab.getUrl());
             }
         }
-        darkMode();
+        dayNightMode();
         loadingFinished = false;
     }
 
@@ -826,7 +799,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
                 confirmDialogFragment.setArguments(bundle);
                 confirmDialogFragment.show(getSupportFragmentManager(), "fragment_confirm_dialog");
             } else {
-                Toast.makeText(this, "应用未安装", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "请先安装应用", Toast.LENGTH_SHORT)
                         .show();
             }
         }
@@ -841,31 +814,22 @@ public class MainActivity extends AppCompatActivity implements UiController{
             loadingFinished = true;
         }
         if (loadingFinished && !redirect) {
-
+            Log.e(TAG, "onPageFinished: ");
         } else {
             redirect = false;
         }
         refreshLayout.setRefreshing(false);
-        darkMode();
-//        CookieManager cookieManager = CookieManager.getInstance();
-//        String cookieStr = cookieManager.getCookie(tab.getUrl()); // 获取到cookie字符串值
         mTabAdapter.notifyDataSetChanged();
+        dayNightMode();
     }
 
-    public void darkMode() {
-//        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-//        Boolean darkMode = sp.getBoolean("dark_state", false);
-//        if(darkMode) {
-//            mActiveTab.loadUrl("javascript:(function() {" + "var parent = document.getElementsByTagName('head').item(0);"
-//                    + "var style = document.createElement('style');"
-//                    + "style.type = 'text/css';" + "style.innerHTML = window.atob('" + nightCode + "');"
-//                    + "parent.appendChild(style)" + "})();", null, false);
-//        }
+    private void dayNightMode() {
+        if(SPUtil.setDayNightMode(this)) JSUtil.loadNightCode(this, mActiveTab.getWebView());
     }
     @Override
     public void onProgressChanged(Tab tab) {
         searchProgress.setProgress(tab.getPageLoadProgress());
-        darkMode();
+        dayNightMode();
     }
     private boolean hasTitle = false;
     @Override
@@ -887,9 +851,7 @@ public class MainActivity extends AppCompatActivity implements UiController{
     }
 
     private void saveAsHistory(Tab tab) {
-        SharedPreferences sp = getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        Boolean noTrack = sp.getBoolean("track_state", false);
-        if (!noTrack && NetworkUtil.isNetworkConnected(this) && !mIsInMain) {
+        if (!SPUtil.isNoTrackMode(this) && NetworkUtil.isNetworkConnected(this) && !mIsInMain) {
             FavHisDao favHisDao = new FavHisDao(this, SQLiteHelper.TABLE_HIS);
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.CHINA);
             String currentTime = format.format(new Date());

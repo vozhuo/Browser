@@ -78,7 +78,7 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SPUtil.setNightMode(this);
+        SPUtil.setDayNightMode(this);
         ActivitySettingBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_setting);
 
         Toolbar toolbar = binding.toolbarSetting;
@@ -100,13 +100,6 @@ public class SettingActivity extends AppCompatActivity {
         mAdapter = new SettingAdapter(menuList());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
-//        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, 0) {
-//            @Override
-//            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-//                super.getItemOffsets(outRect, view, parent, state);
-//                outRect.set(20, 20, 10, 20);
-//            }
-//        });
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {

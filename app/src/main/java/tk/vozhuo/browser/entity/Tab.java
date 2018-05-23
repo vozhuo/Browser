@@ -27,7 +27,7 @@ import java.util.Stack;
 
 import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.R;
-import tk.vozhuo.browser.interfaces.WebViewController;
+import tk.vozhuo.browser.interfaces.web.WebViewController;
 
 public class Tab {
     public static final String DEFAULT_BLANK_URL = "about:blank";
@@ -67,13 +67,6 @@ public class Tab {
 
     // The time the load started, used to find load page time
     private long mLoadStartTime;
-
-//    private int mCaptureWidth;
-//    private int mCaptureHeight;
-//
-//    private Bitmap mCapture;
-//    private Handler mHandler;
-//    private boolean mUpdateThumbnail;
 
     public String mSavePageTitle;
     public String mSavePageUrl;
@@ -224,13 +217,6 @@ public class Tab {
      * added to TabControl. Preloaded tabs can be created before restoreInstanceState, leading
      * to overlapping IDs between the preloaded and restored tabs.
      */
-    public void refreshIdAfterPreload() {
-        mId++;
-    }
-
-    public void setController(WebViewController ctl) {
-        mWebViewController = ctl;
-    }
     public long getId() {
         return mId;
     }
@@ -314,47 +300,6 @@ public class Tab {
         }
     }
 
-    void resume() {
-        if (mMainView != null) {
-            setupHwAcceleration(mMainView);
-            mMainView.onResume();
-            if (mSubView != null) {
-                mSubView.onResume();
-            }
-        }
-    }
-    void pause() {
-        if (mMainView != null) {
-            mMainView.onPause();
-            if (mSubView != null) {
-                mSubView.onPause();
-            }
-        }
-    }
-    void putInForeground() {
-        if (mInForeground) {
-            return;
-        }
-        mInForeground = true;
-        resume();
-    }
-    void putInBackground() {
-//        Log.e(TAG,"putInBackground ------- mInForeground =:" + mInForeground);
-        if (!mInForeground) {
-            return;
-        }
-        mInForeground = false;
-        pause();
-        mMainView.setOnCreateContextMenuListener(null);
-        if (mSubView != null) {
-            mSubView.setOnCreateContextMenuListener(null);
-        }
-    }
-
-    boolean inForeground() {
-        return mInForeground;
-    }
-
     /**
      * Return the main window of this tab. Note: if a tab is freed in the
      * background, this can return null. It is only guaranteed to be
@@ -365,20 +310,11 @@ public class Tab {
         return mMainView;
     }
 
-    void setViewContainer(View container) {
-        mContainer = container;
-    }
     public String getUrl() {
         return mCurrentState.mUrl;
     }
 
-    public boolean checkUrlNotNull(){
-        return mCurrentState.checkUrlNotNull();
-    }
     public String getCurrentUrl(){
-//        for(int i = 0 ;i < mBrowsedHistory.size();i++){
-//            Log.e(TAG,"getCurrentUrl :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i));
-//        }
         return mBrowsedHistory.peek();
     }
     public String getPreUrl(){
@@ -491,11 +427,6 @@ public class Tab {
         mSavedState.putString(CURRENT_TITLE, mCurrentState.mTitle);
         return mSavedState;
     }
-//    public Bitmap getScreenshot() {
-//        synchronized (Tab.this) {
-//            return mCapture;
-//        }
-//    }
 
     private void setupHwAcceleration(View web) {
         if (web == null) return;
@@ -552,34 +483,13 @@ public class Tab {
         }
     }
 
-//    private int currentPos;
-//
-//    public int getCurrentPos() {
-//        return currentPos;
-//    }
-//
-//    public void setCurrentPos(int currentPos) {
-//        this.currentPos = currentPos;
-//    }
-
     public boolean canGoBack() {
-//        for(int i = 0 ;i < mBrowsedHistory.size();i++){
-//            Log.e(TAG,"canGoBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
-//        }
         boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
         boolean isSingle = mBrowsedHistory.size() == 1;
-
-//        Log.e(TAG,"canGoBack :: " + currentPos);
         return mMainView != null && !(isSingle && isBlank);
-//        return mMainView != null && !isBlank;
-
     }
 
     public boolean canGoForward() {
-//        boolean isBlank = DEFAULT_BLANK_URL.equals(mBrowsedHistory.peek());
-//        boolean isSingle = (mBrowsedHistory.size() == 1);
-//        boolean isLast = (currentPos == mBrowsedHistory.size());
-
         return mMainView != null && !mForwardHistory.isEmpty();
     }
 
@@ -599,18 +509,9 @@ public class Tab {
             mForwardHistory.push(mBrowsedHistory.peek());
             mBrowsedHistory.pop();
 
-//            currentPos -= 1;
-//            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.peek());
-//            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
             mMainView.loadUrl(mBrowsedHistory.peek());
             isGoBack = true;
-//            WebBackForwardList list = mMainView.copyBackForwardList();
-//            String url;
-//            for (int i = 0; i < list.getSize(); i++) {
-//                url = list.getItemAtIndex(i).getUrl();
-//                Log.e(TAG, "WebBackForwardList: 第 " + i +"项  :" + url);
-//            }
-//            mMainView.goBack();
+
             for(int i = 0 ;i < mBrowsedHistory.size();i++) {
                 Log.e(TAG,"goBack :: 第 " + i +"项  :" + mBrowsedHistory.elementAt(i) + " ,size =:" +  mBrowsedHistory.size());
             }
@@ -619,9 +520,6 @@ public class Tab {
 
     public void goForward() {
         if (mMainView != null) {
-//            currentPos += 1;
-//            Log.e(TAG, "goBack: "+ currentPos + " " + mBrowsedHistory.elementAt(currentPos - 1));
-//            mMainView.loadUrl(mBrowsedHistory.elementAt(currentPos - 1));
             mMainView.loadUrl(mForwardHistory.peek());
             mBrowsedHistory.push(mForwardHistory.peek());
             mForwardHistory.pop();

@@ -28,7 +28,6 @@ import tk.vozhuo.browser.utils.SPUtil;
 
 public class SearchActivity extends AppCompatActivity implements MySearchView {
 
-    private static final int RESULT_CODE = 1;
     private static final String TAG = "SearchActivity";
     private static SearchPresenter mSearchPresenter;
     private SearchHistoryAdapter mAdapter;
@@ -68,14 +67,13 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SPUtil.setNightMode(this);
+        SPUtil.setDayNightMode(this);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
         binding.setHandlers(this); //设置点击监听
 
         searchView = binding.searchView;
         mRecyclerView = binding.showSearchList;
         clear_history = binding.clearHistory;
-
 
         instance = this;
         searchView.setIconified(false);

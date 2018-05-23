@@ -67,7 +67,7 @@ public class DownloadActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance = this;
-        SPUtil.setNightMode(this);
+        SPUtil.setDayNightMode(this);
         ActivityDownloadBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_download);
         binding.setHandlers(this);
         mRecyclerView = binding.showDownloadList;
@@ -150,10 +150,6 @@ public class DownloadActivity extends AppCompatActivity {
             ProgressBar progress = (ProgressBar) mAdapter.getViewByPosition(mRecyclerView, i, R.id.progressBar);
             ImageView control = (ImageView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.iv_download_control);
             TextView speed = (TextView) mAdapter.getViewByPosition(mRecyclerView, i, R.id.tv_download_speed);
-            if(progress == null) {
-                Log.e(TAG, "running: NULL");
-            }
-
             if (item != null && task.getKey().equals(item.getKey())) {
                 progress.setProgress(task.getPercent());
                 control.setVisibility(View.VISIBLE);
