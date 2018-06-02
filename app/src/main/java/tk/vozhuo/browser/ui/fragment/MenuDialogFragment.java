@@ -34,6 +34,7 @@ import tk.vozhuo.browser.ui.activity.FavHisActivity;
 import tk.vozhuo.browser.ui.activity.MainActivity;
 import tk.vozhuo.browser.ui.activity.SettingActivity;
 import tk.vozhuo.browser.utils.NetworkUtil;
+import tk.vozhuo.browser.utils.SPUtil;
 
 import static android.content.ContentValues.TAG;
 
@@ -83,18 +84,11 @@ public class MenuDialogFragment extends DialogFragment {
         cb_dark = binding.dark;
 
         //检测智能无图模式是否开启
-        SharedPreferences sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        Boolean state = sp.getBoolean("image_state", false);
-        cb_image.setChecked(state);
-
+        cb_image.setChecked(SPUtil.isNoImageMode(getActivity()));
         //检测无痕模式是否开启
-        sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        state = sp.getBoolean("track_state", false);
-        cb_track.setChecked(state);
-
+        cb_track.setChecked(SPUtil.isNoTrackMode(getActivity()));
         //检测是否已收藏
         favHisDao = new FavHisDao(getContext(), SQLiteHelper.TABLE_FAV);
-
         boolean isCollected = favHisDao.queryURL(((MainActivity)getActivity()).getPageUrl());
         if(isCollected) {
             collect.setText("已添加");
@@ -105,11 +99,8 @@ public class MenuDialogFragment extends DialogFragment {
         }
 
         //检测夜间模式是否开启
-        sp = getActivity().getSharedPreferences("GlobalConfig", Context.MODE_PRIVATE);
-        state = sp.getBoolean("dark_state", false);
-        cb_dark.setChecked(state);
+        cb_dark.setChecked(SPUtil.isNightMode(getActivity()));
         //刷新、收藏Checkbox是否可点击
-        Log.e(TAG, "onViewCreated: " +((MainActivity)getActivity()).getPageUrl());
         if(((MainActivity)getActivity()).getPageUrl().isEmpty()) {
             binding.refresh.setEnabled(false);
             collect.setEnabled(false);
@@ -152,7 +143,6 @@ public class MenuDialogFragment extends DialogFragment {
         SharedPreferences.Editor editor = sp.edit();
 
         if(cb_dark.isChecked()) { //进入夜间模式
-//            ((MainActivity)getActivity()).setNoTrack();
             editor.putBoolean("dark_state", true);
             editor.apply();
             Toast.makeText(getContext(), "夜间模式开启", Toast.LENGTH_SHORT).show();

@@ -125,7 +125,12 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
 
     private void search(String value) {
         if (!TextUtils.isEmpty(value)) {
-            mSearchPresenter.search(value);
+            if(getContent().equals(value)) {
+                mSearchPresenter.search(value, false);
+            } else {
+                mSearchPresenter.search(value, true);
+            }
+
         }
     }
 

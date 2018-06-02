@@ -1,6 +1,5 @@
 package tk.vozhuo.browser.interfaces.presenter;
 
-
 import android.content.Context;
 
 import java.util.ArrayList;
@@ -40,8 +39,8 @@ public class SearchPresenterImpl implements SearchPresenter, OnSearchListener {
     }
 
     @Override
-    public void search(String value) {
-        searchModel.save(value);
+    public void search(String value, boolean save) {
+        if(save) searchModel.save(value);
         searchModel.search(value, this);
     }
 

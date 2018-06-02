@@ -1,16 +1,69 @@
+'start
+':点击标签页;
+'if (是否为当前标签页) then (是)
+'    :退出列表;
+'else (否)
+'    :移除当前标签页布局;
+'    if (选择的标签页是否为主页) then (是)
+'        :添加主页布局;
+'    else (否)
+'        :添加WebView布局;
+'    endif
+'    :退出列表;
+'endif
+'stop
+
 @startuml
-start
-:点击标签页;
-if (是否为当前标签页) then (是)
-    :退出列表;
-else (否)
-    :移除当前标签页布局;
-    if (选择的标签页是否为主页) then (是)
-        :添加主页布局;
-    else (否)
-        :添加WebView布局;
-    endif
-    :退出列表;
-endif
-stop
+    interface OnSearchListener {
+        void onSortSuccess(ArrayList<SearchBean> results)
+        void searchSuccess(String value)
+        void fuzzySearchSuccess(ArrayList<SearchBean> results)
+    }
+    interface SearchModel {
+        void save(String value)
+        void search(String value, OnSearchListener onSearchListener)
+        void remove(String key)
+        void clear()
+        void sortHistory(OnSearchListener onSearchListener)
+        void fuzzySearch(String value, OnSearchListener onSearchListener)
+    }
+    class SearchModelImpl implements SearchModel {
+        + save(String value)
+        + search(String value, OnSearchListener onSearchListener)
+        + remove(String key)
+        + clear()
+        + sortHistory(OnSearchListener onSearchListener)
+        + fuzzySearch(String value, OnSearchListener onSearchListener)
+    }
+    interface SearchPresenter {
+        void remove(String key)
+        void clear()
+        void sortHistory()
+        void search(String value, boolean save)
+        void fuzzySearch(String value)
+    }
+    class SearchPresenterImpl implements SearchPresenter, OnSearchListener {
+        - searchView : MySearchView
+        - searchModel : SearchModel
+        + save(String value)
+        + search(String value, OnSearchListener onSearchListener)
+        + remove(String key)
+        + clear()
+        + sortHistory(OnSearchListener onSearchListener)
+        + fuzzySearch(String value, OnSearchListener onSearchListener)
+        + onSortSuccess(ArrayList<SearchBean> results)
+        + searchSuccess(String value)
+        + fuzzySearchSuccess(ArrayList<SearchBean> results)
+    }
+    interface MySearchView {
+        void searchSuccess(String value)
+        void showContains(ArrayList<SearchBean> results)
+    }
+    class SearchActivity implements MySearchView {
+        - mSearchPresenter : SearchPresenter
+        + void showContains(ArrayList<SearchBean> results)
+        + void searchSuccess(String value)
+    }
+MySearchView <.. SearchPresenterImpl
+SearchModel <.. SearchPresenterImpl
 @enduml

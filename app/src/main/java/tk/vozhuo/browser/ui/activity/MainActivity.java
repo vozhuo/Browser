@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
         return true;
     }
 
-    //    private boolean isReload = false;
+    //private boolean isReload = false;
     //for Fragment use
     public void refreshPage() {
         if(mActiveTab != null) {
@@ -352,7 +352,9 @@ public class MainActivity extends AppCompatActivity implements UiController {
             }
         });
 
-        if(mIsInMain) refreshLayout.setEnabled(false);
+        if(mIsInMain) {
+            refreshLayout.setEnabled(false);
+        }
 
         favHisDao = new FavHisDao(this, SQLiteHelper.TABLE_QA);
 
@@ -501,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
 
     private String size;
     private String fileUrl;
-    public void doDownload(String fileName, String url) {
+    public void doDownload(String fileName, final String url) {
         String destPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 .getAbsolutePath() + File.separator + fileName;
         Log.e(TAG, "doDownload: "+ destPath + size + fileUrl);
@@ -511,14 +513,18 @@ public class MainActivity extends AppCompatActivity implements UiController {
                 .setFilePath(destPath)
                 .start();
         Aria.get(this).getDownloadConfig().setConvertSpeed(true);
-
-        Snackbar.make(mContentWrapper, "正在下载",
-                Snackbar.LENGTH_LONG).setAction("点击查看", new View.OnClickListener() {
+        new Handler().postDelayed(new Runnable() {
             @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, DownloadActivity.class));
+            public void run() {
+                Snackbar.make(mContentWrapper, "正在下载",
+                        Snackbar.LENGTH_LONG).setAction("点击查看", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(new Intent(MainActivity.this, DownloadActivity.class));
+                    }
+                }).show();
             }
-        }).show();
+        }, 100);
     }
 
     private void addTab(boolean second) {
@@ -824,7 +830,7 @@ public class MainActivity extends AppCompatActivity implements UiController {
     }
 
     private void dayNightMode() {
-        if(SPUtil.setDayNightMode(this)) JSUtil.loadNightCode(this, mActiveTab.getWebView());
+        if(SPUtil.isNightMode(this)) JSUtil.loadNightCode(this, mActiveTab.getWebView());
     }
     @Override
     public void onProgressChanged(Tab tab) {

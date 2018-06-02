@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -28,6 +30,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.security.auth.login.LoginException;
+
 import tk.vozhuo.browser.ui.fragment.ConfirmDialogFragment;
 import tk.vozhuo.browser.R;
 import tk.vozhuo.browser.adapter.DownloadAdapter;
@@ -45,11 +49,14 @@ public class DownloadActivity extends AppCompatActivity {
     private DownloadAdapter mAdapter;
     private boolean isSelectMode = false;
     private SparseBooleanArray sba;
+    private ActivityDownloadBinding binding;
 
     public void onClick(View view) {
         int count = 0;
         sba = mAdapter.getSba();
+        Log.e(TAG, "onClick: "+ mAdapter.getSba().size());
         for (int i = 0; i < sba.size(); i++) {
+            Log.e("TAG", "" + sba.get(i));
             if (sba.get(i)) {
                 Log.e("TAG", "你选了第：" + i + "项");
                 count++;
@@ -68,7 +75,7 @@ public class DownloadActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         instance = this;
         SPUtil.setDayNightMode(this);
-        ActivityDownloadBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_download);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_download);
         binding.setHandlers(this);
         mRecyclerView = binding.showDownloadList;
 
@@ -89,13 +96,10 @@ public class DownloadActivity extends AppCompatActivity {
         mList = Aria.download(this).getTaskList();
 
         mAdapter = new DownloadAdapter(mList);
-
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
 
-        if (!(mList == null || mList.isEmpty())) {
-            binding.ibDownloadClear.setVisibility(View.VISIBLE);
-        } else {
+        if (mList == null || mList.isEmpty()) {
             mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
         }
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
@@ -105,7 +109,8 @@ public class DownloadActivity extends AppCompatActivity {
                 String url = item.getKey();
                 TextView tv = view.findViewById(R.id.tv_download_speed);
                 if (isSelectMode) { //选择删除模式
-                    mAdapter.setSelectItem(position);
+                    view.findViewById(R.id.cb_download).performClick();
+//                    mAdapter.setSelectItem(position);
                 } else {
                     if (!item.isComplete()) { //任务未完成，执行开始、暂停
                         switchState(url);
@@ -120,15 +125,21 @@ public class DownloadActivity extends AppCompatActivity {
                 }
             }
         });
+
+
         mAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
                 //进入选择删除模式
-                isSelectMode = true;
                 mAdapter.setShowBox();
-                //设置选中的项
-                mAdapter.setSelectItem(position);
-                mAdapter.notifyDataSetChanged();
+                if(isSelectMode) {
+                    binding.ibDownloadClear.setVisibility(View.GONE);
+                } else {
+                    binding.ibDownloadClear.setVisibility(View.VISIBLE);
+                    //设置选中的项
+                    view.findViewById(R.id.cb_download).performClick();
+                }
+                isSelectMode = !isSelectMode;
                 return true;
             }
         });
@@ -138,11 +149,12 @@ public class DownloadActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(isSelectMode) {
             mAdapter.setShowBox();
+            binding.ibDownloadClear.setVisibility(View.GONE);
+            isSelectMode = false;
         } else {
             super.onBackPressed();
         }
     }
-
     @Download.onTaskRunning
     protected void running(DownloadTask task) {
         for (int i = 0; i < mAdapter.getItemCount(); i++) {
@@ -249,11 +261,20 @@ public class DownloadActivity extends AppCompatActivity {
         }
         if (sba.size() == 0) { //未选择，视为全选
             Aria.download(this).removeAllTask(true);
-            mAdapter.setNewData(new ArrayList<DownloadEntity>());
+            mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
         }
-        if (isSelectMode) mAdapter.setShowBox(); //收回多选框
-    }
+        mAdapter.setShowBox(); //收回多选框
+        binding.ibDownloadClear.setVisibility(View.GONE);
+        isSelectMode = false;
 
+        mList = Aria.download(this).getTaskList();
+        if (mList == null || mList.isEmpty()) {
+            mAdapter.setEmptyView(R.layout.view_nodata, (ViewGroup) binding.getRoot());
+        } else {
+            mAdapter.setNewData(mList);
+        }
+    }
+    //外部调用
     public void removeRecord() {
         Aria.download(this).removeAllTask(false);
     }

@@ -4,6 +4,6 @@ public interface SearchPresenter {
     void remove(String key);
     void clear();
     void sortHistory();
-    void search(String value);
+    void search(String value, boolean save);
     void fuzzySearch(String value);
 }
