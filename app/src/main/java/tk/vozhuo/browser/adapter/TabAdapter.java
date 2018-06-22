@@ -43,15 +43,6 @@ public class TabAdapter extends BaseItemDraggableAdapter<Tab, BaseViewHolder> {
         }
         return t;
     }
-    public Tab createNewTab(Bundle state) {
-        final WebView w = mController.getWebViewFactory().createWebView();
-        Tab t = new Tab(mController, w, state);
-        addData(t);
-        if (mController != null) {
-            mController.onTabCountChanged();
-        }
-        return t;
-    }
     public void setActiveTab(Tab tab) {
         Tab t = getItem(currentPos);
         WebView webView;

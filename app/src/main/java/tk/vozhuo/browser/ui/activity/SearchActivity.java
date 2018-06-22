@@ -61,7 +61,9 @@ public class SearchActivity extends AppCompatActivity implements MySearchView {
         }
     }
     private String getContent() {
-        return getIntent().getStringExtra("siteInfo");
+        if(getIntent().getStringExtra("siteInfo") != null)
+            return getIntent().getStringExtra("siteInfo");
+        return "";
     }
 
     @Override

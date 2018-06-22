@@ -1,17 +1,18 @@
-'start
-':点击标签页;
-'if (是否为当前标签页) then (是)
-'    :退出列表;
-'else (否)
-'    :移除当前标签页布局;
-'    if (选择的标签页是否为主页) then (是)
-'        :添加主页布局;
-'    else (否)
-'        :添加WebView布局;
-'    endif
-'    :退出列表;
-'endif
-'stop
+@startuml
+start
+if () then (点击当前标签页)
+
+else (点击其他标签页)
+    :移除当前标签页布局;
+    if () then (选择的标签页为主页)
+        :添加主页布局;
+    else (选择的标签页为网页)
+        :添加WebView布局;
+    endif
+    :退出列表;
+endif
+stop
+@enduml
 
 @startuml
     interface OnSearchListener {
@@ -66,4 +67,87 @@
     }
 MySearchView <.. SearchPresenterImpl
 SearchModel <.. SearchPresenterImpl
+@enduml
+
+@startuml
+start
+:点击书签历史;
+if () then (点击历史Tab)
+    :显示历史Fragment;
+    if() then (点击item)
+    :销毁Activity;
+    :访问网页;
+    else (点击删除)
+    :删除记录;
+    endif
+    stop
+else (留在书签Tab)
+    :移除当前标签页布局;
+    if() then (点击item)
+    :销毁Activity;
+    :访问网页;
+    else (长按item)
+    :弹出选项菜单;
+    :操作;
+    endif
+    stop
+endif
+@enduml
+
+@startuml
+start
+:点击菜单;
+if () then (当前网页已加入书签)
+    :添加文字“已收藏”;
+    :点击移除书签;
+else (当前网页未加入书签)
+    :添加文字“添加收藏”;
+    :点击添加书签;
+endif
+:图标改变;
+:收回菜单栏;
+stop
+@enduml
+
+@startuml
+:点击打开Activity;
+repeat
+    :输入字符;
+repeat while () is (字符无效)
+    :执行模糊搜索;
+    :提交内容;
+if () then (字符串为URL)
+else (字符串不是URL)
+    :拼接为URL;
+endif
+:加载URL;
+:显示WebView;
+stop
+@enduml
+
+@startuml
+start
+:点击选项;
+if () then (已设置默认浏览器)
+    :打开默认浏览器的应用属性;
+    :清除默认设置并返回;
+else (未设置默认浏览器)
+endif
+:显示浏览器列表;
+:设置默认;
+:显示反馈;
+stop
+@enduml
+
+@startuml
+start
+:点击链接;
+:弹出下载框;
+:修改文件名;
+if () then (点击下载)
+    :弹出下载提示;
+    :进入下载Activity;
+else (点击取消)
+endif
+stop
 @enduml

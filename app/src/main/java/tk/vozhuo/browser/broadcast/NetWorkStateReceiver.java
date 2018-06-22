@@ -45,12 +45,14 @@ public class NetWorkStateReceiver extends BroadcastReceiver {
             //获取所有网络连接的信息
             Network[] networks = connMgr.getAllNetworks();
             //通过循环将网络信息逐个取出来
-            for (int i = 0; i < networks.length; i++) {
+            for (Network network : networks) {
                 //获取ConnectivityManager对象对应的NetworkInfo对象
-                NetworkInfo networkInfo = connMgr.getNetworkInfo(networks[i]);
-                if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI && !networkInfo.isConnected()) {
+                NetworkInfo networkInfo = connMgr.getNetworkInfo(network);
+                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && !networkInfo.isConnected()) {
+                    Log.e(TAG, "onReceive: 无图");
                     MainActivity.instance.setNoImage(true);
                 } else {
+                    Log.e(TAG, "onReceive: 有图");
                     MainActivity.instance.setNoImage(false);
                 }
             }
